@@ -1,0 +1,256 @@
+<?php
+use App\Models\User;
+use App\Models\AdminRating;
+use App\Models\ProductReview;
+use App\Models\Offer;
+use App\Models\Order;
+use App\Models\Pincode;
+if (!function_exists('storeFileWithCustomName')) {
+    function storeFileWithCustomName($file, $directory)
+    {
+       // Ensure the directory exists
+       $path = storage_path("app/public/$directory");
+       if (!is_dir($path)) {
+           mkdir($path, 0755, true);
+       }
+       // Generate a custom filename: random 4 digits + timestamp + file extension
+       $filename = rand(1000, 9999) . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+       // Store the file in the specified directory and return its path
+       $file->storeAs($directory, $filename, 'public');
+       return 'storage/' . $directory . '/' . $filename;
+    }
+}
+if (!function_exists('MakingCustomerId')) {
+    function MakingCustomerId(){
+        do {
+            // Generate a new customer ID
+            $lastCustomer = User::orderBy('id', 'desc')->first();
+            $customerId = 'EW-' . str_pad($lastCustomer ? $lastCustomer->id + 1 : 1, 8, '0', STR_PAD_LEFT);
+    
+            // Check if the generated ID already exists in the database
+            $exists = User::where('customer_id', $customerId)->exists();
+    
+        } while ($exists);
+    
+        return $customerId;
+    }
+}
+
+if (!function_exists('CheckUserStatus')) {
+    function CheckUserStatus($id) {
+        // Get the user's status for all required fields
+        $data = User::select('driving_license_status', 'govt_id_card_status', 'cancelled_cheque_status', 'current_address_proof_status')
+                    ->where('id', $id)
+                    ->first();
+
+        // Check if all the status fields are equal to 2
+        if ($data && $data->driving_license_status == 2 && 
+            $data->govt_id_card_status == 2 && 
+            $data->cancelled_cheque_status == 2 && 
+            $data->current_address_proof_status == 2) {
+            return true;  // Return 1 if all fields are 2
+        }
+
+        return false;  // Return 0 if any field is not 2
+    }
+}
+if(!function_exists('AdminRatings')){
+    function AdminRatings($id){
+        $ratings =AdminRating::where('user_id', $id)->get();
+
+        //check if any ratings founds
+        if($ratings->isEmpty()){
+            return 0; //If not ratings, return 0
+        }
+
+        //Calculate the average rating
+        $averateRating = $ratings->avg('rating');//Assuming 'rating' is the column for ratings
+        return round($averateRating, 1);//Round to 1 decimal for better precision
+    }
+}
+
+if (!function_exists('ProductReviews')) {
+    function ProductReviews($id) {
+        // Retrieve product reviews with user details (name, profile_image)
+        $reviews = ProductReview::select('product_id', 'user_id', 'rating', 'review')
+            ->with([
+                'user' => function($query) {
+                    $query->select('id', 'name', 'profile_image');  // Specify columns to retrieve from the user table
+                }
+            ])
+            ->where('product_id', $id)
+            ->get();
+
+        // Format the reviews to match the desired structure
+        return $reviews->map(function($review) {
+            if($review->user){
+                return [
+                    'name' => $review->user->name,
+                    'profile_image' => $review->user->profile_image,
+                    'rating' => $review->rating,
+                    'review' => $review->review
+                ];
+            }
+        });
+    }
+}
+
+if (!function_exists('GetAllActivePaymentType')) {
+    function GetAllActivePaymentType() {
+        return $data = [
+            [
+                'title' => 'Card',
+                'value'=>'Card',
+                'image' => 'assets/img/card.png'
+            ],
+            [
+                'title' => 'Cash on Delivery (COD)',
+                'value'=>'COD',
+                'image' => 'assets/img/cash-on-delivery.png'
+            ],
+            [
+                'title' => 'PhonePay',
+                'value'=>'PhonePay',
+                'image' => 'assets/img/phonepe.png'
+            ],
+            [
+                'title' => 'GooglePay',
+                'value'=>'GooglePay',
+                'image' => 'assets/img/gpay.png'
+            ],
+            [
+                'title' => 'UPI',
+                'value'=>'UPI',
+                'image' => 'assets/img/upi.png'
+            ],
+            [
+                'title' => 'NetBanking',
+                'value'=>'NetBanking',
+                'image' => 'assets/img/net-banking.png'
+            ],
+            [
+                'title' => 'Wallet',
+                'value'=>'Wallet',
+                'image' => 'assets/img/wallet.png'
+            ]
+        ];
+    }
+}
+
+if(!function_exists('checkCouponValue')){
+    function checkCouponValue($couponCode, $orderAmount, $userId){
+
+        $current_date = date('Y-m-d H:i:s'); // Use 'H' for 24-hour format
+
+        // Fetch Offer
+        $offer = Offer::where('coupon_code', $couponCode)
+            ->where('status', 'active')
+            ->whereDate('start_date', '<=', $current_date)
+            ->whereDate('end_date', '>=', $current_date)
+            ->first();
+        if (!$offer) {
+            return [
+                'status' => false,
+                'message' => 'Invalid or expired coupon.',
+            ];
+        }
+        // Validate the minimum order amount
+        if ($offer->minimum_order_amount && $orderAmount < $offer->minimum_order_amount) {
+            return [
+                'status' => false,
+                'message' => 'Order amount does not meet the minimum required for this coupon.',
+            ];
+        }
+
+        // Check global usage limit
+        if($offer->usage_limit){
+            $global_usage_order = Order::where('offer_id', $offer->id)->count();
+            if ($global_usage_order >= $offer->usage_limit) {
+                return [
+                    'status' => false,
+                    'message' => 'This coupon has reached its global usage limit.',
+                ];
+            }
+        }
+        
+
+        // Check usage limit per user
+        if($offer->usage_per_user){
+            $usage_per_user_order = Order::where('offer_id', $offer->id)
+                ->where('user_id', $userId)
+                ->count();
+            if ($usage_per_user_order >= $offer->usage_per_user) {
+                return [
+                    'status' => false,
+                    'message' => 'You have reached the usage limit for this coupon.',
+                ];
+            }
+        }
+
+        // Calculate discount
+        $discount = 0;
+        if ($offer->discount_type === 'flat') {
+            $discount = $offer->discount_value;
+        } elseif ($offer->discount_type === 'percentage') {
+            $discount = $orderAmount * $offer->discount_value / 100;
+            if ($offer->maximum_discount) {
+                $discount = min($discount, $offer->maximum_discount);
+            }
+        }
+
+        $finalAmount = max(0, $orderAmount - $discount);
+
+        return [
+            'status' => true,
+            'offer_id' => $offer->id,
+            'discount' => $discount,
+            'final_amount' => $finalAmount,
+            'message' => 'Coupon applied successfully.',
+        ];
+    }
+}
+
+if(!function_exists('generateOrderNumber')){
+    function generateOrderNumber(){
+        $prefix = 'EW-'.date('Ym');
+        $orderNumber = null;
+
+        do{
+            $lastOrder = Order::where('order_number', 'LIKE', "{$prefix}%")
+            ->orderBy('order_number', 'desc')
+            ->first();
+            $lastNumber = $lastOrder ? (int)substr($lastOrder->order_number, -6) : 0;
+
+            // Increment the last number and format it as a 6-digit number
+            $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+
+            // Generate the new order number
+            $orderNumber = "{$prefix}{$newNumber}";
+        } while (Order::where('order_number', $orderNumber)->exists()); // Ensure uniqueness
+
+        return $orderNumber;
+    }
+}
+if(!function_exists('PincodeStatus')){
+    function PincodeStatus($code){
+        $Pincode = Pincode::where('pincode', $code)->first();
+        if($Pincode){
+            return $Pincode->status;
+        }
+        return 1;
+    }
+}
+if(!function_exists('PincodeId')){
+    function PincodeId($code){
+        $Pincode = Pincode::where('pincode', $code)->first();
+        if($Pincode){
+            return $Pincode->id;
+        }
+        return 1;
+    }
+}
+
+
+
+

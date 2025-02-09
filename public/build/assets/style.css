@@ -1,0 +1,196 @@
+.card-body{
+    flex: 1 1 auto;
+    padding:1.25rem;
+}
+.loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    z-index: 9999; /* Ensure it is above all other elements */
+    visibility: hidden; /* Initially hidden */
+    opacity: 0; /* Initially invisible */
+    pointer-events: none; /* Prevent interactions with the loader */
+    transition: visibility 0s, opacity 0.3s ease-in-out; /* Smooth transition for visibility */
+    display: flex;/* Flexbox for centering */
+}
+
+.loader-container[wire\:loading] {
+    visibility: visible; /* Make it visible when loading */
+    opacity: 1; /* Make it fully opaque */
+    pointer-events: all; /* Enable interactions with the loader */
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 6px solid #f3f3f3; /* Light grey */
+    border-top: 6px solid #3498db; /* Blue */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.badge-select {
+    appearance: none; /* Remove default browser styles */
+    background-color: #f5f5f9; /* Light grey background */
+    border: none;
+    border-radius: 12px;
+    padding: 0.25rem 1rem; /* Adjust padding for badge-like look */
+    font-size: 0.875rem; /* Smaller font size */
+    font-weight: 500; /* Medium weight for badge text */
+    color: #6c757d; /* Default text color */
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.badge-select:focus {
+    outline: none;
+    background-color: #e9ecef; /* Slightly darker grey on focus */
+}
+
+.badge-select option.text-success {
+    color: #198754;
+}
+
+.badge-select option.text-warning {
+    color: #ffc107;
+}
+
+.badge-select option.text-info {
+    color: #0dcaf0;
+}
+
+.badge-select option.text-danger {
+    color: #dc3545;
+}
+
+
+/* Drag-and-Drop Area Styles */
+.drag-drop-area {
+    width: 100%;
+    height: 50px;
+    border: 2px dashed #aaa;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    padding: 10px;
+    transition: background-color 0.3s;
+}
+
+.drag-drop-area:hover {
+    background-color: #e9ecef;
+}
+
+.drag-drop-area p {
+    margin: 0;
+    font-size: 16px;
+    color: #666;
+}
+.mt-n2-important {
+    margin-top: -10px !important;
+}
+.product-feature input{
+    height: 0px !important;
+    min-height: 36px !important;
+}
+.product-feature label{
+    margin-top: 0px !important;
+}
+.product-title{
+    font-size: 13px;
+    color: #555454;
+    font-weight: 900;
+}
+
+.price-details {
+    width: 20%;
+}
+.price-details .price-title{
+   font-size: 10px;
+}
+.price-details ul {
+    list-style: none; /* Remove default list styling */
+    padding: 0;
+    margin: 0;
+}
+
+
+.price-details .price-item {
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.price-details .price-item .label {
+    font-weight: 600;
+    color: #8a8d93;
+    font-size: 12px;
+}
+
+.price-details .price-item .value {
+    font-weight: 700;
+    color: #8c57ff; /* Bootstrap primary color */
+}
+.price-details .price-item .actual-value {
+    font-weight: 700;
+    text-decoration: line-through;
+    color: #f4767a; /* Bootstrap primary color */
+    font-size: 12px;
+}
+.product-list .waves-effect{
+    font-size: 12px;
+    padding: 6px 9px !important;
+}
+.product-list .btn-group .active{
+    background-color: #ede4ff !important;
+    color: #8c57ff !important;
+}
+.discount-details{
+    font-size: 12px;
+}
+.discount-details .avatar-initial{
+    font-size: 20px !important;
+}
+.discount-details .avatar{
+    width: 32px !important;
+    height: 34px !important;
+}
+.discount-details .grid{
+    display: grid;
+}
+.offer-list td{
+    font-size: 13px;
+}
+
+
+
+
+
+
+
