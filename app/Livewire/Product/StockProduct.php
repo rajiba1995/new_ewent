@@ -138,6 +138,7 @@ class StockProduct extends Component
     }
     public function ModalActivity($value){
         $this->modal_activity_class = $value;
+        $this->resetSearch();
     }
 
     public function searchButtonClicked()
@@ -146,7 +147,7 @@ class StockProduct extends Component
     }
     public function resetSearch()
     {
-        $this->reset('search'); // Reset the search term
+        $this->reset(['csvFile', 'search']);
         $this->resetPage();     // Reset pagination
     }
     public function render()

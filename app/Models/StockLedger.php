@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockLedger extends Model
 {
     protected $table = 'stock_ledgers';
-    protected $fillable = ['product_id', 'order_id', 'stock_id', 'quantity', 'type', 'purpose',];
+    protected $fillable = ['product_id', 'order_id', 'quantity', 'type', 'purpose',];
 
     public function product()
     {
@@ -16,9 +16,5 @@ class StockLedger extends Model
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
-    }
-    public function stock()
-    {
-        return $this->belongsTo(Stock::class, 'stock_id', 'id');
     }
 }

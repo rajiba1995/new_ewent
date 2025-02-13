@@ -107,9 +107,9 @@
                                 @endphp
                                 @forelse ($pins as $item)
                                 <button type="button" class="btn rounded-pill btn-xs btn-outline-{{PincodeStatus($item) == 1?"success":"danger"}} waves-effect waves-light mt-1">
-                                    
                                    <span  wire:click="edit({{ PincodeId($item) }})"> {{ $item }} </span>
                                     <span class="tf-icons {{ PincodeStatus($item) == 1 ? 'ri-checkbox-circle-line text-success' : 'ri-close-circle-line text-danger' }} ri-16px ms-1_5" wire:click="UpdatePinStatus('{{$item}}')"></span>
+                                    <span class="tf-icons ri-delete-bin-line text-danger ri-16px ms-1_5" wire:click="deletePincode('{{ $item }}')" title="Delete Pincode"></span>
                                 </button>
                                 @empty
                                     <div class="alert alert-danger">
