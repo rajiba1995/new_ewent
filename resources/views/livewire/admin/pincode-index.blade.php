@@ -63,7 +63,7 @@
                     <h6>Pincode</h6>
                   </div>
                   <div class="col-lg-6 col-5 my-auto text-end">
-                    <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+                    <div class="ms-md-auto d-flex align-items-center">
                       <input type="text" wire:model.debounce.500ms="search"
                         class="form-control border border-2 p-2 custom-input-sm" placeholder="Enter city or pincodes">
                       <button type="button" wire:click="searchButtonClicked" class="btn btn-dark text-white mb-0 custom-input-sm">

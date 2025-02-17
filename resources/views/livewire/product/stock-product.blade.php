@@ -97,13 +97,17 @@
                                         Total Quantity
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                        Used Quantity
+                                        Assigned Quantity
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
+                                        No of Sold
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
                                         Available Quantity
                                     </th>
+                                    
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                        No of Sale
+                                       Action
                                     </th>
                                 </tr>
                             </thead>
@@ -128,9 +132,20 @@
                                             </div>
                                         </td>
                                         <td class="text-center">{{$stock->stock_count}}</td>
-                                        <td class="text-center">{{$stock->used_quantity}}</td>
-                                        <td class="text-center">{{$stock->available_quantity}}</td>
-                                        <td class="text-center">{{$stock->no_of_sale}}</td>
+                                        <td class="text-center">
+                                            {{GetProductWiseAssignedStock($stock->product_id)}}
+                                        </td>
+                                        <td class="text-center">
+                                            {{GetProductWiseSoldStock($stock->product_id)}}
+                                        </td>
+                                        <td class="text-center">
+                                            {{GetProductWiseAvailableStock($stock->product_id)}}
+                                        </td>
+                                        <td class="text-center"> 
+                                            <a href="{{route('admin.product.stocks.vehicle', $stock->product_id)}}">
+                                                <span class="control"></span>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

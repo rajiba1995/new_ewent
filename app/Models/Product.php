@@ -57,6 +57,10 @@ class Product extends Model
     {
         return $this->hasMany(ProductFeature::class);
     }
+    public function rentalprice()
+    {
+        return $this->hasMany(RentalPrice::class);
+    }
     public function ProductImages()
     {
         return $this->hasMany(ProductImage::class);

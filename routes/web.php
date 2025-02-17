@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
-    GalleryIndex, StockProduct, MasterProductType
+    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle
 };
 use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex};
 
@@ -41,6 +41,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
 
     Route::group(['prefix' => 'stock'], function () {
         Route::get('/list', StockProduct::class)->name('admin.product.stocks');
+        Route::get('/product/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
     });
     // Order Management
     Route::group(['prefix'=>'order'], function(){

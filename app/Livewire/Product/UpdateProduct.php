@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use Livewire\WithFileUploads;
 use App\Models\ProductType;
+use App\Models\RentalPrice;
 use App\Models\ProductImage;
 use App\Models\ProductFeature;
 use Illuminate\Validation\Rule; // Import the Rule class
@@ -19,13 +20,14 @@ class UpdateProduct extends Component
     public $meta_title, $meta_keyword, $meta_description;
     public $categories = [], $subcategories = [];
     public $is_selling = false;
-    public $is_rent = false;
+    public $is_rent = true;
     public $base_price;
     public $display_price;
     public $per_rent_price;
     public $multipleImages = [];
     public $selectedProductTypes = [];
     public $product_type = [];
+    public $rental_prices = [];
     public $rent_duration;
 
     public $existingImages = [];
@@ -55,7 +57,6 @@ class UpdateProduct extends Component
         $this->display_price = $product->display_price;
         $this->per_rent_price = $product->per_rent_price;
         $this->is_selling = $product->base_price ? true : false;
-        $this->is_rent = $product->per_rent_price ? true : false;
         $this->categories = Category::all();
     
         if ($product->category_id) {
@@ -70,6 +71,7 @@ class UpdateProduct extends Component
     
         // Load product features
         $this->features = $product->features->toArray();
+        $this->rental_prices = $product->rentalprice->toArray();
     
         // Load selected product types
         $this->selectedProductTypes = $product->types ? explode(',', $product->types) : [];
@@ -99,6 +101,19 @@ class UpdateProduct extends Component
         unset($this->multipleImages[$index]);
         $this->multipleImages = array_values($this->multipleImages); // Reindex array
     }
+
+      // Method to add a feature
+      public function addRentalProce()
+      {
+          $this->rental_prices[] = ['duration' => '', 'duration_type'=>'','price'=>''];  // Add an empty feature
+      }
+      // Method to remove a feature
+     public function removeRentalProce($index)
+     {
+         unset($this->rental_prices[$index]);
+         $this->rental_prices = array_values($this->rental_prices);  // Re-index the array
+     }
+
     public function addFeature()
     {
         $this->features[] = ['title' => ''];  // Add an empty feature
@@ -147,8 +162,11 @@ class UpdateProduct extends Component
             'image' => $this->image instanceof \Illuminate\Http\UploadedFile ? 'nullable|mimes:jpg,jpeg,png,gif' : 'nullable',
             'base_price' => $this->is_selling ? 'required|numeric' : 'nullable',
             'display_price' => $this->is_selling ? 'required|numeric' : 'nullable',
-            'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
+            // 'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
             'features.*.title' => 'required|string|max:255', // Validate each feature title
+            'rental_prices.*.duration' => $this->is_rent ? 'required|numeric' : 'nullable',
+            'rental_prices.*.duration_type' => $this->is_rent ? 'required|string' : 'nullable',
+            'rental_prices.*.price' => $this->is_rent ? 'required|numeric' : 'nullable',
         ]);
 
         // Handle image upload
@@ -166,7 +184,7 @@ class UpdateProduct extends Component
             'sub_category_id' => $this->sub_category_id,
             'title' => ucwords($this->title),
             'product_sku' => strtoupper($this->product_sku),
-            'type' => $selectedProductTypesString,
+            'types' => $selectedProductTypesString,
             'short_desc' => $this->short_desc,
             'long_desc' => $this->long_desc,
             'image' => $imagePath,
@@ -175,9 +193,26 @@ class UpdateProduct extends Component
             'meta_description' => $this->meta_description,
             'base_price' => $this->base_price,
             'display_price' => $this->display_price,
-            'per_rent_price' => $this->per_rent_price,
+            // 'per_rent_price' => $this->per_rent_price,
         ]);
-
+         // Update rental_price
+         foreach ($this->rental_prices as $rental_item) {
+            if (!empty($rental_item['id'])) {
+                // Update existing feature
+                RentalPrice::where('id', $rental_item['id'])->update([
+                   'duration_type' => $rental_item['duration_type'],
+                    'duration' => $rental_item['duration'],
+                    'price' => $rental_item['price'],
+                ]);
+            } else {
+                RentalPrice::create([
+                    'product_id' => $product->id,
+                    'duration_type' => $rental_item['duration_type'],
+                    'duration' => $rental_item['duration'],
+                    'price' => $rental_item['price'],
+                ]);
+            }
+        }
         // Update features
         foreach ($this->features as $feature) {
             if (!empty($feature['id'])) {

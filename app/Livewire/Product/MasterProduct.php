@@ -7,6 +7,7 @@ use App\Models\SubCategory;
 use App\Models\Category;
 use App\Models\Product;
 use Livewire\WithFileUploads;
+use Illuminate\Pagination\Paginator;
 use Livewire\WithPagination; // Import WithPagination trait
 
 class MasterProduct extends Component
@@ -15,6 +16,10 @@ class MasterProduct extends Component
 
     public $search = '';
 
+    public function boot()
+    {
+        Paginator::useBootstrap();
+    }
     public function searchButtonClicked()
     {
         $this->resetPage(); // Reset to the first page
@@ -92,7 +97,7 @@ class MasterProduct extends Component
                 });
             })
             ->with(['category', 'subcategory'])
-            ->paginate(10);
+            ->paginate(20);
 
         return view('livewire.product.master-product', [
             'products' => $products

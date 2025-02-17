@@ -141,8 +141,7 @@ class StockProduct extends Component
         $this->resetSearch();
     }
 
-    public function searchButtonClicked()
-    {
+    public function searchButtonClicked(){
         $this->resetPage(); // Reset to the first page
     }
     public function resetSearch()
@@ -165,7 +164,6 @@ class StockProduct extends Component
         ->selectRaw('
             product_id, 
             COUNT(*) as stock_count, 
-            SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as used_quantity, 
             SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as available_quantity
         ')
         ->groupBy('product_id') // Group by product_id

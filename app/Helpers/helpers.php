@@ -5,6 +5,8 @@ use App\Models\ProductReview;
 use App\Models\Offer;
 use App\Models\Order;
 use App\Models\Pincode;
+use App\Models\Stock;
+use App\Models\AsignedVehicle;
 if (!function_exists('storeFileWithCustomName')) {
     function storeFileWithCustomName($file, $directory)
     {
@@ -241,6 +243,67 @@ if(!function_exists('PincodeStatus')){
         return 1;
     }
 }
+if(!function_exists('VehicleStatus')){
+    function VehicleStatus($id){
+        $data = AsignedVehicle::with('order_item')->where('vehicle_id', $id)->whereIn('status', ['sold','assigned'])->orderBy('id','DESC')->first();
+        if($data){
+            $return = [];
+            $return['order_id']= $data->order_item?$data->order_item->order_id:null;
+            if($data->status=="assigned"){
+                $return['class'] = "warning";
+                $return['message'] = "Assigned Now";
+            }elseif($data->status=="sold"){
+                $return['class'] = "danger";
+                $return['message'] = "Sold";
+            }
+            return $return; //Assigned
+        }
+        return null; //Not Assigned
+    }
+}
+if(!function_exists('vehicleLog')){
+    function vehicleLog($id){
+        $data = AsignedVehicle::where('vehicle_id', $id)->get()->count();
+        if($data){
+            return $data; //Assigned
+        }
+        return 0; //Not Assigned
+    }
+}
+if (!function_exists('GetProductWiseAvailableStock')) {
+    function GetProductWiseAvailableStock($product_id) {
+        $all_vehicle_ids = Stock::where('product_id', $product_id)->pluck('id')->toArray();
+
+        $used_data = AsignedVehicle::whereIn('status', ['assigned', 'sold'])
+            ->whereIn('vehicle_id', $all_vehicle_ids)
+            ->count();
+
+        return count($all_vehicle_ids) - $used_data; // Available Stock
+    }
+}
+
+if (!function_exists('GetProductWiseAssignedStock')) {
+    function GetProductWiseAssignedStock($product_id) {
+        $all_vehicle_ids = Stock::where('product_id', $product_id)->pluck('id')->toArray();
+        
+        return AsignedVehicle::where('status', 'assigned')
+            ->whereIn('vehicle_id', $all_vehicle_ids)
+            ->count();
+    }
+}
+
+if (!function_exists('GetProductWiseSoldStock')) {
+    function GetProductWiseSoldStock($product_id) {
+        $all_vehicle_ids = Stock::where('product_id', $product_id)->pluck('id')->toArray();
+
+        return AsignedVehicle::where('status', 'sold')
+            ->whereIn('vehicle_id', $all_vehicle_ids)
+            ->count();
+    }
+}
+
+
+
 if(!function_exists('PincodeId')){
     function PincodeId($code){
         $Pincode = Pincode::where('pincode', $code)->first();

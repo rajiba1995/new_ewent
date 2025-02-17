@@ -235,19 +235,71 @@
               <label class="form-check-label" for="is_rent">
                 <input type="checkbox" id="is_rent" wire:model="is_rent" class="form-check-input"
                   wire:change="toggleRentFields">
-                  For Rent({{$rent_duration}} Days)
+                  Rental Price Chart
               </label>
             </div>
-
             @if($is_rent)
-            <div class="form-floating form-floating-outline mb-2 mt-2">
-              <input type="number" wire:model="per_rent_price" class="form-control border border-2 p-2"
-                placeholder="Enter Per Rent Price">
-              <label>Per Rent Price</label>
-            </div>
-            @error('per_rent_price')
-            <p class="text-danger inputerror">{{ $message }}</p>
-            @enderror
+              @foreach($rental_prices as $index => $rental_price)
+                <div class="col-12 mb-3 d-flex align-items-center rental-price" id="rental_price_{{ $index }}">
+                    <!-- Duration Type Dropdown -->
+                    <div class="d-flex flex-column w-100 me-2">
+                        <div class="custom-floating mb-2">
+                            <select wire:model="rental_prices.{{ $index }}.duration_type" 
+                                    class="custom-input-sm w-100">
+                                <option value="">Type</option>
+                                <option value="day">Day</option>
+                                <option value="week">Week</option>
+                                <option value="biweekly">15 Days</option>
+                                <option value="month">Month</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Duration Input -->
+                    <div class="d-flex flex-column w-100 me-2">
+                        <div class="custom-floating mb-2">
+                            <input type="text" wire:model="rental_prices.{{ $index }}.duration" 
+                                  class="custom-input-sm w-100"
+                                  placeholder="Duration">
+                        </div>
+                    </div>
+                    <!-- Price Input -->
+                    <div class="d-flex flex-column w-100 me-2">
+                        <div class="custom-floating mb-2">
+                            <input type="number" wire:model="rental_prices.{{ $index }}.price" 
+                                  class="custom-input-sm w-100"
+                                  placeholder="Price">
+                        </div>
+                    </div>
+
+                    <!-- Remove Button -->
+                    <div>
+                        <button type="button" class="btn btn-danger btn-sm mt-n2-important" 
+                                wire:click="removeRentalProce({{ $index }})">
+                            <i class="ri-close-circle-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Validation Error -->
+                @error("rental_prices.$index.duration")
+                    <p class="text-danger inputerror">{{ $message }}</p>
+                @enderror
+                @error("rental_prices.$index.duration_type")
+                    <p class="text-danger inputerror">{{ $message }}</p>
+                @enderror
+                @error("rental_prices.$index.price")
+                    <p class="text-danger inputerror">{{ $message }}</p>
+                @enderror
+              @endforeach
+              <!-- Add Button -->
+              @if(isset($errorMessage['error_rental_prices']))
+                  <div class="text-danger">{{ $errorMessage['error_rental_prices'] }}</div>
+              @endif
+              <div class="text-end">
+                <button type="button" class="btn btn-primary btn-sm" wire:click="addRentalProce">
+                  <i class="ri-add-circle-fill"> </i>
+                </button>
+              </div>
             @endif
           </div>
         </div>
@@ -257,20 +309,20 @@
                 <h6>Product Tags & Key</h6>
                 <!-- Selling Price -->
                 <div class="mb-2">
-                    @foreach ($product_type as $ptype)
-                        <div class="form-check">
-                            <input 
-                                type="checkbox" 
-                                id="product_type_{{ $ptype->title }}" 
-                                wire:model="selectedProductTypes" 
-                                value="{{ $ptype->title }}" 
-                                class="form-check-input"
-                            >
-                            <label class="form-check-label" for="product_type_{{ $ptype->title }}">
-                                {{ $ptype->title }}
-                            </label>
-                        </div>
-                    @endforeach
+                    @foreach ($product_type as $k => $ptype)
+                      <div class="form-check">
+                          <input 
+                              type="checkbox" 
+                              id="product_type_{{ $ptype->id }}" 
+                              wire:model="selectedProductTypes" 
+                              value="{{ $ptype->title }}" 
+                              class="form-check-input"
+                          >
+                          <label class="form-check-label" for="product_type_{{ $ptype->id }}">
+                              {{ $ptype->title }}
+                          </label>
+                      </div>
+                  @endforeach
                 </div>
 
             </div>
@@ -364,6 +416,9 @@
       </div>
     </div>
   </form>
+  <div class="loader-container" wire:loading>
+    <div class="loader"></div>
+  </div>
 </div>
 @section('page-script')
 <script>

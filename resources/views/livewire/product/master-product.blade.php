@@ -129,14 +129,18 @@
                                                     Bestseller
                                                 </button>
                                             </div>
+                                            <button data-bs-toggle="modal" data-bs-target="#productDetailsModal{{$product->id}}" class="btn btn-sm btn-icon view-record btn-text-secondary rounded-pill waves-effect btn-sm" title="View">
+                                                <i class="ri-eye-line ri-20px text-primary"></i> 
+                                            </button>
+                                            
                                             <a href="{{route('admin.product.update',$product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
                                                 <i class="ri-edit-box-line ri-20px text-info"></i>
                                             </a>
                                             <button wire:click="destroy({{ $product->id }})" class="btn btn-sm btn-icon delete-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Delete">
                                                 <i class="ri-delete-bin-7-line ri-20px text-danger"></i>
                                             </button>
-                                            <span class="control" data-bs-toggle="modal" data-bs-target="#productDetailsModal{{$product->id}}"></span>
-
+                                            <a href="{{route('admin.product.stocks.vehicle',$product->id)}}">
+                                            <span class="control"></span></a>
                                             <div class="modal fade" id="productDetailsModal{{$product->id}}" tabindex="-1" aria-labelledby="productDetailsLabel{{$product->id}}" aria-hidden="true">
                                                 <div class="modal-dialog" role="document">
                                                     <div class="modal-content">
@@ -190,7 +194,7 @@
                         </table>
 
                             <div class="d-flex justify-content-end mt-2">
-                                {{-- {{ $products->links() }} --}}
+                                {{ $products->links('pagination::bootstrap-4') }}
                             </div>
                         </div>
                     </div>

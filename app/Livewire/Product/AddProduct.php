@@ -7,6 +7,7 @@ use App\Models\SubCategory;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductType;
+use App\Models\RentalPrice;
 use App\Models\ProductFeature;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
@@ -22,14 +23,15 @@ class AddProduct extends Component
     
     public $categories = [], $subcategories = [], $product_type = [];
 
+    public $errorMessage = [];
     public $is_selling = false;
-    public $is_rent = false;
+    public $is_rent = true;
     public $base_price;
     public $display_price;
     public $per_hr_rent;
     public $per_rent_price;
 
-    public $features = [], $selectedProductTypes = [];
+    public $features = [], $selectedProductTypes = [], $rental_prices = [];
     public $feature_title = '';
 
     public $rent_duration;
@@ -39,8 +41,6 @@ class AddProduct extends Component
     {
         $this->categories = Category::where('status',1)->orderBY('title', 'ASC')->get();
         $this->product_type = ProductType::where('status',1)->orderBY('title', 'ASC')->get();
-        $this->is_selling = false;
-        $this->is_rent = false;
         $this->rent_duration = env('DEFAULT_RENT_DURATION', 30); // Default to 30 if not set
     }
 
@@ -52,6 +52,12 @@ class AddProduct extends Component
     public function saveProduct()
     {
         
+        $this->reset(['errorMessage']);
+        $this->errorMessage = array();
+        // Validate customer
+        if ($this->is_rent && (!is_array($this->rental_prices) || count($this->rental_prices) === 0)) {
+            $this->errorMessage['error_rental_prices'] = 'Please enter at least one rental price.';
+        }
         // Validate the input
         $this->validate([
             'category_id' => 'nullable',
@@ -64,8 +70,11 @@ class AddProduct extends Component
             'multipleImages.*' => 'nullable|image|max:2024|mimes:jpg,jpeg,png,webp', // Validation for multiple images
             'base_price' => $this->is_selling ? 'required|numeric' : 'nullable',
             'display_price' => $this->is_selling ? 'required|numeric' : 'nullable',
-            'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
+            // 'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
             'features.*.title' => 'required|string|max:255',
+            'rental_prices.*.duration' => $this->is_rent ? 'required|numeric' : 'nullable',
+            'rental_prices.*.duration_type' => $this->is_rent ? 'required|string' : 'nullable',
+            'rental_prices.*.price' => $this->is_rent ? 'required|numeric' : 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -99,10 +108,10 @@ class AddProduct extends Component
                 'meta_description' => $this->meta_description,
                 'base_price' => $this->base_price,
                 'display_price' => $this->display_price,
-                'per_rent_price' => $this->per_rent_price,
+                // 'per_rent_price' => $this->per_rent_price,
                 'is_selling' => $is_selling_value,
                 'is_rent' => $is_rent_value,
-                'rent_duration' => $this->rent_duration,
+                // 'rent_duration' => $this->rent_duration,
             ]);
 
             // Insert related Product Features
@@ -112,7 +121,16 @@ class AddProduct extends Component
                     'title' => $feature['title'],
                 ]);
             }
-
+            if(count($this->rental_prices)>0){
+                foreach ($this->rental_prices as $rental_item) {
+                    RentalPrice::create([
+                        'product_id' => $product->id,
+                        'duration_type' => $rental_item['duration_type'],
+                        'duration' => $rental_item['duration'],
+                        'price' => $rental_item['price'],
+                    ]);
+                }
+            }
             // Handle multiple images upload
             if ($this->multipleImages) {
                 foreach ($this->multipleImages as $image) {
@@ -153,6 +171,16 @@ class AddProduct extends Component
         }
     }
      // Method to add a feature
+     public function addRentalProce()
+     {
+         $this->rental_prices[] = ['duration' => '', 'duration_type'=>'','price'=>''];  // Add an empty feature
+     }
+     // Method to remove a feature
+    public function removeRentalProce($index)
+    {
+        unset($this->rental_prices[$index]);
+        $this->rental_prices = array_values($this->rental_prices);  // Re-index the array
+    }
      public function addFeature()
      {
          $this->features[] = ['title' => ''];  // Add an empty feature
