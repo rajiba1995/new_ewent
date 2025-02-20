@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\SubCategory;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\RentalPrice;
 use Livewire\WithFileUploads;
 use Illuminate\Pagination\Paginator;
 use Livewire\WithPagination; // Import WithPagination trait
@@ -91,12 +92,13 @@ class MasterProduct extends Component
                         ->orWhere('short_desc', 'like', '%' . $this->search . '%')
                         ->orWhere('long_desc', 'like', '%' . $this->search . '%')
                         ->orWhere('base_price', 'like', '%' . $this->search . '%')
-                        ->orWhere('display_price', 'like', '%' . $this->search . '%')
-                        ->orWhere('per_rent_price', 'like', '%' . $this->search . '%')
-                        ->orWhere('rent_duration', 'like', '%' . $this->search . '%');
+                        ->orWhere('display_price', 'like', '%' . $this->search . '%');
                 });
             })
-            ->with(['category', 'subcategory'])
+            ->with(['category', 'subcategory',
+                'rentalprice' => function ($query) {
+                $query->orderBy('duration', 'ASC'); // Order rental prices directly in the query
+            }])
             ->paginate(20);
 
         return view('livewire.product.master-product', [

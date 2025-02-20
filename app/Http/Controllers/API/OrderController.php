@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\RentalPrice;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Carbon;
@@ -70,8 +71,15 @@ class OrderController extends Controller
             $finalPrice = 0;
             foreach($request->order_items as $item){
                 $product = Product::findOrFail($item['product_id']);
+                $productPrice = RentalPrice::where('product_id',$item['product_id'])->where('duration', $item['duration'])->first();
+                    if(!isset($productPrice)){
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Sorry! This duration does not exist for this product.',
+                        ], 400);
+                    }
                 if($request->order_type==="Rent"){
-                    $totalPrice+=$product->per_rent_price*$item['quantity'];
+                    $totalPrice+=$productPrice->price*$item['quantity'];
                 }elseif($request->order_type==="Sell"){
                     $totalPrice+=$product->display_price*$item['quantity'];
                 }else{
@@ -115,7 +123,7 @@ class OrderController extends Controller
                     'discount_amount' => $discountAmount,
                     'final_amount' => $finalPrice,
                     'quantity' => array_sum(array_column($request->order_items, 'quantity')),
-                    'status' => 'Ready to pickup',
+                    'status' => 'pending',
                     'offer_id' => $request->offer_id?$request->offer_id:null,
                     'payment_type' => $request->payment_type,
                     'payment_status' => $request->payment_type==="Wallet"?"completed":"pending",
@@ -126,16 +134,17 @@ class OrderController extends Controller
                     'rent_end_date' => $request->order_type === 'Rent' 
                         ? Carbon::parse($request->rent_start_date)->addDays($request->rent_duration) 
                         : null,
-                    'rent_status' => $request->order_type === 'Rent' ? 'Ready to pickup' : null,
+                    'rent_status' => $request->order_type === 'Rent' ? 'pending' : null,
                 ]);
 
                 // Create Order Items
 
                 foreach($request->order_items as $order_item){
+                    $productPrice = RentalPrice::where('product_id',$order_item['product_id'])->where('duration', $order_item['duration'])->first();
                     $product = Product::findOrFail($order_item['product_id']);
                     $item_price = 0;
                     if($request->order_type==="Rent"){
-                        $item_price=$product->per_rent_price;
+                        $item_price=$productPrice->price;
                     }elseif($request->order_type==="Sell"){
                         $item_price=$product->display_price;
                     }

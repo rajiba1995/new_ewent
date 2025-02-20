@@ -77,7 +77,7 @@ class UpdateProduct extends Component
         $this->selectedProductTypes = $product->types ? explode(',', $product->types) : [];
 
         $this->existingImages = $product->ProductImages->pluck('image', 'id')->toArray(); // Map image ID to file path
-        $this->rent_duration = env('DEFAULT_RENT_DURATION', 30);
+        // $this->rent_duration = env('DEFAULT_RENT_DURATION', 30);
     }
 
     public function removeExistingImage($imageId)
@@ -191,6 +191,8 @@ class UpdateProduct extends Component
             'meta_title' => $this->meta_title,
             'meta_keyword' => $this->meta_keyword,
             'meta_description' => $this->meta_description,
+            'is_rent' => $this->is_rent,
+            'is_selling' => $this->is_selling,
             'base_price' => $this->base_price,
             'display_price' => $this->display_price,
             // 'per_rent_price' => $this->per_rent_price,

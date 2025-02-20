@@ -30,8 +30,6 @@ class Product extends Model
         'is_rent',
         'base_price',
         'display_price',
-        'per_rent_price',
-        'rent_duration ',
     ];
 
     public function getRentDurationAttribute()

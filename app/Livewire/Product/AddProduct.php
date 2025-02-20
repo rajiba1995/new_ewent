@@ -41,7 +41,7 @@ class AddProduct extends Component
     {
         $this->categories = Category::where('status',1)->orderBY('title', 'ASC')->get();
         $this->product_type = ProductType::where('status',1)->orderBY('title', 'ASC')->get();
-        $this->rent_duration = env('DEFAULT_RENT_DURATION', 30); // Default to 30 if not set
+        // $this->rent_duration = env('DEFAULT_RENT_DURATION', 30); // Default to 30 if not set
     }
 
     public function GetSubcat($category_id)

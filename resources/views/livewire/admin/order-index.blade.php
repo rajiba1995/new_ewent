@@ -147,32 +147,37 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($orders as $k => $order)
+                                @foreach($orderData as $k => $item)
                                 @php
-                                    if($order->status==="Ready to pickup"){
+                               
+                                    if($item->status==="Ready to pickup"){
                                         $status_color = "warning";
-                                    }elseif($order->status==="completed"){
+                                    }elseif($item->status==="pending"){
+                                        $status_color = "warning";
+                                    }elseif($item->status==="completed"){
                                         $status_color = "success";
-                                    }elseif($order->status==="cancelled"){
+                                    }elseif($item->status==="cancelled"){
                                         $status_color = "danger";
-                                    }elseif($order->status==="returned"){
+                                    }elseif($item->status==="returned"){
                                         $status_color = "primary";
                                     }
-                                    if($order->rent_status==="Ready to pickup"){
+                                    if($item->rent_status==="Ready to pickup"){
                                         $rent_status_color = "warning";
-                                    }elseif($order->rent_status==="completed"){
+                                    }elseif($item->rent_status==="pending"){
+                                        $rent_status_color = "warning";
+                                    }elseif($item->rent_status==="completed"){
                                         $rent_status_color = "success";
-                                    }elseif($order->rent_status==="late"){
+                                    }elseif($item->rent_status==="late"){
                                         $rent_status_color = "danger";
-                                    }elseif($order->rent_status==="ongoing"){
+                                    }elseif($item->rent_status==="ongoing"){
                                         $rent_status_color = "primary";
                                     }
 
-                                    if($order->payment_status==="pending"){
+                                    if($item->payment_status==="pending"){
                                         $status_payment_color = "warning";
-                                    }elseif($order->status==="failed"){
+                                    }elseif($item->status==="failed"){
                                         $status_payment_color = "danger";
-                                    }elseif($order->status==="cancelled"){
+                                    }elseif($item->status==="cancelled"){
                                         $status_payment_color = "secondary";
                                     }
                                    
@@ -181,43 +186,43 @@
                                     <tr>
                                         <td class="align-middle text-center">{{ $k + 1 }}</td>
                                         <td class="align-middle text-center">
-                                            <a href="{{route('admin.order.detail', $order->id)}}"><span>#{{$order->order_number}}</span></a>
+                                            <a href="{{route('admin.order.detail', $item->id)}}"><span>#{{$item->order_number}}</span></a>
                                         </td>
                                         <td class="align-middle text-center"> 
-                                            <span class="badge bg-label-{{$order->order_type=="Rent"?"danger":"success"}} price-title">{{$order->order_type}}</span>
+                                            <span class="badge bg-label-{{$item->order_type=="Rent"?"danger":"success"}} price-title">{{$item->order_type}}</span>
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-start align-items-center customer-name">
                                                 <div class="avatar-wrapper me-3">
                                                     <div class="avatar avatar-sm"><img
-                                                            src="{{ $order->user->image ? asset($order->user->image) : asset('assets/img/profile-image.webp') }}"
+                                                            src="{{ $item->user->image ? asset($item->user->image) : asset('assets/img/profile-image.webp') }}"
                                                             alt="Avatar" class="rounded-circle"></div>
                                                 </div>
                                                 <div class="d-flex flex-column">
-                                                    <a href="{{ route('admin.customer.details', $order->user->id) }}"
-                                                        class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($order->user->name) }}</span>
+                                                    <a href="{{ route('admin.customer.details', $item->user->id) }}"
+                                                        class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($item->user->name) }}</span>
                                                     </a>
-                                                    <small class="text-truncate">{{ $order->user->email }} | {{ $order->user->mobile }}</small>
+                                                    <small class="text-truncate">{{ $item->user->email }} | {{ $item->user->mobile }}</small>
                                                 <div>
                                             </div>
                                         </td>
                                         
                                         <td class="align-middle text-center">
-                                           <span>{{env('APP_CURRENCY')}}{{$order->final_amount}}</span>
+                                           <span>{{env('APP_CURRENCY')}}{{$item->final_amount}}</span>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <h6 class="mb-0 w-px-100 d-flex align-items-center text-{{$status_payment_color}}"><i class="ri-circle-fill ri-10px me-1"></i>{{ucwords($order->payment_status)}}</h6>
+                                            <h6 class="mb-0 w-px-100 d-flex align-items-center text-{{$status_payment_color}}"><i class="ri-circle-fill ri-10px me-1"></i>{{ucwords($item->payment_status)}}</h6>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <span class="badge px-2 rounded-pill bg-label-{{$status_color}}" text-capitalized="">{{ucwords($order->status)}}</span>
+                                            <span class="badge px-2 rounded-pill bg-label-{{$status_color}}" text-capitalized="">{{ucwords($item->status)}}</span>
                                         </td>
                                         <td class="align-middle text-center">
-                                            @if($order->rent_status)
-                                            <span class="badge px-2 rounded-pill bg-label-{{$rent_status_color}}" text-capitalized="">{{ucwords($order->rent_status)}}</span>
+                                            @if($item->rent_status)
+                                            <span class="badge px-2 rounded-pill bg-label-{{$rent_status_color}}" text-capitalized="">{{ucwords($item->rent_status)}}</span>
                                             @endif
                                         </td>
                                         <td class="align-middle text-end px-4">
-                                            <a href="{{route('admin.order.detail', $order->id)}}">
+                                            <a href="{{route('admin.order.detail', $item->id)}}">
                                                 <span class="control"></span>
                                             </a>
                                         </td>
@@ -225,6 +230,9 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-end mt-2">
+                            {{ $orderData->links('pagination::bootstrap-4') }}
+                        </div>
                         </div>
                     </div>
                 </div>

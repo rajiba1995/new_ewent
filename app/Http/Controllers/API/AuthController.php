@@ -516,8 +516,10 @@ class AuthController extends Controller
             'position',
             'types',
             'short_desc',
-            'rent_duration',
-            'per_rent_price',
+            'is_selling',
+            'base_price',
+            'display_price',
+            'is_rent',
             'image',
             'status'
         )
@@ -530,6 +532,9 @@ class AuthController extends Controller
             });
         })
         ->with([
+            'rentalprice' => function ($query) {
+                $query->select('id', 'product_id', 'duration', 'price'); // Select only necessary columns
+            },
             'category:id,title',      // Load specific columns for 'category'
             'subCategory:id,title',   // Load specific columns for 'subcategory'
             'features:id,product_id,title'       // Load specific columns for 'features'
@@ -539,6 +544,14 @@ class AuthController extends Controller
         ->orderBy('title', 'ASC') // Then order by title
         ->get();
 
+        // Process each product to set rental price details
+        foreach ($products as $product) {
+            $rental = $product->rentalprice->orderBy('duration', 'ASC')->first(); // Get the first rental price record
+
+            $product->rentduration = $rental ? $rental->duration : 0;
+            $product->per_rent_price = $rental ? $rental->price : 0;
+            $product->is_rent = $rental ? 1 : 0;
+        }
         // Return the product list as a JSON response
         return response()->json([
             'status' => true,
@@ -553,6 +566,9 @@ class AuthController extends Controller
         $data = Product::where('id', $id)
             ->where('status', 1)
             ->with([
+                'rentalprice' => function ($query) {
+                    $query->select('id', 'product_id', 'duration', 'price', 'duration_type'); // Select only necessary columns
+                },
                 'ProductImages:product_id,image', // Eager load product images
                 'category:id,title',             // Eager load category with specific columns
                 'subCategory:id,title',           // Eager load sub-category with specific columns
@@ -588,8 +604,6 @@ class AuthController extends Controller
             'position',
             'types',
             'short_desc',
-            'rent_duration',
-            'per_rent_price',
             'image',
             'category_id',
             'sub_category_id',
@@ -620,11 +634,12 @@ class AuthController extends Controller
         $product_data->base_price = $data->base_price;
         $product_data->display_price = $data->display_price;
         $product_data->is_rent = $data->is_rent;
-        $product_data->rent_duration = $data->rent_duration;
-        $product_data->per_rent_price = $data->per_rent_price;
+        // $product_data->rent_duration = $data->rent_duration;
+        // $product_data->per_rent_price = $data->per_rent_price;
         $product_data->status = $data->status;
         $product_data->all_features = $product_features;
         $product_data->all_images = $allImages; // Set combined images array
+        $product_data->rental_price = $data->rentalprice;
         $product_data->related_products = $related_products;
         $product_data->customer_reviews = ProductReviews($data->id);
         // Return the product details as a JSON response
@@ -645,7 +660,7 @@ class AuthController extends Controller
         $faqs = Faq::orderBy('question', 'ASC')->get();
         
         // Fetching the products with eager loading
-        $products = Product::select('id', 'title', 'position', 'types', 'short_desc', 'rent_duration', 'per_rent_price', 'image', 'status')->where('status', 1)
+        $products = Product::select('id', 'title', 'position', 'types', 'short_desc', 'image', 'status')->where('status', 1)
             ->orderBy('position', 'ASC')
             ->orderBy('title', 'ASC') // Order products by title
             ->limit(10)

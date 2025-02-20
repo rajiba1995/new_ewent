@@ -97,11 +97,11 @@
                                                         <span class="value">{{env('APP_CURRENCY')}}{{ $product->display_price }}</span>
                                                     </li>
                                                 @endif
-                                                @if($product->is_rent == 1)
+                                                @if(count($product->rentalprice)> 0)
                                                     <span class="badge bg-label-danger price-title">RENT PRICE</span>
                                                     <li class="price-item">
-                                                        <span class="label">Per Rent Price:</span>
-                                                        <span class="value">{{env('APP_CURRENCY')}}{{ $product->per_rent_price }}</span>
+                                                        <span class="label">Duration:({{$product->rentalprice[0]->duration}} Days) </span>
+                                                        <span class="value">{{env('APP_CURRENCY')}}{{ $product->rentalprice[0]->price }}</span>
                                                     </li>
                                                 @endif
                                             </ul>

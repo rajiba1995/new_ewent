@@ -6,9 +6,16 @@ use Livewire\Component;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemReturn;
+use Illuminate\Pagination\Paginator;
+use Livewire\WithPagination; // Import WithPagination trait
 
 class OrderIndex extends Component
 {
+    use WithPagination; // Include WithPagination trait
+    public function boot()
+    {
+        Paginator::useBootstrap();
+    }
     public $search = '';
     public $data = [];
     public $orders;
@@ -26,7 +33,7 @@ class OrderIndex extends Component
     }
     public function render()
     {
-        $this->orders = Order::query()
+        $orderData = Order::query()
             ->when($this->search, function ($query) {
                 $query->where(function ($query) {
                     $query->where('order_type', 'like', '%' . $this->search . '%')
@@ -42,9 +49,10 @@ class OrderIndex extends Component
                         ->orWhere('mobile', 'like', '%' . $this->search . '%');
                 });
             })->with(['user'])
-            ->get();
+            ->orderBy('id', 'DESC')
+            ->paginate(10);
         return view('livewire.admin.order-index', [
-            'orders' => $this->orders
+            'orderData' => $orderData
         ]);
     }
 }
