@@ -144,6 +144,89 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h5 class="card-title m-0">Bike Ride Activity</h5>
+                    </div>
+                    <div class="card-body mt-3">
+                        <ul class="timeline pb-0 mb-0">
+                            @foreach($activities as $activity)
+                                @php
+                                    // Define status colors
+                                    $statusColors = [
+                                        'Ride Booked' => 'warning',
+                                        'Payment Received' => 'success',
+                                        'Ride Canceled' => 'danger',
+                                        'Vehicle Assigned' => 'info',
+                                        'Ride Started' => 'primary',
+                                        'Ride Completed' => 'success',
+                                    ];
+                                    
+                                    $color = $statusColors[$activity->status] ?? 'secondary';
+                                @endphp
+                                
+                                <li class="timeline-item timeline-item-transparent border-{{ $color }}">
+                                    <span class="timeline-point timeline-point-{{ $color }}"></span>
+                                    <div class="timeline-event">
+                                        <div class="timeline-header mb-1">
+                                            <h6 class="mb-0">{{ $activity->status }} 
+                                                @if($activity->status == 'Ride Booked') (Order ID: #{{ $activity->order->order_number }}) @endif
+                                                @if($activity->status == 'Vehicle Assigned') (Vehicle No: {{ $activity->vehicle->vehicle_number }}) @endif
+                                            </h6>
+                                            <small class="text-muted">{{ $activity->created_at->format('l, d M Y h:i A') }}</small>
+                                        </div>
+                                        <p class="mt-1 mb-3">{{ $activity->description ?? 'No additional details.' }}</p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Update Ride Status</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (session()->has('status_success'))
+                                <div class="alert alert-success">{{ session('status_success') }}</div>
+                            @endif
+                            @if (session()->has('status_error'))
+                                <div class="alert alert-danger">{{ session('status_error') }}</div>
+                            @endif
+                    
+                            <form wire:submit.prevent="updateStatus">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Select Status</label>
+                                    <select id="status" class="form-control " wire:model="status">
+                                        <option value="">-- Select Status --</option>
+                                        {{-- <option value="Ride Booked">Ride Booked</option>
+                                        <option value="Payment Received">Payment Received</option> --}}
+                                        <option value="Ride Canceled">Ride Canceled</option>
+                                        <option value="Vehicle Assigned">Vehicle Assigned</option>
+                                        <option value="Ride Started">Ride Started</option>
+                                        <option value="Ride Completed">Ride Completed</option>
+                                    </select>
+                                    @error('status') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                                {{-- <div class="mb-3">
+                                    <label for="rideId" class="form-label">Ride ID</label>
+                                    <input type="text" id="rideId" class="form-control" wire:model="rideId" placeholder="Enter Ride ID">
+                                    @error('rideId') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div> --}}
+                    
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">Update Status</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
     </div>
     <div class="col-lg-4 col-md-12 mb-md-0 mb-4">
         <div class="row">
@@ -180,6 +263,7 @@
             </div>
         </div>
     </div>
+    
 
     {{-- Modal --}}
 

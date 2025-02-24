@@ -21,6 +21,7 @@ class OrderIndex extends Component
     public $orders;
     public function mount(){
         $this->data = [
+            'ready_to_pickup_orders' => Order::where('status', 'ready to pickup')->count(),
             'pending_orders' => Order::where('status', 'pending')->count(),
 
             'completed_orders' => Order::where('status', 'completed')->count(),

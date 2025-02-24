@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 13, 2025 at 08:55 AM
+-- Generation Time: Feb 24, 2025 at 07:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -63,6 +63,30 @@ CREATE TABLE `admin_ratings` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `assigned_vehicles`
+--
+
+CREATE TABLE `assigned_vehicles` (
+  `id` bigint(11) NOT NULL,
+  `order_item_id` bigint(11) UNSIGNED NOT NULL,
+  `vehicle_id` int(11) UNSIGNED NOT NULL,
+  `status` enum('assigned','returned','cancelled','sold') NOT NULL DEFAULT 'assigned',
+  `assigned_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `assigned_vehicles`
+--
+
+INSERT INTO `assigned_vehicles` (`id`, `order_item_id`, `vehicle_id`, `status`, `assigned_at`) VALUES
+(1, 34, 30, 'assigned', '2025-02-16 03:49:56'),
+(5, 32, 29, 'returned', '2025-02-16 04:30:34'),
+(6, 31, 25, 'returned', '2025-02-16 04:44:27'),
+(7, 30, 25, 'sold', '2025-02-16 04:44:27');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `banners`
 --
 
@@ -95,14 +119,6 @@ CREATE TABLE `cache` (
   `value` mediumtext NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `cache`
---
-
-INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('5c785c036466adea360111aa28563bfd556b5fba', 'i:1;', 1739432758),
-('5c785c036466adea360111aa28563bfd556b5fba:timer', 'i:1739432758;', 1739432758);
 
 -- --------------------------------------------------------
 
@@ -162,7 +178,7 @@ CREATE TABLE `cities` (
 
 INSERT INTO `cities` (`id`, `name`, `state_id`, `country`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'Kolkata', 2, 'India', 1, '2025-02-13 07:19:23', '2025-02-13 07:19:23'),
-(2, 'Howrah', 2, 'India', 1, '2025-02-13 07:19:23', '2025-02-13 07:19:23'),
+(2, 'Howrah', 2, 'India', 1, '2025-02-13 07:19:23', '2025-02-22 19:51:58'),
 (3, 'Durgapur', 2, 'India', 0, '2025-02-13 07:19:23', '2025-02-13 02:15:11'),
 (4, 'Asansol', 2, 'India', 0, '2025-02-13 07:19:23', '2025-02-13 02:15:16'),
 (5, 'Siliguri', 2, 'India', 0, '2025-02-13 07:19:23', '2025-02-13 02:15:14'),
@@ -330,7 +346,7 @@ CREATE TABLE `orders` (
   `discount_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `final_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `quantity` int(10) UNSIGNED NOT NULL,
-  `status` enum('pending','completed','cancelled','returned') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','completed','cancelled','returned','ongoing','ready to pickup') NOT NULL DEFAULT 'pending',
   `offer_id` bigint(20) UNSIGNED DEFAULT NULL,
   `payment_type` enum('Card','COD','PhonePay','GooglePay','UPI','NetBanking','Wallet') NOT NULL DEFAULT 'COD',
   `payment_mode` enum('Online','Offline') NOT NULL DEFAULT 'Online',
@@ -339,7 +355,7 @@ CREATE TABLE `orders` (
   `rent_duration` int(10) UNSIGNED DEFAULT NULL,
   `rent_start_date` datetime DEFAULT NULL,
   `rent_end_date` datetime DEFAULT NULL,
-  `rent_status` enum('pending','ongoing','completed','late') DEFAULT NULL,
+  `rent_status` enum('pending','ongoing','completed','late','ready to pickup','cancelled') DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -350,7 +366,7 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`id`, `user_id`, `order_type`, `order_number`, `total_price`, `discount_amount`, `final_amount`, `quantity`, `status`, `offer_id`, `payment_type`, `payment_mode`, `payment_status`, `shipping_address`, `rent_duration`, `rent_start_date`, `rent_end_date`, `rent_status`, `created_at`, `updated_at`) VALUES
 (2, 1, 'Rent', 'ORD12345', 100.00, 0.00, 0.00, 1, 'completed', 1, 'COD', 'Online', 'pending', '123 Main St, City, Country', 24, '2025-02-01 10:00:00', '2025-02-02 10:00:00', 'completed', '2025-01-22 08:03:12', '2025-01-26 07:18:25'),
-(18, 1, 'Rent', 'EW-202501000010', 6498.00, 909.72, 5588.28, 3, 'pending', NULL, 'COD', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 06:37:43', '2025-01-27 06:37:43'),
+(18, 1, 'Rent', 'EW-202501000010', 6498.00, 909.72, 5588.28, 3, 'pending', NULL, 'COD', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'ready to pickup', '2025-01-27 06:37:43', '2025-01-27 06:37:43'),
 (19, 1, 'Rent', 'EW-202501000011', 6498.00, 0.00, 6498.00, 3, 'pending', NULL, 'COD', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 06:39:08', '2025-01-27 06:39:08'),
 (20, 1, 'Rent', 'EW-202501000012', 6498.00, 0.00, 6498.00, 3, 'pending', NULL, 'COD', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 06:39:15', '2025-01-27 06:39:15'),
 (21, 1, 'Rent', 'EW-202501000013', 6498.00, 0.00, 6498.00, 3, 'pending', NULL, 'COD', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 06:40:30', '2025-01-27 06:40:30'),
@@ -360,7 +376,22 @@ INSERT INTO `orders` (`id`, `user_id`, `order_type`, `order_number`, `total_pric
 (32, 1, 'Rent', 'EW-202501000017', 3998.00, 0.00, 3998.00, 2, 'pending', NULL, 'COD', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 08:22:47', '2025-01-27 08:22:47'),
 (33, 1, 'Rent', 'EW-202501000018', 3998.00, 0.00, 3998.00, 2, 'pending', NULL, 'Wallet', 'Online', 'pending', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 08:25:19', '2025-01-27 08:25:19'),
 (34, 1, 'Rent', 'EW-202501000019', 3998.00, 0.00, 3998.00, 2, 'pending', NULL, 'Wallet', 'Online', 'completed', '123 Main St, City, Country', 30, '2025-02-01 12:15:58', '2025-03-03 12:15:58', 'pending', '2025-01-27 08:28:00', '2025-01-27 08:28:00'),
-(40, 1, 'Sell', 'EW-202501000020', 270000.00, 0.00, 270000.00, 2, 'pending', NULL, 'Wallet', 'Online', 'completed', '123 Main St, City, Country', NULL, NULL, NULL, NULL, '2025-01-27 08:38:40', '2025-01-27 08:38:40');
+(40, 1, 'Sell', 'EW-202501000020', 270000.00, 0.00, 270000.00, 2, 'pending', NULL, 'Wallet', 'Online', 'completed', '123 Main St, City, Country', NULL, NULL, NULL, NULL, '2025-01-27 08:38:40', '2025-01-27 08:38:40'),
+(41, 1, 'Rent', 'EW-202502000001', 150.00, 0.00, 150.00, 1, 'pending', NULL, 'PhonePay', 'Online', 'pending', '123 Main St, City, Country', NULL, '2025-02-01 12:15:58', '2025-02-01 12:15:58', 'pending', '2025-02-19 23:19:20', '2025-02-19 23:19:20');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_addresses`
+--
+
+CREATE TABLE `order_addresses` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `order_id` bigint(20) UNSIGNED NOT NULL,
+  `user_address_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -402,7 +433,8 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`, 
 (30, 32, 2, 2, 1999.00, 3998.00, '2025-01-27 08:22:47', '2025-01-27 08:22:47'),
 (31, 33, 2, 2, 1999.00, 3998.00, '2025-01-27 08:25:19', '2025-01-27 08:25:19'),
 (32, 34, 2, 2, 1999.00, 3998.00, '2025-01-27 08:28:00', '2025-01-27 08:28:00'),
-(34, 40, 2, 2, 135000.00, 270000.00, '2025-01-27 08:38:40', '2025-01-27 08:38:40');
+(34, 40, 2, 2, 135000.00, 270000.00, '2025-01-27 08:38:40', '2025-01-27 08:38:40'),
+(35, 41, 1, 1, 150.00, 150.00, '2025-02-19 23:19:20', '2025-02-19 23:19:20');
 
 -- --------------------------------------------------------
 
@@ -476,7 +508,8 @@ INSERT INTO `payments` (`id`, `order_id`, `payment_method`, `payment_status`, `t
 (19, 32, 'Wallet', 'pending', NULL, 3998.00, 'INR', NULL, '2025-01-27 08:22:47', '2025-01-27 08:22:47'),
 (20, 33, 'Wallet', 'pending', NULL, 3998.00, 'INR', NULL, '2025-01-27 08:25:19', '2025-01-27 08:25:19'),
 (21, 34, 'Wallet', 'pending', NULL, 3998.00, 'INR', NULL, '2025-01-27 08:28:00', '2025-01-27 08:28:00'),
-(22, 40, 'Wallet', 'completed', NULL, 270000.00, 'INR', NULL, '2025-01-27 08:38:40', '2025-01-27 08:38:40');
+(22, 40, 'Wallet', 'completed', NULL, 270000.00, 'INR', NULL, '2025-01-27 08:38:40', '2025-01-27 08:38:40'),
+(23, 41, 'PhonePay', 'pending', NULL, 150.00, 'INR', NULL, '2025-02-19 23:19:21', '2025-02-19 23:19:21');
 
 -- --------------------------------------------------------
 
@@ -528,9 +561,8 @@ INSERT INTO `pincodes` (`id`, `pincode`, `city_id`, `status`, `created_at`, `upd
 (2, '711106', 2, 1, '2025-02-13 01:51:06', '2025-02-13 01:51:06'),
 (3, '711205', 2, 1, '2025-02-13 01:51:06', '2025-02-13 01:51:06'),
 (4, '711303', 2, 1, '2025-02-13 01:51:06', '2025-02-13 01:51:06'),
-(5, '700006', 1, 1, '2025-02-13 01:51:06', '2025-02-13 01:51:06'),
 (6, '700007', 1, 1, '2025-02-13 01:51:06', '2025-02-13 01:51:20'),
-(7, '700008', 1, 1, '2025-02-13 01:51:06', '2025-02-13 01:51:06'),
+(7, '700008', 1, 1, '2025-02-13 01:51:06', '2025-02-17 08:47:23'),
 (8, '700009', 1, 1, '2025-02-13 01:51:06', '2025-02-13 01:53:27');
 
 -- --------------------------------------------------------
@@ -580,8 +612,6 @@ CREATE TABLE `products` (
   `base_price` decimal(10,2) DEFAULT NULL,
   `display_price` decimal(10,2) DEFAULT NULL,
   `is_rent` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0:inactive, 1:active',
-  `per_rent_price` decimal(10,2) DEFAULT NULL,
-  `rent_duration` varchar(255) DEFAULT NULL,
   `meta_title` varchar(255) DEFAULT NULL,
   `meta_description` text DEFAULT NULL,
   `meta_keyword` text DEFAULT NULL,
@@ -598,9 +628,10 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `stock_qty`, `stock`, `title`, `product_sku`, `position`, `types`, `short_desc`, `long_desc`, `category_id`, `sub_category_id`, `image`, `is_selling`, `base_price`, `display_price`, `is_rent`, `per_rent_price`, `rent_duration`, `meta_title`, `meta_description`, `meta_keyword`, `status`, `is_bestseller`, `is_new_arrival`, `is_featured`, `deleted_at`, `created_at`, `updated_at`) VALUES
-(1, 743, 1, 'Bajaj Electric Scooter With Lithium Ion Battery', 'BESWLIB', NULL, '', '<ul>\n	<li>Specifications: 113 kms range in single charge; 63 kmph top speed</li>\n	<li>Hasslefree: Charge your Chetak with the offbaord charger using any normal 220V, 15A, 3 pin earthed socket.</li>\n	<li>Thudproof &amp; splashproof: Seamless steel unibody that is built to last with IP67 rating for water resistance</li>\n	<li>Stressproof: Future ready with key FOB; Bluetooth; Call Accept/Reject &ndash; all via the Chetak app!</li>\n	<li>Other Features: Colour LCD Display with Digital speedometer, odometer, and tripmeter; Touch Sensitive Switches; Braking: Front &amp; Rear Drum Brakes; Motor Type: PMSM; Storage: Glove Box 5.5 L, Underseat storage 21 L</li>\n	<li>Additional features with TecPac - Top speed of 73 kmph with 3 ride modes (2 Forward - Eco and Sports and 1 Reverse); Hill-hold Assist; Geo-fencing; Trip Data Analytics. The scooter is activated with TecPac for upto 1000 km / 30 days from invoice date as a trial pack, after which it will be de-activated. *Subscription of TecPac has to be purchased additionally, directly from the dealer</li>\n</ul>\n', '<ul>\n	<li>Specifications: 113 kms range in single charge; 63 kmph top speed</li>\n	<li>Hasslefree: Charge your Chetak with the offbaord charger using any normal 220V, 15A, 3 pin earthed socket.</li>\n	<li>Thudproof &amp; splashproof: Seamless steel unibody that is built to last with IP67 rating for water resistance</li>\n	<li>Stressproof: Future ready with key FOB; Bluetooth; Call Accept/Reject &ndash; all via the Chetak app!</li>\n	<li>Other Features: Colour LCD Display with Digital speedometer, odometer, and tripmeter; Touch Sensitive Switches; Braking: Front &amp; Rear Drum Brakes; Motor Type: PMSM; Storage: Glove Box 5.5 L, Underseat storage 21 L</li>\n	<li>Additional features with TecPac - Top speed of 73 kmph with 3 ride modes (2 Forward - Eco and Sports and 1 Reverse); Hill-hold Assist; Geo-fencing; Trip Data Analytics. The scooter is activated with TecPac for upto 1000 km / 30 days from invoice date as a trial pack, after which it will be de-activated. *Subscription of TecPac has to be purchased additionally, directly from the dealer</li>\n</ul>\n', 2, 5, 'storage/uploads/product/2140_1737967692.png', 1, 85000.00, 75000.00, 1, 2500.00, NULL, NULL, NULL, NULL, 1, 0, 1, 0, NULL, '2025-01-27 03:18:12', '2025-02-13 02:15:00'),
-(2, 1997, 1, 'Kinectic Electric Scooter', 'KEST', NULL, 'Waterproof,Lightweight,Chargeable', '<p>Kinetic Electric Scooter.&nbsp;A budget-friendly, low-speed scooter with a top speed of 25 km/h.&nbsp;It&#39;s designed for young riders and doesn&#39;t require a license or registration.&nbsp;Some say it&#39;s a good choice for city commuting, with a responsive handling and a peppy engine.&nbsp;</p>\n', '<p>Kinetic Electric Scooter.&nbsp;A budget-friendly, low-speed scooter with a top speed of 25 km/h.&nbsp;It&#39;s designed for young riders and doesn&#39;t require a license or registration.&nbsp;Some say it&#39;s a good choice for city commuting, with a responsive handling and a peppy engine.&nbsp;</p>\n', 2, 2, 'storage/uploads/product/8189_1737968239.jpg', 0, 150000.00, 135000.00, 1, 1999.00, NULL, NULL, NULL, NULL, 1, 0, 1, 0, NULL, '2025-01-27 03:27:19', '2025-02-13 02:15:00');
+INSERT INTO `products` (`id`, `stock_qty`, `stock`, `title`, `product_sku`, `position`, `types`, `short_desc`, `long_desc`, `category_id`, `sub_category_id`, `image`, `is_selling`, `base_price`, `display_price`, `is_rent`, `meta_title`, `meta_description`, `meta_keyword`, `status`, `is_bestseller`, `is_new_arrival`, `is_featured`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 744, 1, 'Bajaj Electric Scooter With Lithium Ion Battery', 'BESWLIB', NULL, '', '<ul>\n	<li>Specifications: 113 kms range in single charge; 63 kmph top speed</li>\n	<li>Hasslefree: Charge your Chetak with the offbaord charger using any normal 220V, 15A, 3 pin earthed socket.</li>\n	<li>Thudproof &amp; splashproof: Seamless steel unibody that is built to last with IP67 rating for water resistance</li>\n	<li>Stressproof: Future ready with key FOB; Bluetooth; Call Accept/Reject &ndash; all via the Chetak app!</li>\n	<li>Other Features: Colour LCD Display with Digital speedometer, odometer, and tripmeter; Touch Sensitive Switches; Braking: Front &amp; Rear Drum Brakes; Motor Type: PMSM; Storage: Glove Box 5.5 L, Underseat storage 21 L</li>\n	<li>Additional features with TecPac - Top speed of 73 kmph with 3 ride modes (2 Forward - Eco and Sports and 1 Reverse); Hill-hold Assist; Geo-fencing; Trip Data Analytics. The scooter is activated with TecPac for upto 1000 km / 30 days from invoice date as a trial pack, after which it will be de-activated. *Subscription of TecPac has to be purchased additionally, directly from the dealer</li>\n</ul>\n', '<ul>\n	<li>Specifications: 113 kms range in single charge; 63 kmph top speed</li>\n	<li>Hasslefree: Charge your Chetak with the offbaord charger using any normal 220V, 15A, 3 pin earthed socket.</li>\n	<li>Thudproof &amp; splashproof: Seamless steel unibody that is built to last with IP67 rating for water resistance</li>\n	<li>Stressproof: Future ready with key FOB; Bluetooth; Call Accept/Reject &ndash; all via the Chetak app!</li>\n	<li>Other Features: Colour LCD Display with Digital speedometer, odometer, and tripmeter; Touch Sensitive Switches; Braking: Front &amp; Rear Drum Brakes; Motor Type: PMSM; Storage: Glove Box 5.5 L, Underseat storage 21 L</li>\n	<li>Additional features with TecPac - Top speed of 73 kmph with 3 ride modes (2 Forward - Eco and Sports and 1 Reverse); Hill-hold Assist; Geo-fencing; Trip Data Analytics. The scooter is activated with TecPac for upto 1000 km / 30 days from invoice date as a trial pack, after which it will be de-activated. *Subscription of TecPac has to be purchased additionally, directly from the dealer</li>\n</ul>\n', 2, 5, 'storage/uploads/product/2140_1737967692.png', 1, 85000.00, 75000.00, 1, NULL, NULL, NULL, 1, 0, 1, 1, NULL, '2025-01-27 03:18:12', '2025-02-19 23:19:21'),
+(2, 1997, 1, 'Kinectic Electric Scooter', 'KEST', NULL, 'Waterproof,Lightweight,Chargeable', '<p>Kinetic Electric Scooter.&nbsp;A budget-friendly, low-speed scooter with a top speed of 25 km/h.&nbsp;It&#39;s designed for young riders and doesn&#39;t require a license or registration.&nbsp;Some say it&#39;s a good choice for city commuting, with a responsive handling and a peppy engine.&nbsp;</p>\n', '<p>Kinetic Electric Scooter.&nbsp;A budget-friendly, low-speed scooter with a top speed of 25 km/h.&nbsp;It&#39;s designed for young riders and doesn&#39;t require a license or registration.&nbsp;Some say it&#39;s a good choice for city commuting, with a responsive handling and a peppy engine.&nbsp;</p>\n', 2, 2, 'storage/uploads/product/8189_1737968239.jpg', 1, 150000.00, 135000.00, 1, NULL, NULL, NULL, 1, 0, 1, 0, NULL, '2025-01-27 03:27:19', '2025-02-19 23:02:08'),
+(5, 0, 1, 'New Product For Live Demo', 'NPFLD', NULL, 'Lightweight,Electronic', NULL, NULL, 2, 2, 'assets/img/default-product.webp', 1, 48000.00, 42000.00, 1, NULL, NULL, NULL, 1, 0, 1, 0, NULL, '2025-02-16 10:15:17', '2025-02-19 21:23:29');
 
 -- --------------------------------------------------------
 
@@ -621,12 +652,12 @@ CREATE TABLE `product_features` (
 --
 
 INSERT INTO `product_features` (`id`, `product_id`, `title`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Battery Type: Lithium-ion', '2025-01-27 03:18:12', '2025-01-27 03:24:51'),
-(2, 1, 'Battery Capacity: 72V, 20Ah', '2025-01-27 03:18:12', '2025-01-27 03:24:51'),
-(3, 1, 'Range: 60 - 80 km on a single charge', '2025-01-27 03:18:12', '2025-01-27 03:24:51'),
-(4, 1, 'Charging Time: 4 - 6 hours', '2025-01-27 03:18:12', '2025-01-27 03:24:51'),
-(5, 1, 'Charging Time: 4 - 6 hours', '2025-01-27 03:18:12', '2025-01-27 03:24:51'),
-(6, 1, 'Top Speed: 45 km/h', '2025-01-27 03:18:12', '2025-01-27 03:24:51');
+(1, 1, 'Battery Type: Lithium-ion', '2025-01-27 03:18:12', '2025-02-19 23:01:46'),
+(2, 1, 'Battery Capacity: 72V, 20Ah', '2025-01-27 03:18:12', '2025-02-19 23:01:46'),
+(3, 1, 'Range: 60 - 80 km on a single charge', '2025-01-27 03:18:12', '2025-02-19 23:01:46'),
+(4, 1, 'Charging Time: 4 - 6 hours', '2025-01-27 03:18:12', '2025-02-19 23:01:46'),
+(5, 1, 'Charging Time: 4 - 6 hours', '2025-01-27 03:18:12', '2025-02-19 23:01:46'),
+(6, 1, 'Top Speed: 45 km/h', '2025-01-27 03:18:12', '2025-02-19 23:01:46');
 
 -- --------------------------------------------------------
 
@@ -701,6 +732,36 @@ INSERT INTO `product_types` (`id`, `title`, `status`, `deleted_at`, `created_at`
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `rental_prices`
+--
+
+CREATE TABLE `rental_prices` (
+  `id` bigint(20) NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `duration` int(11) NOT NULL,
+  `duration_type` enum('day','week','biweekly','month') NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rental_prices`
+--
+
+INSERT INTO `rental_prices` (`id`, `product_id`, `duration`, `duration_type`, `price`, `created_at`, `updated_at`) VALUES
+(1, 5, 1, 'day', 150.00, '2025-02-16 10:15:17', '2025-02-19 21:23:29'),
+(2, 5, 7, 'week', 750.00, '2025-02-16 10:15:17', '2025-02-19 21:23:29'),
+(3, 5, 15, 'biweekly', 1200.00, '2025-02-16 10:15:17', '2025-02-19 21:23:29'),
+(4, 5, 30, 'month', 2000.00, '2025-02-16 10:15:17', '2025-02-19 21:23:29'),
+(5, 1, 7, 'week', 780.00, '2025-02-19 21:32:42', '2025-02-19 23:01:46'),
+(6, 2, 15, 'biweekly', 2500.00, '2025-02-19 21:33:18', '2025-02-19 23:02:08'),
+(7, 1, 1, 'day', 150.00, '2025-02-19 23:01:46', '2025-02-19 23:01:46'),
+(8, 2, 7, 'week', 500.00, '2025-02-19 23:02:08', '2025-02-19 23:02:08');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `sessions`
 --
 
@@ -718,7 +779,40 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('DynzqhiZee5Kvn0d7QzdGPjRNkHSfMe6fJ35NCoj', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoib2VYR0taTlZibzFqT055czByOVZzVGdpdGxWY1d0U2tyWGRLQ0laZSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9vcmRlci9saXN0Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MjoibG9naW5fYWRtaW5fNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1739432736);
+('eRhYHv14qefCUY9fDmRcFrqRfSD8CQqdpNeZWuL5', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTHcxa2Q4cnExalE2cUpuSEswbzYzd2I2VGNNbUk4TUo4UzNCanIwTiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9jdXN0b21lci9kZXRhaWxzLzEiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUyOiJsb2dpbl9hZG1pbl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1740290070);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `shipping_activities`
+--
+
+CREATE TABLE `shipping_activities` (
+  `id` int(11) NOT NULL,
+  `order_id` bigint(20) UNSIGNED NOT NULL,
+  `status` enum('Ride Booked','Payment Received','Ride Canceled','Vehicle Assigned','Ride Started','Ride Completed') NOT NULL,
+  `vehicle_id` bigint(50) UNSIGNED DEFAULT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `payment_status` enum('Pending','Paid','Refunded') DEFAULT 'Pending',
+  `description` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `shipping_activities`
+--
+
+INSERT INTO `shipping_activities` (`id`, `order_id`, `status`, `vehicle_id`, `user_id`, `payment_status`, `description`, `created_at`, `updated_at`) VALUES
+(1, 41, 'Ride Booked', NULL, 1, 'Pending', 'User booked a bike ride', '2025-02-23 05:07:49', '2025-02-23 05:11:14'),
+(2, 41, 'Payment Received', NULL, 1, 'Paid', 'Payment confirmed via wallet', '2025-02-23 05:07:49', '2025-02-23 05:11:11'),
+(3, 41, 'Vehicle Assigned', 34, 1, 'Paid', 'Bike assigned for the ride', '2025-02-23 05:07:49', '2025-02-23 05:11:09'),
+(4, 41, 'Ride Started', 34, 1, 'Paid', 'User started the ride', '2025-02-23 05:07:49', '2025-02-23 05:11:05'),
+(5, 41, 'Ride Completed', 34, 1, 'Paid', 'Ride successfully completed', '2025-02-23 05:07:49', '2025-02-23 05:11:01'),
+(6, 41, 'Ride Started', NULL, 1, 'Pending', 'User started the ride\', \'Yamaha R15 - Black', '2025-02-23 00:19:09', '2025-02-23 00:19:09'),
+(7, 41, 'Ride Completed', NULL, 1, 'Pending', 'Ride successfully completed\', \'Yamaha R15 - Black', '2025-02-23 00:19:53', '2025-02-23 00:19:53'),
+(8, 41, 'Ride Canceled', NULL, 1, 'Refunded', 'User canceled the ride, refund processed', '2025-02-23 00:20:39', '2025-02-23 00:20:39'),
+(9, 41, 'Vehicle Assigned', NULL, 1, 'Pending', 'Bike assigned for the ride\', \'Yamaha R15 - Black', '2025-02-23 00:20:50', '2025-02-23 00:20:50');
 
 -- --------------------------------------------------------
 
@@ -751,7 +845,7 @@ INSERT INTO `states` (`id`, `name`, `country`, `status`, `created_at`, `updated_
 --
 
 CREATE TABLE `stocks` (
-  `id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `product_id` bigint(11) UNSIGNED NOT NULL,
   `vehicle_number` varchar(50) NOT NULL,
   `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '0: Inactive, 1: Active',
@@ -764,16 +858,17 @@ CREATE TABLE `stocks` (
 --
 
 INSERT INTO `stocks` (`id`, `product_id`, `vehicle_number`, `status`, `created_at`, `updated_at`) VALUES
-(25, 1, 'WB20250185', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(26, 1, 'WB20250159', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(27, 1, 'WB20250145', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(28, 1, 'WB202501423', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(29, 1, 'WB20250152', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
+(25, 1, 'WB20250185', 1, '2025-02-13 02:15:00', '2025-02-16 00:26:46'),
+(28, 1, 'WB202501423', 1, '2025-02-13 02:15:00', '2025-02-16 00:26:45'),
+(29, 1, 'WB20250152', 1, '2025-02-13 02:15:00', '2025-02-16 00:27:22'),
 (30, 2, 'WB20240185', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
 (31, 2, 'WB20240159', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(32, 2, 'WB20240145', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(33, 2, 'WB202401423', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(34, 2, 'WB20240152', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00');
+(34, 2, 'WB20240152', 1, '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
+(35, 1, 'WB784124', 1, '2025-02-16 01:09:56', '2025-02-16 09:14:39'),
+(36, 1, 'WB001245', 1, '2025-02-16 01:09:56', '2025-02-16 01:09:56'),
+(37, 1, 'WB20250158', 1, '2025-02-16 09:13:16', '2025-02-17 08:48:56'),
+(38, 1, 'WB20250159', 1, '2025-02-16 09:14:17', '2025-02-16 09:14:17'),
+(39, 1, 'WB20250160', 1, '2025-02-16 09:14:27', '2025-02-16 09:14:27');
 
 -- --------------------------------------------------------
 
@@ -798,7 +893,8 @@ CREATE TABLE `stock_ledgers` (
 
 INSERT INTO `stock_ledgers` (`id`, `product_id`, `order_id`, `quantity`, `type`, `purpose`, `created_at`, `updated_at`) VALUES
 (7, 1, NULL, 5, 'Credit', 'New', '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
-(8, 2, NULL, 5, 'Credit', 'New', '2025-02-13 02:15:00', '2025-02-13 02:15:00');
+(8, 2, NULL, 5, 'Credit', 'New', '2025-02-13 02:15:00', '2025-02-13 02:15:00'),
+(9, 1, NULL, 2, 'Credit', 'New', '2025-02-16 01:09:56', '2025-02-16 01:09:56');
 
 -- --------------------------------------------------------
 
@@ -866,7 +962,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `customer_id`, `name`, `mobile`, `email`, `email_verified_at`, `password`, `address`, `city`, `pincode`, `profile_image`, `driving_license`, `driving_license_status`, `govt_id_card`, `govt_id_card_status`, `cancelled_cheque`, `cancelled_cheque_status`, `current_address_proof`, `current_address_proof_status`, `status`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'EW-00000001', 'Souvik Mondal', '7894562589', 'souvik@gmail.com', NULL, '$2y$12$BMOMrGoAhVKMuq4.z72HruUeoEySAZWXF7Ko1h0YacNJs292Rx3wm', NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 1, NULL, '2025-01-27 02:53:40', '2025-01-27 02:53:40'),
-(2, 'EW-00000002', 'Rajib Ali Khan', '8617207528', 'rajib45@gmail.co', NULL, '$2y$12$.qrxUJbC1ptVNvhn4v5F7.2462q8cDbdxtQHgJDBjKVIcrqvO.UhW', 'ghatal', NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, 0, NULL, 0, 1, NULL, '2025-01-28 04:25:10', '2025-01-28 04:25:10');
+(2, 'EW-00000002', 'Rajib Ali Khan', '8617207528', 'rajib45@gmail.co', NULL, '$2y$12$.qrxUJbC1ptVNvhn4v5F7.2462q8cDbdxtQHgJDBjKVIcrqvO.UhW', 'ghatal', NULL, NULL, NULL, NULL, 1, NULL, 2, NULL, 0, NULL, 0, 1, NULL, '2025-01-28 04:25:10', '2025-02-16 11:59:03');
 
 -- --------------------------------------------------------
 
@@ -877,7 +973,7 @@ INSERT INTO `users` (`id`, `customer_id`, `name`, `mobile`, `email`, `email_veri
 CREATE TABLE `user_addresses` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
-  `type` varchar(255) NOT NULL,
+  `type` enum('home','work','other','') NOT NULL,
   `street_address` varchar(255) NOT NULL,
   `city` varchar(255) NOT NULL,
   `country` varchar(255) NOT NULL,
@@ -983,6 +1079,14 @@ ALTER TABLE `admin_ratings`
   ADD KEY `admin_ratings_admin_id_foreign` (`admin_id`);
 
 --
+-- Indexes for table `assigned_vehicles`
+--
+ALTER TABLE `assigned_vehicles`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_item_k1` (`order_item_id`),
+  ADD KEY `fk_vehicle` (`vehicle_id`);
+
+--
 -- Indexes for table `banners`
 --
 ALTER TABLE `banners`
@@ -1067,6 +1171,14 @@ ALTER TABLE `orders`
   ADD KEY `orders_offer_id_foreign` (`offer_id`);
 
 --
+-- Indexes for table `order_addresses`
+--
+ALTER TABLE `order_addresses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `user_address_id` (`user_address_id`);
+
+--
 -- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
@@ -1145,11 +1257,24 @@ ALTER TABLE `product_types`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `rental_prices`
+--
+ALTER TABLE `rental_prices`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
 -- Indexes for table `sessions`
 --
 ALTER TABLE `sessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `sessions_user_id_foreign` (`user_id`);
+
+--
+-- Indexes for table `shipping_activities`
+--
+ALTER TABLE `shipping_activities`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `states`
@@ -1231,6 +1356,12 @@ ALTER TABLE `admin_ratings`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `assigned_vehicles`
+--
+ALTER TABLE `assigned_vehicles`
+  MODIFY `id` bigint(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `banners`
 --
 ALTER TABLE `banners`
@@ -1288,13 +1419,19 @@ ALTER TABLE `offers`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+
+--
+-- AUTO_INCREMENT for table `order_addresses`
+--
+ALTER TABLE `order_addresses`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `order_item_returns`
@@ -1306,7 +1443,7 @@ ALTER TABLE `order_item_returns`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -1330,7 +1467,7 @@ ALTER TABLE `policies`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `product_features`
@@ -1357,6 +1494,18 @@ ALTER TABLE `product_types`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `rental_prices`
+--
+ALTER TABLE `rental_prices`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `shipping_activities`
+--
+ALTER TABLE `shipping_activities`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
 -- AUTO_INCREMENT for table `states`
 --
 ALTER TABLE `states`
@@ -1366,13 +1515,13 @@ ALTER TABLE `states`
 -- AUTO_INCREMENT for table `stocks`
 --
 ALTER TABLE `stocks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `stock_ledgers`
 --
 ALTER TABLE `stock_ledgers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `sub_categories`
@@ -1422,6 +1571,13 @@ ALTER TABLE `admin_ratings`
   ADD CONSTRAINT `admin_ratings_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
+-- Constraints for table `assigned_vehicles`
+--
+ALTER TABLE `assigned_vehicles`
+  ADD CONSTRAINT `fk_vehicle` FOREIGN KEY (`vehicle_id`) REFERENCES `stocks` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_item_k1` FOREIGN KEY (`order_item_id`) REFERENCES `order_items` (`id`);
+
+--
 -- Constraints for table `cities`
 --
 ALTER TABLE `cities`
@@ -1439,6 +1595,13 @@ ALTER TABLE `galleries`
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_offer_id_foreign` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `orders_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `order_addresses`
+--
+ALTER TABLE `order_addresses`
+  ADD CONSTRAINT `order_addresses_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_addresses_ibfk_2` FOREIGN KEY (`user_address_id`) REFERENCES `user_addresses` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `order_items`
@@ -1490,6 +1653,12 @@ ALTER TABLE `product_images`
 ALTER TABLE `product_reviews`
   ADD CONSTRAINT `product_reviews_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   ADD CONSTRAINT `product_reviews_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `rental_prices`
+--
+ALTER TABLE `rental_prices`
+  ADD CONSTRAINT `rental_prices_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `sessions`

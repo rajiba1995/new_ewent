@@ -58,7 +58,7 @@
                             </div>
                             <div class="d-flex align-items-center gap-4">
                               <div class="avatar">
-                                <div class="avatar-initial rounded bg-label-primary"><i class="ri-money-dollar-circle-line ri-24px"></i>
+                                <div class="avatar-initial rounded bg-label-primary"><i class="ri-money-rupee-circle-line ri-24px"></i>
                                 </div>
                               </div>
                               <div>

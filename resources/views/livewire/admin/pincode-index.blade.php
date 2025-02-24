@@ -109,7 +109,7 @@
                                 <button type="button" class="btn rounded-pill btn-xs btn-outline-{{PincodeStatus($item) == 1?"success":"danger"}} waves-effect waves-light mt-1">
                                    <span  wire:click="edit({{ PincodeId($item) }})"> {{ $item }} </span>
                                     <span class="tf-icons {{ PincodeStatus($item) == 1 ? 'ri-checkbox-circle-line text-success' : 'ri-close-circle-line text-danger' }} ri-16px ms-1_5" wire:click="UpdatePinStatus('{{$item}}')"></span>
-                                    <span class="tf-icons ri-delete-bin-line text-danger ri-16px ms-1_5" wire:click="deletePincode('{{ $item }}')" title="Delete Pincode"></span>
+                                    <span class="tf-icons ri-delete-bin-line text-danger ri-16px ms-1_5" wire:click="deletePinCode('{{ $item }}')"  title="Delete Pincode"></span>
                                 </button>
                                 @empty
                                     <div class="alert alert-danger">
@@ -218,8 +218,26 @@
             });
         });
     });
-
-
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+         window.addEventListener('showConfirm', function (event) {
+        let itemId = event.detail[0].itemId;
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.call('deleteItem', itemId); // Calls Livewire method directly
+                Swal.fire("Deleted!", "Your item has been deleted.", "success");
+            }
+        });
+    });
     </script>
 @endsection
 

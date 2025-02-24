@@ -16,7 +16,7 @@
                             <div class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0">
                                 <div>
                                     <h4 class="mb-0">{{ $data['pending_orders'] }}</h4>
-                                    <p class="mb-0">Ready To Pickup Order</p>
+                                    <p class="mb-0">Pending</p>
                                 </div>
                                 <div class="avatar me-sm-6">
                                     <span class="avatar-initial rounded bg-label-secondary text-heading">
@@ -27,10 +27,25 @@
                             <hr class="d-none d-sm-block d-lg-none me-6">
                         </div>
                         <div class="col-sm-6 col-lg-3">
+                            <div class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0">
+                                <div>
+                                    <h4 class="mb-0">{{ $data['ready_to_pickup_orders'] }}</h4>
+                                    <p class="mb-0">Ready To Pickup</p>
+                                </div>
+                                <div class="avatar me-sm-6">
+                                    <span class="avatar-initial rounded bg-label-secondary text-heading">
+                                        <i class="ri-time-line ri-24px"></i> <!-- Pending icon -->
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="d-none d-sm-block d-lg-none me-6">
+                        </div>
+                        
+                        <div class="col-sm-6 col-lg-2">
                             <div class="d-flex justify-content-between align-items-start card-widget-2 border-end pb-4 pb-sm-0">
                                 <div>
                                     <h4 class="mb-0">{{ $data['completed_orders'] }}</h4>
-                                    <p class="mb-0">Completed Order</p>
+                                    <p class="mb-0">Completed</p>
                                 </div>
                                 <div class="avatar me-lg-6">
                                     <span class="avatar-initial rounded bg-label-secondary text-heading">
@@ -40,11 +55,11 @@
                             </div>
                             <hr class="d-none d-sm-block d-lg-none">
                         </div>
-                        <div class="col-sm-6 col-lg-3">
+                        <div class="col-sm-6 col-lg-2">
                             <div class="d-flex justify-content-between align-items-start border-end pb-4 pb-sm-0 card-widget-3">
                                 <div>
                                     <h4 class="mb-0">{{ $data['rented_orders'] }}</h4>
-                                    <p class="mb-0">Rented Order</p>
+                                    <p class="mb-0">Rented</p>
                                 </div>
                                 <div class="avatar me-sm-6">
                                     <span class="avatar-initial rounded bg-label-secondary text-heading">
@@ -53,11 +68,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-sm-6 col-lg-3">
+                        <div class="col-sm-6 col-lg-2">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h4 class="mb-0">{{ $data['sell_orders'] }}</h4>
-                                    <p class="mb-0">Sell Order</p>
+                                    <p class="mb-0">Sell</p>
                                 </div>
                                 <div class="avatar">
                                     <span class="avatar-initial rounded bg-label-secondary text-heading">

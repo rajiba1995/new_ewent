@@ -198,6 +198,23 @@ class PincodeIndex extends Component
         $this->dispatch('select2_reload');
         $this->modal_activity_class = $value;
     }
+
+    public function deletePinCode($id)
+    {
+        $this->dispatch('showConfirm', ['itemId' => $id]);
+    }
+
+    public function deleteItem($itemId)
+    {
+        $pincode = Pincode::where('pincode',$itemId)->first();
+        if ($pincode) {
+            $pincode->delete();
+            $this->mount(); // Reset to the first page
+            $this->refresh();
+            session()->flash('success', 'Pincode deleted successfully!');
+        } 
+    }
+
     public function UpdatePinStatus($code){
         $update = Pincode::where('pincode', $code)->first();
         if($update){
