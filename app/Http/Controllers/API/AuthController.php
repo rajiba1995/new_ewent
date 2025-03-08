@@ -436,9 +436,13 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'id' => 'required|exists:users,id',
             'driving_license' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'driving_license_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'govt_id_card_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'cancelled_cheque_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'current_address_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'current_address_proof_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         // Check if validation fails
@@ -453,24 +457,32 @@ class AuthController extends Controller
         $user = User::where('id', $request->id)->first();
 
        // Handle image upload (if provided)
-        if ($request->hasFile('driving_license')) {
+        if ($request->hasFile('driving_license') || $request->hasFile('driving_license_back')) {
             $driving_license = storeFileWithCustomName($request->file('driving_license'), 'uploads/driving_licenses');
             $user->driving_license = $driving_license;
+            $driving_license_back = storeFileWithCustomName($request->file('driving_license_back'), 'uploads/driving_licenses');
+            $user->driving_license_back = $driving_license_back;
             $user->driving_license_status = 1;
         }
-        if ($request->hasFile('govt_id_card')) {
+        if ($request->hasFile('govt_id_card') || $request->hasFile('govt_id_card_back')) {
             $govt_id_card = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
             $user->govt_id_card = $govt_id_card;
+            $govt_id_card_back = storeFileWithCustomName($request->file('govt_id_card_back'), 'uploads/govt_id_cards');
+            $user->govt_id_card_back = $govt_id_card_back;
             $user->govt_id_card_status = 1;
         }
-        if ($request->hasFile('cancelled_cheque')) {
+        if ($request->hasFile('cancelled_cheque') || $request->hasFile('cancelled_cheque_back')) {
             $cancelled_cheque = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
             $user->cancelled_cheque = $cancelled_cheque;
+            $cancelled_cheque_back = storeFileWithCustomName($request->file('cancelled_cheque_back'), 'uploads/cancelled_cheques');
+            $user->cancelled_cheque_back = $cancelled_cheque_back;
             $user->cancelled_cheque_status = 1;
         }
-        if ($request->hasFile('current_address_proof')) {
+        if ($request->hasFile('current_address_proof') || $request->hasFile('current_address_proof_back')) {
             $current_address_proof = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
             $user->current_address_proof = $current_address_proof;
+            $current_address_proof_back = storeFileWithCustomName($request->file('current_address_proof_back'), 'uploads/address_proofs');
+            $user->current_address_proof_back = $current_address_proof_back;
             $user->current_address_proof_status = 1;
         }
         $user->save();

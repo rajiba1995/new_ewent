@@ -71,15 +71,15 @@
         </li>
       </ul>
     </li>
-    <li class="menu-item {{ (request()->is('admin/customer*')) ? 'open' : '' }}">
+    <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-stock-line"></i>
-        <div>Customer Management</div>
+        <div>Rider Management</div>
       </a>
       <ul class="menu-sub">
-      <li class="menu-item {{ (request()->is('admin/customer*')) ? 'open' : '' }}">
+      <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
           <a href="{{route('admin.customer.list')}}" class="menu-link">
-            <div>Customer List</div>
+            <div>Riders</div>
           </a>
         </li>
         {{-- <li class="menu-item ">

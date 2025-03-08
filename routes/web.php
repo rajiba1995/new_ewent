@@ -23,7 +23,7 @@ Route::get('/', function () { return redirect()->route('login');});
 Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     // Dashboard and Customer Routes
     Route::get('dashboard', Dashboard::class)->name('admin.dashboard');
-    Route::group(['prefix' => 'customer'], function () {
+    Route::group(['prefix' => 'rider'], function () {
         Route::get('add', CustomerAdd::class)->name('admin.customer.add');
         Route::get('list', CustomerIndex::class)->name('admin.customer.list');
         Route::get('details/{id}', CustomerDetails::class)->name('admin.customer.details');
