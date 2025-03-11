@@ -153,21 +153,26 @@ class StockProduct extends Component
     {
 
         $stock = Stock::query()
-        ->when($this->search, function ($query) {
-            $query->orWhereHas('product', function ($query) {
-                $query->where('title', 'like', '%' . $this->search . '%')
-                    ->orWhere('product_sku', 'like', '%' . $this->search . '%')
-                    ->orWhere('types', 'like', '%' . $this->search . '%');
-            });
-        })
-        ->with(['product'])
-        ->selectRaw('
-            product_id, 
-            COUNT(*) as stock_count, 
-            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as available_quantity
-        ')
-        ->groupBy('product_id') // Group by product_id
-        ->paginate(10);
+            ->when($this->search, function ($query) {
+                $query->orWhereHas('product', function ($query) {
+                    $query->whereNull('deleted_at') // Ensure product is not soft-deleted
+                        ->where(function ($subQuery) { // Group conditions properly
+                            $subQuery->where('title', 'like', '%' . $this->search . '%')
+                                ->orWhere('product_sku', 'like', '%' . $this->search . '%')
+                                ->orWhere('types', 'like', '%' . $this->search . '%');
+                        });
+                });
+            })
+            ->with(['product'])
+            ->selectRaw('
+                product_id, 
+                COUNT(*) as stock_count, 
+                SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as available_quantity
+            ')
+            ->groupBy('product_id') // Group by product_id
+            ->paginate(10);
+
+
         return view('livewire.product.stock-product', [
             'stocks' => $stock
         ]);

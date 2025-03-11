@@ -1,10 +1,19 @@
 
 <div class="row mb-4">
-    <div class="col-lg-12 d-flex justify-content-end">
-        <a href="{{route('admin.product.add')}}"  class="btn btn-primary">
-            <i class="ri-add-line ri-16px me-0 me-sm-2 align-baseline"></i>
-            Add Product
-        </a>
+    <div class="col-lg-12 d-flex justify-content-between">
+        <div>
+            <h5 class="mb-0">Model Management</h5>
+            <div>
+                 <small class="text-dark fw-medium">Dashboard</small>
+                 <small class="text-light fw-medium arrow">Models</small>
+            </div>
+         </div>
+        <div>
+            <a href="{{route('admin.product.add')}}"  class="btn btn-primary">
+                <i class="ri-add-line ri-16px me-0 me-sm-2 align-baseline"></i>
+                Add Model
+            </a>
+        </div>
     </div>
     <div class="col-lg-12 col-md-6 mb-md-0 mb-4">
         <div class="row">
@@ -25,10 +34,7 @@
                             @endif
                         </div>
                         <div class="row">
-                            <div class="col-lg-6 col-7">
-                                <h6>Products</h6>
-                            </div>
-                            <div class="col-lg-6 col-5 my-auto text-end">
+                            <div class="col-lg-12 d-flex justify-content-end my-auto">
                                 <div class="d-flex align-items-center">
                                     <input type="text" wire:model.debounce.300ms="search" 
                                            class="form-control border border-2 p-2 custom-input-sm" 
@@ -56,11 +62,8 @@
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle" width="25%">
                                         Title
                                     </th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                        Price
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                        Stock
+                                    <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">
+                                        Selling Price
                                     </th>
                                     <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">
                                         Actions
@@ -97,17 +100,17 @@
                                                         <span class="value">{{env('APP_CURRENCY')}}{{ $product->display_price }}</span>
                                                     </li>
                                                 @endif
-                                                @if(count($product->rentalprice)> 0)
+                                                {{-- @if(count($product->rentalprice)> 0)
                                                     <span class="badge bg-label-danger price-title">RENT PRICE</span>
                                                     <li class="price-item">
                                                         <span class="label">Duration:({{$product->rentalprice[0]->duration}} Days) </span>
                                                         <span class="value">{{env('APP_CURRENCY')}}{{ $product->rentalprice[0]->price }}</span>
                                                     </li>
-                                                @endif
+                                                @endif --}}
                                             </ul>
                                         </td>
                                                                             
-                                        <td class="align-middle text-sm text-center">
+                                        {{-- <td class="align-middle text-sm text-center">
                                             <div class="form-check form-switch">
                                                 <input 
                                                     class="form-check-input ms-auto" 
@@ -116,9 +119,9 @@
                                                     wire:click="toggleStatus({{ $product->id }})"
                                                     @if($product->status) checked @endif>
                                             </div>
-                                        </td>
+                                        </td> --}}
                                         <td class="align-middle text-end px-4">
-                                            <div class="btn-group" role="group" aria-label="Basic example">
+                                            {{-- <div class="btn-group" role="group" aria-label="Basic example">
                                                 <button type="button" class="btn btn-outline-secondary waves-effect {{$product->is_featured==1?"active":""}}" title="Mark as Featured" wire:click="setAsFeatured({{ $product->id }})">
                                                     Featured
                                                 </button>
@@ -128,7 +131,7 @@
                                                 <button type="button" class="btn btn-outline-secondary waves-effect {{$product->is_bestseller==1?"active":""}}" title="Mark as Bestseller" wire:click="setAsBestseller({{ $product->id }})">
                                                     Bestseller
                                                 </button>
-                                            </div>
+                                            </div> --}}
                                             <button data-bs-toggle="modal" data-bs-target="#productDetailsModal{{$product->id}}" class="btn btn-sm btn-icon view-record btn-text-secondary rounded-pill waves-effect btn-sm" title="View">
                                                 <i class="ri-eye-line ri-20px text-primary"></i> 
                                             </button>

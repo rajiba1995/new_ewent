@@ -16,12 +16,13 @@ class Stock extends Model
     // Corrected relationship: A stock (vehicle) may be assigned to an order item
     public function assignedVehicle()
     {
-        return $this->hasOne(AssignedVehicle::class, 'vehicle_id', 'id');
+        return $this->hasOne(AsignedVehicle::class, 'vehicle_id', 'id')
+                    ->where('status', 'assigned'); // Ensure only assigned vehicles are retrieved
     }
-
+    
     // If you want to get all assignments (history), use hasMany instead
     public function assignedVehicles()
     {
-        return $this->hasMany(AssignedVehicle::class, 'vehicle_id', 'id');
+        return $this->hasMany(AsignedVehicle::class, 'vehicle_id', 'id');
     }
 }

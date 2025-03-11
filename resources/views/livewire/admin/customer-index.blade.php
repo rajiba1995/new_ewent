@@ -155,8 +155,8 @@
                                                     <div class="d-flex justify-content-start align-items-center customer-name">
                                                         <div class="avatar-wrapper me-3">
                                                             <div class="avatar avatar-sm">
-                                                                @if ($un_user->image)
-                                                                    <img src="{{ asset($un_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @if ($un_user->profile_image)
+                                                                    <img src="{{ asset($un_user->profile_image) }}" alt="Avatar" class="rounded-circle">
                                                                 @else
                                                                     <div class="avatar-initial rounded-circle {{$colorClass}}">
                                                                         {{ strtoupper(substr($un_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($un_user->name, ' '), 1, 1)) }}

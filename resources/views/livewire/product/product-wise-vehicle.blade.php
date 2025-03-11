@@ -16,7 +16,7 @@
               </div>
             </div>
         </div>
-      <div class="col-lg-8 col-md-6 mb-md-0 mb-4">
+      <div class="col-lg-12 col-md-12 mb-md-0 mb-4">
         <div class="row">
           <div class="col-12">
             <div class="card my-4">
@@ -46,7 +46,7 @@
               <div class="card-body px-0 pb-2 mt-2 vehicle_body">
                 <div class="row mx-2 mt-2">
                     @foreach ($data as $item)
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3 px-1">
+                    <div class="col-12 col-sm-6 col-md-3 col-lg-2 mb-3 px-1">
                         <div class="vehicle-card">
                             <img src="{{ asset($item->product->image) }}" alt="Vehicle Image" class="vehicle-image">
                             <h3 class="vehicle-number">{{ $item->vehicle_number }}</h3>
@@ -66,9 +66,9 @@
                                     </div>
                                     @if(vehicleLog($item->id)==0)
                                         <div>
-                                            <span class="icon tf-icons ri-edit-line text-primary cursor-pointer" 
+                                            {{-- <span class="icon tf-icons ri-edit-line text-primary cursor-pointer" 
                                                 wire:click="UpdateVehicle('{{ $item->id }}')" 
-                                                title="Update Vehicle"></span>
+                                                title="Update Vehicle"></span> --}}
                                     
                                             <span class="icon tf-icons ri-delete-bin-line text-danger cursor-pointer" 
                                                 wire:click="deleteVehicle('{{ $item->id }}')" 
@@ -90,7 +90,7 @@
         </div>
       </div>
     
-      <div class="col-lg-4 col-md-6 mb-md-0 mb-4">
+      {{-- <div class="col-lg-4 col-md-6 mb-md-0 mb-4">
         <div class="row">
           <div class="col-12">
             <div class="card my-4">
@@ -130,7 +130,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> --}}
     </div>
     
     <div class="loader-container" wire:loading>

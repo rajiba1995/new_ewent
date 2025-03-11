@@ -3,7 +3,11 @@
     <div class="row gx-4 mb-4">
       <div class="col-auto my-auto">
         <div class="h-100">
-          <h5 class="mb-1"> Update Product</h5>
+          <h5 class="mb-0">Model Management</h5>
+          <div>
+               <small class="text-dark fw-medium">Model</small>
+               <small class="text-light fw-medium arrow">Update Model</small>
+          </div>
         </div>
       </div>
       <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
@@ -15,7 +19,7 @@
           </a>
           <button type="submit" class="btn btn-secondary btn-sm add-new btn-primary waves-effect waves-light"
             wire:loading.attr="disabled">
-            <span> Update Product</span>
+            <span> Update Model</span>
           </button>
         </div>
       </div>
@@ -37,7 +41,7 @@
     <div class="row">
       <!-- Left Card -->
       <div class="col-lg-8">
-        <div class="card card-plain h-100 p-4">
+        <div class="card card-plain p-4">
           <div class="card-body p-3">
             <div class="row">
               <!-- Product Title -->
@@ -45,7 +49,7 @@
                   <div class="form-floating form-floating-outline mb-3 mt-2">
                     <input type="text" wire:model="title" class="form-control border border-2 p-2"
                       placeholder="Enter Title">
-                    <label>Product Title <span class="text-danger">*</span></label>
+                    <label>Model Title <span class="text-danger">*</span></label>
                   </div>
                   @error('title')
                   <p class="text-danger inputerror">{{ $message }}</p>
@@ -55,7 +59,7 @@
                 <div class="form-floating form-floating-outline mb-3 mt-2">
                   <input type="text" wire:model="product_sku" class="form-control border border-2 p-2"
                     placeholder="Enter sku">
-                  <label>Product SKU <span class="text-danger">*</span></label>
+                  <label>Model SKU <span class="text-danger">*</span></label>
                 </div>
                 @error('product_sku')
                 <p class="text-danger inputerror">{{ $message }}</p>
@@ -95,7 +99,7 @@
                 @enderror
               </div>
               <!-- Short Description -->
-              <div class="card card-plain mb-3 p-0" style="box-shadow: unset;">
+              {{-- <div class="card card-plain mb-3 p-0" style="box-shadow: unset;">
                 <div class="card-body p-3">
                   <h6>Product Short Description</h6>
                   <hr>
@@ -108,9 +112,9 @@
                       @enderror
                   </div>
                 </div>
-              </div>
+              </div> --}}
               <!-- Long Description -->
-              <div class="card card-plain mb-3 p-0" style="box-shadow: unset;">
+              {{-- <div class="card card-plain mb-3 p-0" style="box-shadow: unset;">
                 <div class="card-body p-3">
                   <h6>Product Long Description</h6>
                   <hr>
@@ -123,16 +127,58 @@
                       @enderror
                   </div>
                 </div>
+              </div> --}}
+            </div>
+          </div>
+        </div>
+        <div class="card card-plain mt-2 p-4">
+          <div class="card-body p-3">
+            <div class="row">
+              <h5 class="mb-4">Feature Information</h5>
+
+              <!-- Loop through each feature -->
+            
+                @foreach($features as $index => $feature)
+                      <div class="col-12 mb-3 d-flex align-items-center product-feature" id="feature_{{ $index }}">
+                          <!-- Feature Title Input -->
+                          <div class="d-flex flex-column w-100 me-2">
+                              <div class="form-floating form-floating-outline mb-2">
+                                  <input type="text" wire:model="features.{{ $index }}.title" 
+                                      class="form-control border border-2 p-2"
+                                      placeholder="Enter Feature Title">
+                                  <label>Title</label>
+                              </div>
+                          </div>
+
+                          <!-- Remove Button for Feature -->
+                          <div>
+                              <button type="button" class="btn btn-danger btn-sm mt-n2-important" wire:click="removeFeature({{ $index }})">
+                                  <i class="ri-close-circle-line"></i>
+                              </button>
+                          </div>
+                      </div>
+                      @error("features.$index.title")
+                      <p class="text-danger inputerror">{{ $message }}</p>
+                      @enderror
+                @endforeach
+
+              <!-- Add More Button -->
+              <div class="col-12 text-end mt-3">
+                <button type="button" class="btn btn-secondary btn-sm add-new btn-primary waves-effect waves-light"
+                  wire:click="addFeature">
+                  <i class="ri-add-circle-fill"> </i> Add
+                </button>
               </div>
             </div>
           </div>
+
         </div>
       </div>
       <!-- Right Card -->
       <div class="col-lg-4">
         <div class="card card-plain mb-3">
           <div class="card-body p-3">
-            <h6>Product Image</h6>
+            <h6>Model Image</h6>
             <!-- Product Image -->
             <div class="mb-2 mt-2">
               <input type="file" wire:model="image" id="image" accept="image/*"
@@ -148,9 +194,10 @@
           </div>
         </div>
 
+
         <div class="card card-plain mb-3">
     <div class="card-body p-3">
-        <h6>Additional Product Images</h6>
+        <h6>Additional Model Images</h6>
         <div class="mb-2 mt-2">
               <!-- Input for file selection -->
                 <input type="file" wire:model="multipleImages" id="multipleImages" accept="image/*" multiple 
@@ -231,14 +278,14 @@
             @endif
 
             <!-- Rent -->
-            <div class="mb-2">
+            {{-- <div class="mb-2">
               <label class="form-check-label" for="is_rent">
                 <input type="checkbox" id="is_rent" wire:model="is_rent" class="form-check-input"
                   wire:change="toggleRentFields">
                   Rental Price Chart
               </label>
-            </div>
-            @if($is_rent)
+            </div> --}}
+            {{-- @if($is_rent)
               @foreach($rental_prices as $index => $rental_price)
                 <div class="col-12 mb-3 d-flex align-items-center rental-price" id="rental_price_{{ $index }}">
                     <!-- Duration Type Dropdown -->
@@ -300,13 +347,13 @@
                   <i class="ri-add-circle-fill"> </i>
                 </button>
               </div>
-            @endif
+            @endif --}}
           </div>
         </div>
         <!-- Product Type -->
         <div class="card card-plain">
             <div class="card-body p-3">
-                <h6>Product Tags & Key</h6>
+                <h6>Model Tags & Key</h6>
                 <!-- Selling Price -->
                 <div class="mb-2">
                     @foreach ($product_type as $k => $ptype)
@@ -329,53 +376,8 @@
         </div>
       </div>
     </div>
-    <div class="row mt-3">
-      <div class="col-lg-8">
-        <div class="card card-plain h-100 p-4">
-          <div class="card-body p-3">
-            <div class="row">
-              <h5 class="mb-4">Feature Information</h5>
-
-              <!-- Loop through each feature -->
-           
-                @foreach($features as $index => $feature)
-                      <div class="col-12 mb-3 d-flex align-items-center product-feature" id="feature_{{ $index }}">
-                          <!-- Feature Title Input -->
-                          <div class="d-flex flex-column w-100 me-2">
-                              <div class="form-floating form-floating-outline mb-2">
-                                  <input type="text" wire:model="features.{{ $index }}.title" 
-                                      class="form-control border border-2 p-2"
-                                      placeholder="Enter Feature Title">
-                                  <label>Title</label>
-                              </div>
-                          </div>
-
-                          <!-- Remove Button for Feature -->
-                          <div>
-                              <button type="button" class="btn btn-danger btn-sm mt-n2-important" wire:click="removeFeature({{ $index }})">
-                                  <i class="ri-close-circle-line"></i>
-                              </button>
-                          </div>
-                      </div>
-                      @error("features.$index.title")
-                      <p class="text-danger inputerror">{{ $message }}</p>
-                      @enderror
-                @endforeach
-
-              <!-- Add More Button -->
-              <div class="col-12 text-end mt-3">
-                <button type="button" class="btn btn-secondary btn-sm add-new btn-primary waves-effect waves-light"
-                  wire:click="addFeature">
-                  <i class="ri-add-circle-fill"> </i> Add
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-    <div class="row mt-3">
+    
+    {{-- <div class="row mt-3">
       <div class="col-lg-8">
         <div class="card card-plain h-100 p-4">
           <div class="card-body p-3">
@@ -414,7 +416,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
   </form>
   <div class="loader-container" wire:loading>
     <div class="loader"></div>

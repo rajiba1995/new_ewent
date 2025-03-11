@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
-    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle
+    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList
 };
 use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex};
 
@@ -29,7 +29,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
         Route::get('details/{id}', CustomerDetails::class)->name('admin.customer.details');
     });
     // Product Routes
-    Route::group(['prefix' => 'products'], function () {
+    Route::group(['prefix' => 'models'], function () {
         Route::get('/list', MasterProduct::class)->name('admin.product.index');
         Route::get('/categories', MasterCategory::class)->name('admin.product.categories');
         Route::get('/sub-categories', MasterSubCategory::class)->name('admin.product.sub_categories');
@@ -41,7 +41,11 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
 
     Route::group(['prefix' => 'stock'], function () {
         Route::get('/list', StockProduct::class)->name('admin.product.stocks');
-        Route::get('/product/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
+        Route::get('/vehicle/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
+    });
+    Route::group(['prefix' => 'vehicle'], function () {
+        Route::get('/list', VehicleList::class)->name('admin.vehicle.list');
+        // Route::get('/vehicle/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
     });
     // Order Management
     Route::group(['prefix'=>'order'], function(){

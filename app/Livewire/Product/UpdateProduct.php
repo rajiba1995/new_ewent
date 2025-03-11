@@ -241,7 +241,7 @@ class UpdateProduct extends Component
             }
         }
 
-        session()->flash('message', 'Product updated successfully!');
+        session()->flash('message', 'Model updated successfully!');
         return redirect()->route('admin.product.index');
     }
 

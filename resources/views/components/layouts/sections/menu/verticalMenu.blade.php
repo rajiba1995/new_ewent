@@ -97,38 +97,56 @@
       <ul class="menu-sub">
         <li class="menu-item {{ (request()->is('admin/stock/list')) ? 'open' : '' }}">
           <a href="{{route('admin.product.stocks')}}" class="menu-link">
-            <div>Product Stock</div>
+            <div>Vehicle Stock</div>
           </a>
         </li>
       </ul>
     </li>
-    <li class="menu-item {{ (request()->is('admin/products*')) ? 'open' : '' }}" style="">
+    <li class="menu-item {{ (request()->is('admin/models*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>
-        <div>Product Management</div>
+        <div>Model Management</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/products/categories*')) ? 'open' : '' }}">
+        <li class="menu-item {{ (request()->is('admin/models/categories*')) ? 'open' : '' }}">
           <a href="{{route('admin.product.categories')}}" class="menu-link">
-            <div>Category</div>
+            <div>Categories</div>
           </a>
         </li>
   
-        <li class="menu-item {{ (request()->is('admin/products/sub-categories*')) ? 'open' : '' }}">
+        <li class="menu-item {{ (request()->is('admin/models/sub-categories*')) ? 'open' : '' }}">
           <a href="{{route('admin.product.sub_categories')}}" class="menu-link">
-            <div>Sub Category</div>
+            <div>Subcategories</div>
           </a>
         </li>
-        <li class="menu-item {{ (request()->is('admin/products/type*')) ? 'open' : '' }}">
+        <li class="menu-item {{ (request()->is('admin/models/type*')) ? 'open' : '' }}">
           <a href="{{route('admin.product.type')}}" class="menu-link">
-            <div>Product Keywords</div>
+            <div>Keywords</div>
           </a>
-  
         </li>
 
-        <li class="menu-item {{ (request()->is('admin/products/list*')) ? 'open' : '' }}">
+        <li class="menu-item {{ (request()->is('admin/models/list*')) ? 'open' : '' }}">
           <a href="{{route('admin.product.index')}}" class="menu-link">
-            <div>Product list</div>
+            <div>Models</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="menu-item {{ (request()->is('admin/vehicle*')) ? 'open' : '' }}" style="">
+      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+        <i class="menu-icon tf-icons ri-store-line"></i>
+        <div>Vehicle Management</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ (request()->is('admin/vehicle/list')) ? 'open' : '' }}">
+          <a href="{{route('admin.vehicle.list')}}" class="menu-link">
+            <div>Vehicles List</div>
+          </a>
+        </li>
+  
+        <li class="menu-item {{ (request()->is('admin/models/sub-categories*')) ? 'open' : '' }}">
+          <a href="{{route('admin.product.sub_categories')}}" class="menu-link">
+            <div>Create Vehicle</div>
           </a>
         </li>
       </ul>

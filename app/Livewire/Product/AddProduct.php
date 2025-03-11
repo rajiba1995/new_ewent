@@ -146,7 +146,7 @@ class AddProduct extends Component
             DB::commit();
 
             // Flash a success message and redirect
-            session()->flash('message', 'Product created successfully!');
+            session()->flash('message', 'Model created successfully!');
             return redirect()->route('admin.product.index');
         } catch (\Exception $e) {
             // dd($e->getMessage());

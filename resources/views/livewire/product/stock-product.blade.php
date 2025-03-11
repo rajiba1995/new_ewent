@@ -1,11 +1,20 @@
 
 <div class="row mb-4">
      <!-- Button to open the modal -->
-     <div class="col-lg-12 d-flex justify-content-end">
-        <button type="button" class="btn btn-primary" wire:click="ModalActivity(1)">
-            <i class="ri-add-line ri-16px me-0 me-sm-2 align-baseline"></i>
-            Upload Stock
-        </button>
+     <div class="col-lg-12 d-flex justify-content-between">
+        <div>
+            <h5 class="mb-0">Stock Management</h5>
+            <div>
+                 <small class="text-dark fw-medium">Model</small>
+                 <small class="text-light fw-medium arrow">Stock</small>
+            </div>
+         </div>
+        <div>
+            <button type="button" class="btn btn-primary" wire:click="ModalActivity(1)">
+                <i class="ri-add-line ri-16px me-0 me-sm-2 align-baseline"></i>
+                Upload Stock
+            </button>
+        </div>
     </div>
 
     <!-- Modal -->
@@ -62,7 +71,6 @@
                         </div>
                         <div class="row">
                             <div class="col-lg-6 col-7">
-                                <h6>Product Stock</h6>
                             </div>
                             <div class="col-lg-6 col-5 my-auto text-end">
                                 <div class="d-flex align-items-center">
@@ -91,7 +99,7 @@
                                         SL
                                     </th>
                                     <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle" width="25%">
-                                        Product
+                                        Model
                                     </th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
                                         Total Quantity
@@ -112,41 +120,49 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $sl = 1;
+                                @endphp
                                 @foreach($stocks as $k => $stock)
-                                    <tr>
-                                        <td class="align-middle text-center">{{ $k + 1 }}</td>
-                                        <td class="sorting_1" width="25%">
-                                            <div class="d-flex justify-content-start align-items-center product-name">
-                                                <div class="avatar-wrapper me-4">
-                                                    <div class="avatar rounded-2 bg-label-secondary">
-                                                        <img 
-                                                            src="{{ $stock->product && $stock->product->image ? asset($stock->product->image) : asset('assets/img/default-product.webp') }}" 
-                                                            alt="Product-9" 
-                                                            class="rounded-2">
+                                    @if($stock->product)
+                                        <tr>
+                                            <td class="align-middle text-center">{{$sl }}</td>
+                                            <td class="sorting_1" width="25%">
+                                                <div class="d-flex justify-content-start align-items-center product-name">
+                                                    <div class="avatar-wrapper me-4">
+                                                        <div class="avatar rounded-2 bg-label-secondary">
+                                                            <img 
+                                                                src="{{ $stock->product && $stock->product->image ? asset($stock->product->image) : asset('assets/img/default-product.webp') }}" 
+                                                                alt="Product-9" 
+                                                                class="rounded-2">
+                                                        </div>
+                                                        
                                                     </div>
-                                                    
+                                                    <div class="d-flex flex-column">
+                                                        <span class="text-heading fw-medium"> {{ $stock->product?ucwords($stock->product->title):"" }}</span>
+                                                        <small class="text-truncate d-none d-sm-block"> {{ $stock->product?$stock->product->product_sku:"" }}</small></div>
                                                 </div>
-                                                <div class="d-flex flex-column">
-                                                    <span class="text-heading fw-medium"> {{ ucwords($stock->product->title) }}</span>
-                                                    <small class="text-truncate d-none d-sm-block"> {{ $stock->product->product_sku }}</small></div>
-                                            </div>
-                                        </td>
-                                        <td class="text-center">{{$stock->stock_count}}</td>
-                                        <td class="text-center">
-                                            {{GetProductWiseAssignedStock($stock->product_id)}}
-                                        </td>
-                                        <td class="text-center">
-                                            {{GetProductWiseSoldStock($stock->product_id)}}
-                                        </td>
-                                        <td class="text-center">
-                                            {{GetProductWiseAvailableStock($stock->product_id)}}
-                                        </td>
-                                        <td class="text-center"> 
-                                            <a href="{{route('admin.product.stocks.vehicle', $stock->product_id)}}">
-                                                <span class="control"></span>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td class="text-center">{{$stock->stock_count}}</td>
+                                            <td class="text-center">
+                                                {{GetProductWiseAssignedStock($stock->product_id)}}
+                                            </td>
+                                            <td class="text-center">
+                                                {{GetProductWiseSoldStock($stock->product_id)}}
+                                            </td>
+                                            <td class="text-center">
+                                                {{GetProductWiseAvailableStock($stock->product_id)}}
+                                            </td>
+                                            <td class="text-center"> 
+                                                <a href="{{route('admin.product.stocks.vehicle', $stock->product_id)}}">
+                                                    <span class="control"></span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        @php
+                                            $sl++;
+                                        @endphp
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
