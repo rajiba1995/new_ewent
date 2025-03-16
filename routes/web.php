@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
-    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList
+    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate
 };
 use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex};
 
@@ -25,7 +25,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::get('dashboard', Dashboard::class)->name('admin.dashboard');
     Route::group(['prefix' => 'rider'], function () {
         Route::get('add', CustomerAdd::class)->name('admin.customer.add');
-        Route::get('list', CustomerIndex::class)->name('admin.customer.list');
+        Route::get('verification/list', CustomerIndex::class)->name('admin.customer.verification.list');
+        Route::get('engagement/list', CustomerIndex::class)->name('admin.customer.engagement.list');
         Route::get('details/{id}', CustomerDetails::class)->name('admin.customer.details');
     });
     // Product Routes
@@ -33,10 +34,12 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
         Route::get('/list', MasterProduct::class)->name('admin.product.index');
         Route::get('/categories', MasterCategory::class)->name('admin.product.categories');
         Route::get('/sub-categories', MasterSubCategory::class)->name('admin.product.sub_categories');
+        
         Route::get('/keywords', MasterProductType::class)->name('admin.product.type');
         Route::get('/new', AddProduct::class)->name('admin.product.add');
         Route::get('/update/{productId}', UpdateProduct::class)->name('admin.product.update');
         Route::get('/gallery/{product_id}', GalleryIndex::class)->name('admin.product.gallery');
+        Route::get('/subscriptions', MasterSubscription::class)->name('admin.model.subscriptions');
     });
 
     Route::group(['prefix' => 'stock'], function () {
@@ -45,7 +48,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     });
     Route::group(['prefix' => 'vehicle'], function () {
         Route::get('/list', VehicleList::class)->name('admin.vehicle.list');
-        // Route::get('/vehicle/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
+        Route::get('/create', VehicleCreate::class)->name('admin.vehicle.create');
     });
     // Order Management
     Route::group(['prefix'=>'order'], function(){

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Banner;
 use App\Models\WhyEwent;
+use App\Models\UserKycLog;
 use App\Models\Faq;
 use App\Models\Product;
 use App\Models\Offer;
@@ -433,6 +434,7 @@ class AuthController extends Controller
     }
     public function updateDocument(Request $request){
          // Validate the request data
+        //  dd($request->all());
         $validator = Validator::make($request->all(), [
             'id' => 'required|exists:users,id',
             'driving_license' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
@@ -463,6 +465,16 @@ class AuthController extends Controller
             $driving_license_back = storeFileWithCustomName($request->file('driving_license_back'), 'uploads/driving_licenses');
             $user->driving_license_back = $driving_license_back;
             $user->driving_license_status = 1;
+           
+            UserKycLog::updateOrCreate( 
+            [
+                'user_id' => $user->id, 
+                'document_type' => 'Driving License' // Another condition
+            ],
+            [
+                'status' => 'Uploaded', // Value to be updated/inserted
+                'updated_at' => date('Y-m-d h:i:s') 
+            ]);
         }
         if ($request->hasFile('govt_id_card') || $request->hasFile('govt_id_card_back')) {
             $govt_id_card = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
@@ -470,6 +482,15 @@ class AuthController extends Controller
             $govt_id_card_back = storeFileWithCustomName($request->file('govt_id_card_back'), 'uploads/govt_id_cards');
             $user->govt_id_card_back = $govt_id_card_back;
             $user->govt_id_card_status = 1;
+            UserKycLog::updateOrCreate( 
+                [
+                    'user_id' => $user->id, 
+                    'document_type' => 'Govt ID Card' // Another condition
+                ],
+                [
+                    'status' => 'Uploaded', // Value to be updated/inserted
+                    'updated_at' => date('Y-m-d h:i:s') 
+                ]);
         }
         if ($request->hasFile('cancelled_cheque') || $request->hasFile('cancelled_cheque_back')) {
             $cancelled_cheque = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
@@ -477,6 +498,15 @@ class AuthController extends Controller
             $cancelled_cheque_back = storeFileWithCustomName($request->file('cancelled_cheque_back'), 'uploads/cancelled_cheques');
             $user->cancelled_cheque_back = $cancelled_cheque_back;
             $user->cancelled_cheque_status = 1;
+            UserKycLog::updateOrCreate( 
+                [
+                    'user_id' => $user->id, 
+                    'document_type' => 'Cancelled Cheque' // Another condition
+                ],
+                [
+                    'status' => 'Uploaded', // Value to be updated/inserted
+                    'updated_at' => date('Y-m-d h:i:s') 
+                ]);
         }
         if ($request->hasFile('current_address_proof') || $request->hasFile('current_address_proof_back')) {
             $current_address_proof = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
@@ -484,7 +514,18 @@ class AuthController extends Controller
             $current_address_proof_back = storeFileWithCustomName($request->file('current_address_proof_back'), 'uploads/address_proofs');
             $user->current_address_proof_back = $current_address_proof_back;
             $user->current_address_proof_status = 1;
+            UserKycLog::updateOrCreate( 
+                [
+                    'user_id' => $user->id, 
+                    'document_type' => 'Current Address Proof' // Another condition
+                ],
+                [
+                    'status' => 'Uploaded', // Value to be updated/inserted
+                    'updated_at' => date('Y-m-d h:i:s') 
+                ]);
         }
+        $user->status = 1;
+        $user->is_verified = 'unverified';
         $user->save();
 
         return response()->json([
@@ -704,7 +745,7 @@ class AuthController extends Controller
     }
 
     public function DocumentStatus($id){
-        $data = User::select('id', 'driving_license', 'driving_license_status', 'govt_id_card', 'govt_id_card_status', 'cancelled_cheque','cancelled_cheque_status', 'current_address_proof', 'current_address_proof_status')->where('id',$id)->first();
+        $data = User::select('id', 'driving_license as driving_license_front', 'driving_license_back','driving_license_status', 'govt_id_card as govt_id_card_front', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque as cancelled_cheque_front', 'cancelled_cheque_back','cancelled_cheque_status', 'current_address_proof as current_address_front','current_address_proof_back', 'current_address_proof_status')->where('id',$id)->first();
          // Check if product exists
         if (!$data) {
             return response()->json(['status' => false, 'message' => 'User not found'], 404);

@@ -47,8 +47,8 @@
     <div class="col-lg-12 justify-content-left">
        <h5 class="mb-0">Rider Management</h5>
        <div>
-            <small class="text-dark fw-medium">Dashboard</small>
-            <small class="text-light fw-medium arrow">Riders</small>
+            <small class="text-dark fw-medium">Riders</small>
+            <small class="text-light fw-medium arrow">Verification</small>
        </div>
     </div>
     <div class="col-lg-12 justify-content-left">
@@ -69,6 +69,26 @@
     <div class="col-lg-12 col-md-6 mb-md-0 my-4">
         <div class="row">
             <div class="col-12">
+                <div class="card mb-2 py-4 px-2">
+                    <div class="row justify-content-end">
+                        <div class="col-lg-6 col-6 my-auto mb-2">
+                            <div class="d-flex align-items-center justify-content-end">
+                                <input type="text" wire:model="search" 
+                                       class="form-control border border-2 p-2 custom-input-sm" 
+                                       placeholder="Search by Rider's Name, Email, or Mobile Number">
+                                <button type="button" wire:click="btn_search" 
+                                        class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
+                                    <span class="material-icons">Search</span>
+                                </button>
+                                <!-- Refresh Button -->
+                                <button type="button" wire:click="reset_search" 
+                                        class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
+                                    <span class="material-icons">Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card mb-6">
                     <div class="card-header px-0 pt-0">
                       <div class="nav-align-top">
@@ -114,22 +134,7 @@
                     <div class="card-body">
                       <div class="tab-content p-0">
                         <div class="tab-pane fade {{$active_tab==1?"active show":""}}" id="navs-justified-home" role="tabpanel">
-                            <div class="col-lg-6 col-6 my-auto text-end mb-2">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <input type="text" wire:model.debounce.300ms="search" 
-                                           class="form-control border border-2 p-2 custom-input-sm" 
-                                           placeholder="Search by name, mobile,email or rider id">
-                                    <button type="button" wire:click="btn_search" 
-                                            class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">search</span>
-                                    </button>
-                                    <!-- Refresh Button -->
-                                    <button type="button" wire:click="reset_search" 
-                                            class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
+                            
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
@@ -200,22 +205,6 @@
                             </div>
                         </div>
                         <div class="tab-pane fade {{$active_tab==2?"active show":""}}" id="navs-justified-profile" role="tabpanel">
-                            <div class="col-lg-6 col-6 my-auto text-end mb-2">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <input type="text" wire:model.debounce.300ms="search" 
-                                           class="form-control border border-2 p-2 custom-input-sm" 
-                                           placeholder="Search by name, mobile,email or rider id">
-                                    <button type="button" wire:click="btn_search" 
-                                            class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">search</span>
-                                    </button>
-                                    <!-- Refresh Button -->
-                                    <button type="button" wire:click="reset_search" 
-                                            class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
@@ -287,22 +276,6 @@
                             </div>
                         </div>
                         <div class="tab-pane fade {{$active_tab==3?"active show":""}}" id="navs-justified-messages" role="tabpanel">
-                            <div class="col-lg-6 col-6 my-auto text-end mb-2">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <input type="text" wire:model.debounce.300ms="search" 
-                                           class="form-control border border-2 p-2 custom-input-sm" 
-                                           placeholder="Search by name, mobile,email or rider id">
-                                    <button type="button" wire:click="btn_search" 
-                                            class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">search</span>
-                                    </button>
-                                    <!-- Refresh Button -->
-                                    <button type="button" wire:click="reset_search" 
-                                            class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
@@ -460,46 +433,51 @@
                                 </div>
                             </div>
                             @if($selectedCustomer->driving_license_status>0)
-                            <div class="d-flex">
-                               <div class="col-6">
-                                <div class="card academy-content shadow-none border mx-2" style="width:150px">
-                                    <div class="p-2">
-                                      <div class="cursor-pointer">
-                                       <img src="{{asset($selectedCustomer->driving_license)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
-                                      </div>
-                                      <div class="text-center fw-medium text-truncate">Front</div>
-                                    </div>
-                                </div>
-                               </div>
+                                <div class="d-flex">
                                 <div class="col-6">
                                     <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                         <div class="p-2">
-                                          <div class="cursor-pointer">
-                                           <img src="{{asset($selectedCustomer->driving_license_back)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
-                                          </div>
-                                          <div class="text-center fw-medium text-truncate">Back</div>
+                                        <div class="cursor-pointer">
+                                        <img src="{{asset($selectedCustomer->driving_license)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                        </div>
+                                        <div class="text-center fw-medium text-truncate">Front</div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="d-flex my-4">
-                                <div class="col-6 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-secondary">Preview</span>
+                                    <div class="col-6">
+                                        <div class="card academy-content shadow-none border mx-2" style="width:150px">
+                                            <div class="p-2">
+                                            <div class="cursor-pointer">
+                                            <img src="{{asset($selectedCustomer->driving_license_back)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                            </div>
+                                            <div class="text-center fw-medium text-truncate">Back</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-6 text-center cursor-pointer">
-                                    <select 
-                                        class="badge-select 
-                                            {{ $selectedCustomer->driving_license_status == 0 ? 'bg-label-warning' : 
-                                            ($selectedCustomer->driving_license_status == 1 ? 'bg-label-info' : 
-                                            ($selectedCustomer->driving_license_status == 2 ? 'bg-label-success' : 'bg-label-danger')) }}" 
-                                        wire:model="status" 
-                                        wire:change="updateStatus({{$selectedCustomer->id}},'driving_license_status', $event.target.value)" >
-                                        <option value="1" {{$selectedCustomer->driving_license_status==1?"selected":""}} class="text-info">Uploaded</option>
-                                        <option value="2" {{$selectedCustomer->driving_license_status==2?"selected":""}} class="text-success">Verified</option>
-                                        <option value="3" {{$selectedCustomer->driving_license_status==3?"selected":""}} class="text-danger">Rejected</option>
-                                    </select>
+                                <div class="d-flex my-4">
+                                    <div class="col-4 text-center cursor-pointer">
+                                        <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                    </div>
+                                    <div class="col-4 text-center cursor-pointer">
+                                        @if($selectedCustomer->driving_license_status==2)
+                                            <span class="badge rounded-pill bg-label-success">
+                                                <i class="ri-check-line"></i> Approved
+                                            </span>
+                                        @else
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','driving_license_status','Driving License',{{$selectedCustomer->id}})">
+                                                 Approve
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="col-4 text-center cursor-pointer">
+                                        @if($selectedCustomer->driving_license_status==3)
+                                            <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
+                                        @else
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('driving_license_status','Driving License',{{$selectedCustomer->id}})">Reject</span>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
                             @else
                                 <div class="alert alert-danger">
                                     Driving license not uploaded
@@ -666,28 +644,27 @@
                     </div>
                     <div class="tab-pane fade" id="navs-justified-history" role="tabpanel">
                         <ul class="timeline pb-0 mb-0">
-                            <li class="timeline-item timeline-item-transparent border-primary">
-                              <span class="timeline-point timeline-point-primary"></span>
-                              <div class="timeline-event">
-                                <div class="timeline-header mb-1">
-                                  <h6 class="mb-0">Aadhar | Pending</h6>
-                                  <small class="text-muted">08 Nov 2024 11:29 AM</small>
+                            @if(count($selectedCustomer->doc_logs)>0)
+                                @foreach ($selectedCustomer->doc_logs as $logs)
+                                <li class="timeline-item timeline-item-transparent border-primary">
+                                    <span class="timeline-point timeline-point-primary"></span>
+                                    <div class="timeline-event">
+                                        <div class="timeline-header mb-1">
+                                        <h6 class="mb-0">{{ucwords($logs->document_type)}} | {{ucwords($logs->status)}}</h6>
+                                        <small class="text-muted">{{ date('d M y h:i A', strtotime($logs->created_at)) }}</small>
+                                        </div>
+                                        @if($logs->remarks)
+                                            <code>Remarks</code>
+                                            <p class="mt-1 mb-3">{{$logs->remarks}}</p>
+                                        @endif
+                                    </div>
+                                    </li>
+                                @endforeach
+                            @else
+                                <div class="alert alert-danger">
+                                   Sorry! data not found!
                                 </div>
-                                <code>Remarks</code>
-                                <p class="mt-1 mb-3">Your order has been placed successfully</p>
-                              </div>
-                            </li>
-                            <li class="timeline-item timeline-item-transparent border-primary">
-                              <span class="timeline-point timeline-point-primary"></span>
-                              <div class="timeline-event">
-                                <div class="timeline-header mb-1">
-                                    <h6 class="mb-0">Aadhar | Pending</h6>
-                                    <small class="text-muted">08 Nov 2024 11:29 AM</small>
-                                  </div>
-                                  <code>Remarks</code>
-                                  <p class="mt-1 mb-3">Your order has been placed successfully</p>
-                              </div>
-                            </li>
+                            @endif
                           </ul>
                     </div>
                 </div>
@@ -699,6 +676,34 @@
     @if($isModalOpen)
         <div class="overlay" wire:click="closeModal"></div>
     @endif
+
+    @if ($isRejectModal)
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0, 0, 0, 0.5);z-index: 99999;">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ $document_type }}</h5>
+                        <button type="button" class="btn-close" wire:click="closeRejectModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Remark</label>
+                            <textarea class="form-control" wire:model="remarks"></textarea>
+                            @if(session()->has('remarks'))
+                            <div class="alert alert-danger">
+                                {{ session('remarks') }}
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-danger" wire:click="updateLog('3','{{$field}}','{{$document_type}}',{{$id}})">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
 </div>
 @section('page-script')
 <script>

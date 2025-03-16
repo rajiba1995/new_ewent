@@ -1,11 +1,21 @@
 <div class="row mb-4">
-    <div class="col-lg-12 justify-content-left">
-       <h5 class="mb-0">Vehicle Management</h5>
-       <div>
-            <small class="text-dark fw-medium">Dashboard</small>
-            <small class="text-light fw-medium arrow">Vehicles</small>
-       </div>
+    <div class="col-auto my-auto">
+        <div class="h-100">
+          <h5 class="mb-0">Vehicle Management</h5>
+          <div>
+               <small class="text-dark fw-medium">Dashboard </small>
+               <small class="text-light fw-medium arrow">Vehicles</small>
+          </div>
+        </div>
     </div>
+    <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
+        <div class="nav-wrapper position-relative end text-end">
+          <!-- Back Button -->
+          <a class="btn btn-secondary btn-sm add-new btn-primary waves-effect waves-light" href="{{route('admin.vehicle.create')}}">
+            New Vehicle
+          </a>
+        </div>
+      </div>
     <div class="col-lg-12 justify-content-left">
         <div class="row">
             @if(session()->has('message'))
@@ -24,6 +34,35 @@
     <div class="col-lg-12 col-md-6 mb-md-0 my-4">
         <div class="row">
             <div class="col-12">
+                <div class="card mb-2 py-4 px-2">
+                    <div class="row justify-content-end">
+                        <div class="col-lg-3 col-6 my-auto mb-2">
+                            <select
+                                class="form-select border border-2 p-2 custom-input-sm" wire:model="model" wire:change="FilterModel($event.target.value)">
+                                <option value="" selected hidden>Select vehicle type</option>
+                                @foreach($models as $model_item)
+                                <option value="{{ $model_item->id }}">{{$model_item->category->title}}|{{ $model_item->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-lg-6 col-6 my-auto mb-2">
+                            <div class="d-flex align-items-center justify-content-end">
+                                <input type="text" wire:model="search" 
+                                       class="form-control border border-2 p-2 custom-input-sm" 
+                                       placeholder="Search by Reg. No, lot IMEI, chassis number">
+                                <button type="button" wire:click="btn_search" 
+                                        class="btn btn-success text-white mb-0 custom-input-sm ms-2">
+                                    <span class="material-icons">search</span>
+                                </button>
+                                <!-- Refresh Button -->
+                                <button type="button" wire:click="reset_search" 
+                                        class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
+                                    <span class="material-icons">refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card mb-6">
                     <div class="card-header px-0 pt-0">
                       <div class="nav-align-top">
@@ -91,22 +130,6 @@
                     <div class="card-body">
                       <div class="tab-content p-0">
                         <div class="tab-pane fade {{$active_tab==1?"active show":""}}" id="navs-justified-home" role="tabpanel">
-                            <div class="col-lg-6 col-6 my-auto text-end mb-2">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <input type="text" wire:model.debounce.300ms="search" 
-                                           class="form-control border border-2 p-2 custom-input-sm" 
-                                           placeholder="Search by Reg. No, lot IMEI, vehicle number">
-                                    <button type="button" wire:click="btn_search" 
-                                            class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">search</span>
-                                    </button>
-                                    <!-- Refresh Button -->
-                                    <button type="button" wire:click="reset_search" 
-                                            class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
@@ -122,93 +145,186 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                       
-                                        {{-- @foreach($unverified_users as $k => $un_user)
-                                       
-                                        @endforeach --}}
+                                        @foreach($all_vehicles as $all_index => $all_item)
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $all_index + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center product-name">
+                                                        <div class="d-flex flex-column">
+                                                            <span class="badge bg-label-primary">{{$all_item->product?$all_item->product->title:"N/A"}}</span>
+                                                            <span class="text-heading fw-medium"> {{ $all_item->vehicle_number }}</span>
+                                                            <small class="text-truncate d-none d-sm-block"> {{ $all_item->imei_number }}</small></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    @if($all_item->assignedVehicle)
+                                                        <p class="m-0"><strong>{{$all_item->assignedVehicle->user->name}}</strong></p>
+                                                    <p class="text-sm m-0"><small>Start Date: {{ date('d M y h:i A', strtotime($all_item->assignedVehicle->start_date)) }}</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: {{ date('d M y h:i A', strtotime($all_item->assignedVehicle->end_date)) }}</small>
+                                                        </p>
+                                                    @else
+                                                        <p class="m-0">N/A</p>
+                                                        <p class="text-sm m-0"><small>Start Date: N/A</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: N/A</small>
+                                                        </p>
+                                                    @endif
+                                                </td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>
+                                                    @if($all_item->assignedVehicle)
+                                                    <span class="badge px-2 rounded-pill bg-label-success text-sm">Assigned Vehicle</span>
+                                                    @else
+                                                        <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="badge px-2 rounded-pill bg-label-secondary">Explore</span>
+                                                </td>
+                                                <td>
+                                                    <a href="javascript:void(0)">
+                                                        <span class="control"></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
-                                    {{-- {{ $unverified_users->links() }} <!-- Pagination links --> --}}
+                                    {{ $all_vehicles->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
                         <div class="tab-pane fade {{$active_tab==2?"active show":""}}" id="navs-justified-profile" role="tabpanel">
-                            <div class="col-lg-6 col-6 my-auto text-end mb-2">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <input type="text" wire:model.debounce.300ms="search" 
-                                           class="form-control border border-2 p-2 custom-input-sm" 
-                                           placeholder="Search by name, mobile,email or rider id">
-                                    <button type="button" wire:click="btn_search" 
-                                            class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">search</span>
-                                    </button>
-                                    <!-- Refresh Button -->
-                                    <button type="button" wire:click="reset_search" 
-                                            class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
                                         <tr>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer ID</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Order</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Spent</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Actions</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                       
-                                       
+                                        @foreach($unassigned_vehicles as $unassigned_index => $unassigned_item)
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $unassigned_index + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center product-name">
+                                                        <div class="d-flex flex-column">
+                                                            <span class="badge bg-label-primary">{{$unassigned_item->product?$unassigned_item->product->title:"N/A"}}</span>
+                                                            <span class="text-heading fw-medium"> {{ $unassigned_item->vehicle_number }}</span>
+                                                            <small class="text-truncate d-none d-sm-block"> {{ $unassigned_item->imei_number }}</small></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    @if($unassigned_item->assignedVehicle)
+                                                        <p class="m-0"><strong>{{$unassigned_item->assignedVehicle->user->name}}</strong></p>
+                                                    <p class="text-sm m-0"><small>Start Date: {{ date('d M y h:i A', strtotime($unassigned_item->assignedVehicle->start_date)) }}</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: {{ date('d M y h:i A', strtotime($unassigned_item->assignedVehicle->end_date)) }}</small>
+                                                        </p>
+                                                    @else
+                                                        <p class="m-0">N/A</p>
+                                                        <p class="text-sm m-0"><small>Start Date: N/A</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: N/A</small>
+                                                        </p>
+                                                    @endif
+                                                </td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>
+                                                    @if($unassigned_item->assignedVehicle)
+                                                    <span class="badge px-2 rounded-pill bg-label-success text-sm">Assigned Vehicle</span>
+                                                    @else
+                                                        <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="badge px-2 rounded-pill bg-label-secondary">Explore</span>
+                                                </td>
+                                                <td>
+                                                    <a href="javascript:void(0)">
+                                                        <span class="control"></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
-                                    {{-- {{ $verified_users->links() }} <!-- Pagination links --> --}}
+                                    {{ $unassigned_vehicles->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
                         <div class="tab-pane fade {{$active_tab==3?"active show":""}}" id="navs-justified-messages" role="tabpanel">
-                            <div class="col-lg-6 col-6 my-auto text-end mb-2">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <input type="text" wire:model.debounce.300ms="search" 
-                                           class="form-control border border-2 p-2 custom-input-sm" 
-                                           placeholder="Search by name, mobile,email or rider id">
-                                    <button type="button" wire:click="btn_search" 
-                                            class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">search</span>
-                                    </button>
-                                    <!-- Refresh Button -->
-                                    <button type="button" wire:click="reset_search" 
-                                            class="btn btn-outline-danger waves-effect mb-0 custom-input-sm ms-2">
-                                        <span class="material-icons">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
+                            
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
                                         <tr>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer ID</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Order</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Spent</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Actions</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                       
+                                        @foreach($assigned_vehicles as $assigned_index => $assigned_item)
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $assigned_index + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center product-name">
+                                                        <div class="d-flex flex-column">
+                                                            <span class="badge bg-label-primary">{{$assigned_item->product?$assigned_item->product->title:"N/A"}}</span>
+                                                            <span class="text-heading fw-medium"> {{ $assigned_item->vehicle_number }}</span>
+                                                            <small class="text-truncate d-none d-sm-block"> {{ $assigned_item->imei_number }}</small></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    @if($assigned_item->assignedVehicle)
+                                                        <p class="m-0"><strong>{{$assigned_item->assignedVehicle->user->name}}</strong></p>
+                                                    <p class="text-sm m-0"><small>Start Date: {{ date('d M y h:i A', strtotime($assigned_item->assignedVehicle->start_date)) }}</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: {{ date('d M y h:i A', strtotime($assigned_item->assignedVehicle->end_date)) }}</small>
+                                                        </p>
+                                                    @else
+                                                        <p class="m-0">N/A</p>
+                                                        <p class="text-sm m-0"><small>Start Date: N/A</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: N/A</small>
+                                                        </p>
+                                                    @endif
+                                                </td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>
+                                                    @if($assigned_item->assignedVehicle)
+                                                    <span class="badge px-2 rounded-pill bg-label-success text-sm">Assigned Vehicle</span>
+                                                    @else
+                                                        <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="badge px-2 rounded-pill bg-label-secondary">Explore</span>
+                                                </td>
+                                                <td>
+                                                    <a href="javascript:void(0)">
+                                                        <span class="control"></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
-                                    {{-- {{ $rejected_users->links() }} <!-- Pagination links --> --}}
+                                    {{ $assigned_vehicles->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>

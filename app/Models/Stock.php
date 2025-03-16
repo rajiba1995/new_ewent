@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Stock extends Model
 {
     protected $table = 'stocks';
-    protected $fillable = ['id','product_id', 'vehicle_number', 'status'];
+    protected $fillable = ['product_id', 'vehicle_number', 'vehicle_track_id', 'imei_number', 'chassis_number', 'friendly_name', 'status'];
 
     public function product()
     {

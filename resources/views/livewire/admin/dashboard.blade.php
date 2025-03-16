@@ -1,6 +1,6 @@
 <div class="row gy-6">
     <!-- Congratulations card -->
-    <div class="col-md-12 col-lg-4">
+    {{-- <div class="col-md-12 col-lg-4">
       <div class="card">
         <div class="card-body text-nowrap">
           <h5 class="card-title mb-0 flex-wrap text-nowrap">Congratulations Norris! 🎉</h5>
@@ -11,11 +11,11 @@
         </div>
         <img src="{{asset('assets/img/illustrations/trophy.png')}}" class="position-absolute bottom-0 end-0 me-5 mb-5" width="83" alt="view sales">
       </div>
-    </div>
+    </div> --}}
     <!--/ Congratulations card -->
 
     <!-- Transactions -->
-    <div class="col-lg-8">
+    <div class="col-lg-12">
       <div class="card h-100">
         <div class="card-header">
           <div class="d-flex align-items-center justify-content-between">
@@ -94,7 +94,7 @@
     <!--/ Transactions -->
 
     <!-- Weekly Overview Chart -->
-    <div class="col-xl-4 col-md-6">
+    {{-- <div class="col-xl-4 col-md-6">
       <div class="card">
         <div class="card-header">
           <div class="d-flex justify-content-between">
@@ -124,11 +124,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Weekly Overview Chart -->
 
     <!-- Total Earnings -->
-    <div class="col-xl-4 col-md-6">
+    {{-- <div class="col-xl-4 col-md-6">
       <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
           <h5 class="card-title m-0 me-2">Total Earning</h5>
@@ -209,11 +209,11 @@
           </ul>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Total Earnings -->
 
     <!-- Four Cards -->
-    <div class="col-xl-4 col-md-6">
+    {{-- <div class="col-xl-4 col-md-6">
       <div class="row gy-6">
         <!-- Total Profit line chart -->
         <div class="col-sm-6">
@@ -304,11 +304,11 @@
         </div>
         <!--/ Sessions chart -->
       </div>
-    </div>
+    </div> --}}
     <!--/ four cards -->
 
     <!-- Sales by Countries -->
-    <div class="col-xl-4 col-md-6">
+    {{-- <div class="col-xl-4 col-md-6">
       <div class="card h-100">
         <div class="card-header d-flex align-items-center justify-content-between">
           <h5 class="card-title m-0 me-2">Sales by Countries</h5>
@@ -421,11 +421,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Sales by Countries -->
 
     <!-- Deposit / Withdraw -->
-    <div class="col-xl-8">
+    {{-- <div class="col-xl-8">
       <div class="card-group">
         <div class="card mb-0">
           <div class="card-body card-separator">
@@ -572,11 +572,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!-- Deposit / Withdraw -->
 
     <!-- Data Tables -->
-    <div class="col-12">
+    {{-- <div class="col-12">
       <div class="card overflow-hidden">
         <div class="table-responsive">
           <table class="table table-sm">
@@ -761,6 +761,6 @@
           </table>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Data Tables -->
   </div>

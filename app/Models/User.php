@@ -61,4 +61,7 @@ class User extends Authenticatable
   public function userAddress(){
         return $this->hasMany(UserAddress::class);
   }
+  public function doc_logs(){
+        return $this->hasMany(UserKycLog::class);
+  }
 }

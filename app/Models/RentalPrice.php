@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class RentalPrice extends Model
 {
     protected $table = 'rental_prices';
-    protected $fillable = ['product_id', 'duration', 'duration_type', 'price', 'currency'];
+    protected $fillable = ['product_id', 'duration', 'subscription_type', 'diposit_amount', 'rental_amount'];
 
     public function product()
     {

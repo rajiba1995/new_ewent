@@ -5,22 +5,27 @@ namespace App\Livewire\Product;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Stock;
+use App\Models\Product;
 
 class VehicleList extends Component
 {
     use WithPagination;
 
+    public $model;
     public $search = '';
     public $active_tab = 1;
-    public $vehicles = [];
+    public $models = [];
     public $isModalOpen = false; // Track modal visibility
 
     /**
      * Search button click handler to reset pagination.
      */
+    public function mount(){
+        $this->models = Product::where('status', 1)->orderBy('title', 'ASC')->get();
+    }
     public function btn_search()
     {
-        $this->resetPage(); // Reset to the first page
+      
     }
 
 
@@ -28,23 +33,28 @@ class VehicleList extends Component
     {
         $this->isModalOpen = false;
     }
+    public function FilterModel($value){
+        $this->model =$value;
+    }
 
     /**
      * Refresh button click handler to reset the search input and reload data.
      */
     public function reset_search(){
-        $this->reset('search'); // Reset the search term
-        $this->resetPage();     // Reset pagination
+        $this->reset(['search','model']); // Reset the search term
     }
 
     public function tab_change($value){
         $this->active_tab = $value;
-        $this->search = "";
+        $this->reset_search();
     }
     public function render()
     {
         // Fetch all vehicles (with or without assigned vehicles)
-        $all_vehicles = Stock::with('product')
+        $all_vehicles = Stock::with('product','assignedVehicle')
+        ->when($this->model, function ($query) {
+            $query->where('product_id', $this->model); // Assuming `model_id` is the column for filtering
+        })
         ->when($this->search, function ($query) {
             $searchTerm = '%' . $this->search . '%';
             $query->where('vehicle_number', 'like', $searchTerm)
@@ -59,6 +69,9 @@ class VehicleList extends Component
         // Fetch only assigned vehicles (having an entry in the assigned_vehicles table)
         $assigned_vehicles = Stock::with('assignedVehicle')
         ->whereHas('assignedVehicle') // Ensures only assigned vehicles are fetched
+        ->when($this->model, function ($query) {
+            $query->where('product_id', $this->model); // Assuming `model_id` is the column for filtering
+        })
         ->when($this->search, function ($query) {
             $searchTerm = '%' . $this->search . '%';
             $query->where('vehicle_number', 'like', $searchTerm)
@@ -71,6 +84,9 @@ class VehicleList extends Component
         ->paginate(20);
         $unassigned_vehicles = Stock::whereDoesntHave('assignedVehicle', function ($query) {
             $query->whereIn('status', ['assigned','sold']); // Ensure it's truly unassigned
+        })
+        ->when($this->model, function ($query) {
+            $query->where('product_id', $this->model); // Assuming `model_id` is the column for filtering
         })
         ->when($this->search, function ($query) {
             $searchTerm = '%' . $this->search . '%';

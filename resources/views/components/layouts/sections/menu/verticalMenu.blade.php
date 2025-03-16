@@ -77,9 +77,14 @@
         <div>Rider Management</div>
       </a>
       <ul class="menu-sub">
-      <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
-          <a href="{{route('admin.customer.list')}}" class="menu-link">
-            <div>Riders</div>
+        <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
+          <a href="{{route('admin.customer.verification.list')}}" class="menu-link">
+            <div>Verification</div>
+          </a>
+        </li>
+        <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
+          <a href="{{route('admin.customer.engagement.list')}}" class="menu-link">
+            <div>Engagement</div>
           </a>
         </li>
         {{-- <li class="menu-item ">
@@ -130,6 +135,11 @@
             <div>Models</div>
           </a>
         </li>
+        <li class="menu-item {{ (request()->is('admin/models/subscriptions')) ? 'open' : '' }}">
+          <a href="{{route('admin.model.subscriptions')}}" class="menu-link">
+            <div>Subscriptions</div>
+          </a>
+        </li>
       </ul>
     </li>
     <li class="menu-item {{ (request()->is('admin/vehicle*')) ? 'open' : '' }}" style="">
@@ -144,8 +154,8 @@
           </a>
         </li>
   
-        <li class="menu-item {{ (request()->is('admin/models/sub-categories*')) ? 'open' : '' }}">
-          <a href="{{route('admin.product.sub_categories')}}" class="menu-link">
+        <li class="menu-item {{ (request()->is('admin/vehicle/create')) ? 'open' : '' }}">
+          <a href="{{route('admin.vehicle.create')}}" class="menu-link">
             <div>Create Vehicle</div>
           </a>
         </li>
