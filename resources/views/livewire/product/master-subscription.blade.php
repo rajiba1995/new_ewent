@@ -49,7 +49,7 @@
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
                                             Validity In Days</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                            Diposit Amount</th>
+                                            Deposit Amount</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
                                             Rental Amount</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">
@@ -69,7 +69,7 @@
                                                 </div>
                                             </td>
                                             <td class="align-middle text-center">{{ $sub_item->duration }} Days</td>
-                                            <td class="align-middle text-center">{{env('APP_CURRENCY')}}{{ $sub_item->diposit_amount }} </td>
+                                            <td class="align-middle text-center">{{env('APP_CURRENCY')}}{{ $sub_item->deposit_amount }} </td>
                                             <td class="align-middle text-center">{{env('APP_CURRENCY')}}{{ $sub_item->rental_amount }} </td>
                                            
                                           
@@ -130,9 +130,9 @@
                                 @error('model') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                             <div class="form-floating form-floating-outline mb-5 fv-plugins-icon-container mt-4">
-                                <input type="number" wire:model="diposit_amount" class="form-control border border-2 p-2" placeholder="{{env('APP_CURRENCY')}}1000.00">
-                                <label>Diposit Amount</label>
-                                @error('diposit_amount') <span class="text-danger">{{ $message }}</span> @enderror
+                                <input type="number" wire:model="deposit_amount" class="form-control border border-2 p-2" placeholder="{{env('APP_CURRENCY')}}1000.00">
+                                <label>Deposit Amount</label>
+                                @error('deposit_amount') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                             <div class="form-floating form-floating-outline mb-5 fv-plugins-icon-container mt-4">
                                 <input type="number" wire:model="rental_amount" class="form-control border border-2 p-2" placeholder="{{env('APP_CURRENCY')}}100.00">

@@ -429,16 +429,16 @@
                                 </div>
                                 <!-- Document Name -->
                                 <div>
-                                    <span class="fw-medium text-truncate text-dark">Driving License</span>
+                                    <span class="fw-medium text-truncate text-dark">Driving Licence</span>
                                 </div>
                             </div>
-                            @if($selectedCustomer->driving_license_status>0)
+                            @if($selectedCustomer->driving_licence_status>0)
                                 <div class="d-flex">
                                 <div class="col-6">
                                     <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                         <div class="p-2">
                                         <div class="cursor-pointer">
-                                        <img src="{{asset($selectedCustomer->driving_license)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                        <img src="{{asset($selectedCustomer->driving_licence)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
                                         </div>
                                         <div class="text-center fw-medium text-truncate">Front</div>
                                         </div>
@@ -448,7 +448,7 @@
                                         <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                             <div class="p-2">
                                             <div class="cursor-pointer">
-                                            <img src="{{asset($selectedCustomer->driving_license_back)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                            <img src="{{asset($selectedCustomer->driving_licence_back)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
                                             </div>
                                             <div class="text-center fw-medium text-truncate">Back</div>
                                             </div>
@@ -460,27 +460,27 @@
                                         <span class="badge rounded-pill bg-label-secondary"> Preview</span>
                                     </div>
                                     <div class="col-4 text-center cursor-pointer">
-                                        @if($selectedCustomer->driving_license_status==2)
+                                        @if($selectedCustomer->driving_licence_status==2)
                                             <span class="badge rounded-pill bg-label-success">
                                                 <i class="ri-check-line"></i> Approved
                                             </span>
                                         @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','driving_license_status','Driving License',{{$selectedCustomer->id}})">
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','driving_licence_status','Driving Licence',{{$selectedCustomer->id}})">
                                                  Approve
                                             </span>
                                         @endif
                                     </div>
                                     <div class="col-4 text-center cursor-pointer">
-                                        @if($selectedCustomer->driving_license_status==3)
+                                        @if($selectedCustomer->driving_licence_status==3)
                                             <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
                                         @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('driving_license_status','Driving License',{{$selectedCustomer->id}})">Reject</span>
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('driving_licence_status','Driving Licence',{{$selectedCustomer->id}})">Reject</span>
                                         @endif
                                     </div>
                                 </div>
                             @else
                                 <div class="alert alert-danger">
-                                    Driving license not uploaded
+                                    Driving licence not uploaded
                                 </div>
                             @endif
                         </div>

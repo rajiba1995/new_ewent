@@ -18,21 +18,7 @@ class User extends Authenticatable
    * @var array<int, string>
    */
   protected $fillable = [
-    'name',
-    'customer_id',
-    'mobile',
-    'image',
-    'email',
-    'password',
-    'address',
-    'city',
-    'pincode',
-    'driving_license',
-    'profile_image',
-    'govt_id_card',
-    'cancelled_cheque',
-    'current_address_proof',
-    'status',
+    'customer_id', 'name', 'country_code', 'mobile', 'email', 'email_verified_at', 'password', 'address', 'city', 'pincode', 'profile_image', 'driving_licence', 'driving_licence_back', 'driving_licence_status', 'govt_id_card', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque', 'cancelled_cheque_back', 'cancelled_cheque_status', 'current_address_proof', 'current_address_proof_back', 'current_address_proof_status', 'status', 'kyc_uploaded_at', 'is_verified', 'remember_token'
   ];
 
   /**

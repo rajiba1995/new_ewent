@@ -34,11 +34,11 @@ class CustomerDetails extends Component
     {
         $this->documents = [
             [
-                'name' => 'Driving License',
-                'tag' => 'driving_license_status',
+                'name' => 'Driving Licence',
+                'tag' => 'driving_licence_status',
                 'icon' => 'ri-roadster-line',
-                'doc' => $this->user->driving_license,
-                'status' => $this->user->driving_license_status,
+                'doc' => $this->user->driving_licence,
+                'status' => $this->user->driving_licence_status,
             ],
             [
                 'name' => 'Govt. ID Card',

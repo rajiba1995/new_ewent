@@ -57,7 +57,7 @@ class Product extends Model
     }
     public function rentalprice()
     {
-        return $this->hasMany(RentalPrice::class);
+        return $this->hasMany(RentalPrice::class)->orderBy('duration', 'ASC');
     }
     public function ProductImages()
     {

@@ -42,12 +42,12 @@ if (!function_exists('MakingCustomerId')) {
 if (!function_exists('CheckUserStatus')) {
     function CheckUserStatus($id) {
         // Get the user's status for all required fields
-        $data = User::select('driving_license_status', 'govt_id_card_status', 'cancelled_cheque_status', 'current_address_proof_status')
+        $data = User::select('driving_licence_status', 'govt_id_card_status', 'cancelled_cheque_status', 'current_address_proof_status')
                     ->where('id', $id)
                     ->first();
 
         // Check if all the status fields are equal to 2
-        if ($data && $data->driving_license_status == 2 && 
+        if ($data && $data->driving_licence_status == 2 && 
             $data->govt_id_card_status == 2 && 
             $data->cancelled_cheque_status == 2 && 
             $data->current_address_proof_status == 2) {

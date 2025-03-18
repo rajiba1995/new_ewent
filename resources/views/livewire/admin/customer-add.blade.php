@@ -113,9 +113,9 @@
                     <div class="card-body">
                         <h5>Additional Documents</h5>
                         <div class="mb-3">
-                            <label for="driving_license" class="form-label">Driving License</label>
-                            <input type="file" wire:model="driving_license" id="driving_license" class="form-control">
-                            @error('driving_license') <small class="text-danger">{{ $message }}</small> @enderror
+                            <label for="driving_licence" class="form-label">Driving Licence</label>
+                            <input type="file" wire:model="driving_licence" id="driving_licence" class="form-control">
+                            @error('driving_licence') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                         <div class="mb-3">
                             <label for="govt_id_card" class="form-label">Government ID</label>

@@ -46,6 +46,8 @@ class OrderController extends Controller
         return response()->json($result, $result['status'] ? 200 : 400);
    }
 
+  
+
    public function createOrder(Request $request){
         // coupon_code
         // discount_amount
@@ -160,7 +162,7 @@ class OrderController extends Controller
                     $product->stock = $product->stock_qty==0?0:1;
                     $product->save();
                 }
-
+                
                 // For Wallet Payment
                 if($request->payment_type==="Wallet"){
                     $existing_user_wallet = Wallet::where('user_id', $order->user_id)->first();

@@ -10,7 +10,9 @@ use App\Models\UserKycLog;
 use App\Models\Faq;
 use App\Models\Product;
 use App\Models\Offer;
+use App\Models\RentalPrice;
 use App\Models\Order;
+use App\Models\AsignedVehicle;
 use App\Models\Policy;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -45,44 +47,45 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
             'address' => 'nullable|string|max:255',
-            'driving_license' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'current_address_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'driving_licence' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'current_address_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
+                'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors()->first()
             ], 422);
         }
         DB::beginTransaction();
 
         try {
             // Initialize paths to null
-            $drivingLicensePath = null;
-            $govtIdCardPath = null;
-            $cancelledChequePath = null;
-            $currentAddressProofPath = null;
+            // $drivinglicencePath = null;
+            // $govtIdCardPath = null;
+            // $cancelledChequePath = null;
+            // $currentAddressProofPath = null;
 
-            // Handle file uploads with custom naming if files are provided
-            if ($request->hasFile('driving_license')) {
-                $drivingLicensePath = storeFileWithCustomName($request->file('driving_license'), 'uploads/driving_licenses');
-            }
+            // // Handle file uploads with custom naming if files are provided
+            // if ($request->hasFile('driving_licence')) {
+            //     $drivinglicencePath = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
+            // }
             
-            if ($request->hasFile('govt_id_card')) {
-                $govtIdCardPath = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
-            }
+            // if ($request->hasFile('govt_id_card')) {
+            //     $govtIdCardPath = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
+            // }
             
-            if ($request->hasFile('cancelled_cheque')) {
-                $cancelledChequePath = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
-            }
+            // if ($request->hasFile('cancelled_cheque')) {
+            //     $cancelledChequePath = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
+            // }
             
-            if ($request->hasFile('current_address_proof')) {
-                $currentAddressProofPath = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
-            }
+            // if ($request->hasFile('current_address_proof')) {
+            //     $currentAddressProofPath = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
+            // }
             // Create the user
             $user = User::create([
                 'name' => ucwords($request->name),
@@ -91,10 +94,10 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'address' => $request->address,
-                'driving_license' => $drivingLicensePath,
-                'govt_id_card' => $govtIdCardPath,
-                'cancelled_cheque' => $cancelledChequePath,
-                'current_address_proof' => $currentAddressProofPath,
+                // 'driving_licence' => $drivinglicencePath,
+                // 'govt_id_card' => $govtIdCardPath,
+                // 'cancelled_cheque' => $cancelledChequePath,
+                // 'current_address_proof' => $currentAddressProofPath,
             ]);
 
             // / Commit the transaction
@@ -105,8 +108,6 @@ class AuthController extends Controller
                 'user' => $user
             ], 201);
         } catch (\Exception $e) {
-            
-        
             // Rollback the transaction if anything goes wrong
             DB::rollBack();
 
@@ -136,8 +137,9 @@ class AuthController extends Controller
     
         if ($validator->fails()) {
             return response()->json([
+                'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()->first(),
             ], 422);
         }
      
@@ -187,8 +189,9 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
+                'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()->first(),
             ], 422);
         }
 
@@ -222,8 +225,9 @@ class AuthController extends Controller
  
          if ($validator->fails()) {
              return response()->json([
+                'status' => false,
                  'message' => 'Validation failed',
-                 'errors' => $validator->errors(),
+                 'errors' => $validator->errors()->first(),
              ], 422);
          }
  
@@ -258,8 +262,9 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
+                'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()->first(),
             ], 422);
         }
 
@@ -278,11 +283,26 @@ class AuthController extends Controller
             'message' => 'Password reset successfully.',
         ], 200);
     }
-    public function userProfile($id)
+
+    protected function getAuthenticatedUser()
     {
-        // Fetch the user by ID
-        $user = User::find($id);
-    
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        return $user;
+    }
+    public function userProfile()
+    {
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        
         // Check if the user exists
         if (!$user) {
             return response()->json([
@@ -308,8 +328,9 @@ class AuthController extends Controller
         // dd($validator);
         if ($validator->fails()) {
             return response()->json([
+                'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors()->first()
             ], 422);
         }
         // Find the user by ID
@@ -410,7 +431,7 @@ class AuthController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()->first(),
             ], 422);
         }
 
@@ -437,8 +458,8 @@ class AuthController extends Controller
         //  dd($request->all());
         $validator = Validator::make($request->all(), [
             'id' => 'required|exists:users,id',
-            'driving_license' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'driving_license_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'driving_licence' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'driving_licence_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'govt_id_card_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
@@ -452,24 +473,24 @@ class AuthController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()->first(),
             ], 422);
         }
 
         $user = User::where('id', $request->id)->first();
 
        // Handle image upload (if provided)
-        if ($request->hasFile('driving_license') || $request->hasFile('driving_license_back')) {
-            $driving_license = storeFileWithCustomName($request->file('driving_license'), 'uploads/driving_licenses');
-            $user->driving_license = $driving_license;
-            $driving_license_back = storeFileWithCustomName($request->file('driving_license_back'), 'uploads/driving_licenses');
-            $user->driving_license_back = $driving_license_back;
-            $user->driving_license_status = 1;
+        if ($request->hasFile('driving_licence') || $request->hasFile('driving_licence_back')) {
+            $driving_licence = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
+            $user->driving_licence = $driving_licence;
+            $driving_licence_back = storeFileWithCustomName($request->file('driving_licence_back'), 'uploads/driving_licences');
+            $user->driving_licence_back = $driving_licence_back;
+            $user->driving_licence_status = 1;
            
             UserKycLog::updateOrCreate( 
             [
                 'user_id' => $user->id, 
-                'document_type' => 'Driving License' // Another condition
+                'document_type' => 'Driving Licence' // Another condition
             ],
             [
                 'status' => 'Uploaded', // Value to be updated/inserted
@@ -542,7 +563,6 @@ class AuthController extends Controller
             DB::table('personal_access_tokens')
                 ->where('tokenable_id', $id)
                 ->delete();
-
             return response()->json([
                 'status' => true,
                 'message' => 'All tokens for the user have been removed successfully.',
@@ -569,10 +589,7 @@ class AuthController extends Controller
             'position',
             'types',
             'short_desc',
-            'is_selling',
-            'base_price',
-            'display_price',
-            'is_rent',
+            'is_driving_licence_required',
             'image',
             'status'
         )
@@ -580,13 +597,12 @@ class AuthController extends Controller
             // Group search conditions with OR logic
             $query->where(function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('types', 'like', '%' . $search . '%')
-                    ->orWhere('short_desc', 'like', '%' . $search . '%');
+                    ->orWhere('types', 'like', '%' . $search . '%');
             });
         })
         ->with([
             'rentalprice' => function ($query) {
-                $query->select('id', 'product_id', 'duration', 'price'); // Select only necessary columns
+                $query->select('id', 'product_id', 'duration','subscription_type', 'deposit_amount', 'rental_amount'); // Select only necessary columns
             },
             'category:id,title',      // Load specific columns for 'category'
             'subCategory:id,title',   // Load specific columns for 'subcategory'
@@ -599,11 +615,11 @@ class AuthController extends Controller
 
         // Process each product to set rental price details
         foreach ($products as $product) {
-            $rental = $product->rentalprice->orderBy('duration', 'ASC')->first(); // Get the first rental price record
-
-            $product->rentduration = $rental ? $rental->duration : 0;
-            $product->per_rent_price = $rental ? $rental->price : 0;
-            $product->is_rent = $rental ? 1 : 0;
+            $rental = $product->rentalprice->first();
+            $product->subscription_type = $rental ? $rental->subscription_type : 0;
+            $product->deposit_amount = $rental ? $rental->deposit_amount : 0;
+            $product->rental_duration = $rental ? $rental->duration : 0;
+            $product->rental_amount = $rental ? $rental->rental_amount : 0;
         }
         // Return the product list as a JSON response
         return response()->json([
@@ -615,12 +631,17 @@ class AuthController extends Controller
     
     public function ProductDetails($id)
     {
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+
         // Retrieve the product by ID and ensure it's active (status = 1)
         $data = Product::where('id', $id)
             ->where('status', 1)
             ->with([
                 'rentalprice' => function ($query) {
-                    $query->select('id', 'product_id', 'duration', 'price', 'duration_type'); // Select only necessary columns
+                    $query->select('id', 'product_id', 'duration', 'subscription_type','deposit_amount', 'rental_amount');
                 },
                 'ProductImages:product_id,image', // Eager load product images
                 'category:id,title',             // Eager load category with specific columns
@@ -629,6 +650,7 @@ class AuthController extends Controller
             ])
             ->first();
 
+ 
         // Check if product exists
         if (!$data) {
             return response()->json(['status' => false, 'message' => 'Product not found'], 404);
@@ -675,18 +697,18 @@ class AuthController extends Controller
             
         // Prepare product details object
         $product_data = (object) [];
-        $product_data->stock_qty = $data->stock_qty;
+        // $product_data->stock_qty = $data->stock_qty;
         $product_data->id = $data->id;
         $product_data->title = $data->title;
         $product_data->types = $data->types;
         $product_data->short_desc = $data->short_desc;
-        $product_data->long_desc = $data->long_desc;
+        // $product_data->long_desc = $data->long_desc;
         $product_data->category = $data->category ? $data->category->title : null;
         $product_data->sub_category = $data->subCategory ? $data->subCategory->title : null;
-        $product_data->is_selling = $data->is_selling;
-        $product_data->base_price = $data->base_price;
-        $product_data->display_price = $data->display_price;
-        $product_data->is_rent = $data->is_rent;
+        // $product_data->is_selling = $data->is_selling;
+        // $product_data->base_price = $data->base_price;
+        // $product_data->display_price = $data->display_price;
+        // $product_data->is_rent = $data->is_rent;
         // $product_data->rent_duration = $data->rent_duration;
         // $product_data->per_rent_price = $data->per_rent_price;
         $product_data->status = $data->status;
@@ -694,6 +716,7 @@ class AuthController extends Controller
         $product_data->all_images = $allImages; // Set combined images array
         $product_data->rental_price = $data->rentalprice;
         $product_data->related_products = $related_products;
+        $product_data->is_driving_licence_required = $data->is_driving_licence_required;
         $product_data->customer_reviews = ProductReviews($data->id);
         // Return the product details as a JSON response
         $features = $allfeatures;
@@ -713,12 +736,23 @@ class AuthController extends Controller
         $faqs = Faq::orderBy('question', 'ASC')->get();
         
         // Fetching the products with eager loading
-        $products = Product::select('id', 'title', 'position', 'types', 'short_desc', 'image', 'status')->where('status', 1)
+        $products = Product::select('id', 'title', 'position', 'types', 'short_desc', 'image', 'status', 'is_driving_licence_required')->where('status', 1)
+            ->with([
+                'rentalprice' => function ($query) {
+                    $query->select('id', 'product_id', 'duration', 'subscription_type', 'deposit_amount', 'rental_amount'); // Select only necessary columns
+                }     // Load specific columns for 'features'
+            ])
             ->orderBy('position', 'ASC')
             ->orderBy('title', 'ASC') // Order products by title
             ->limit(10)
             ->get();
-    
+            foreach ($products as $product) {
+                $rental = $product->rentalprice->first();
+                $product->subscription_type = $rental ? $rental->subscription_type : 0;
+                $product->deposit_amount = $rental ? $rental->deposit_amount : 0;
+                $product->rental_duration = $rental ? $rental->duration : 0;
+                $product->rental_amount = $rental ? $rental->rental_amount : 0;
+            }
         // Check if there are any banners, FAQs, or products
         if ($banners->isEmpty() && $faqs->isEmpty() && $products->isEmpty()) {
             // Return a response if no data is found
@@ -744,12 +778,65 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function DocumentStatus($id){
-        $data = User::select('id', 'driving_license as driving_license_front', 'driving_license_back','driving_license_status', 'govt_id_card as govt_id_card_front', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque as cancelled_cheque_front', 'cancelled_cheque_back','cancelled_cheque_status', 'current_address_proof as current_address_front','current_address_proof_back', 'current_address_proof_status')->where('id',$id)->first();
+    public function DocumentStatus(){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        $documents= [];
+       
+        $data = User::select('id', 'driving_licence as driving_licence_front', 'driving_licence_back','driving_licence_status', 'govt_id_card as govt_id_card_front', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque as cancelled_cheque_front', 'cancelled_cheque_back','cancelled_cheque_status', 'current_address_proof as current_address_front','current_address_proof_back', 'current_address_proof_status')->where('id',$user->id)->first();
          // Check if product exists
         if (!$data) {
             return response()->json(['status' => false, 'message' => 'User not found'], 404);
         }
+
+        $documents['Driving Licence'] = [
+            'front' =>$data->driving_licence_front,
+            'back'=>$data->driving_licence_back,
+            'status' =>$data->driving_licence_status,
+        ];
+
+        $documents['Govt ID Card'] = [
+            'front' =>$data->govt_id_card_front,
+            'back'=>$data->govt_id_card_back,
+            'status' =>$data->govt_id_card_status,
+        ];
+
+        $documents['Cancelled Cheque'] = [
+            'front' =>$data->cancelled_cheque_front,
+            'back'=>$data->cancelled_cheque_back,
+            'status' =>$data->cancelled_cheque_status,
+        ];
+
+        $documents['Current Address Proof'] = [
+            'front' =>$data->current_address_front,
+            'back'=>$data->current_address_proof_back,
+            'status' =>$data->current_address_proof_status,
+        ];
+
+
+        $documents['Driving Licence']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Driving Licence')->orderBy('id', 'ASC')->get()->map(function ($item) {
+            $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            return $item;
+        })->toArray();
+
+        $documents['Govt ID Card']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Govt ID Card')->orderBy('id', 'ASC')->get()->map(function ($item) {
+            $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            return $item;
+        })->toArray();
+
+        $documents['Cancelled Cheque']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Cancelled Cheque')->orderBy('id', 'ASC')->get()->map(function ($item) {
+            $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            return $item;
+        })->toArray();
+
+        $documents['Current Address Proof']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Current Address Proof')->orderBy('id', 'ASC')->get()->map(function ($item) {
+            $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            return $item;
+        })->toArray();
+
+        dd($documents);
         // Return the data if found
         return response()->json([
             'status' => true,
@@ -799,7 +886,6 @@ class AuthController extends Controller
         return response()->json(['status'=>true, 'response'=>$order, 'message'=>'Data successfully retrieved'],200);
     }
 
-
     public function CompanyPolicy(){
         $data = Policy::orderBy('title', 'DESC')->get();
         if(count($data)==0){
@@ -814,6 +900,170 @@ class AuthController extends Controller
             return response()->json(['status'=>false, 'message'=>'data not found!'], 404);
         }
         return response()->json(['status'=>true, 'response'=>$data, 'message'=>'Data successfully retrieved'],200);
+    }
+
+    public function bookNow(Request $request){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id', // Ensure 'id' column exists
+            'is_driving_licence_required' => 'required', // If it's a boolean
+            'user_id' => 'required|exists:users,id', // Ensure 'id' column exists
+            'subscription_type' => 'required|string|max:255',
+            'deposit_amount' => 'required|numeric', // Ensure it's a number
+            'rental_amount' => 'required|numeric',
+            'total_amount' => 'required|numeric',
+        ]);
+        
+       
+        // Check if validation fails
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed. Please check the errors below.',
+                'errors' => $validator->errors()->first(), // Return all errors instead of only the first
+            ], 422);
+        }
+
+        // // Check User Verification
+        // if ($user->is_verified!=="verified") {
+        //     return response()->json([
+        //         'status' => false, 
+        //         'message' => "Your KYC status is currently $user->is_verified Please verify your KYC to continue."
+        //     ], 404);
+        // }
+
+        // // Check Driving Licence Verification
+        // if ($request->is_driving_licence_required==1 && $user->driving_licence_status!=2) {
+        //     return response()->json([
+        //         'status' => false, 
+        //         'message' => "Your driving licence verification is pending. Please complete the verification to continue."
+        //     ], 404);
+        // }
+
+        // // Assuming assigned_vehicle holds the assigned vehicle data
+        // $assigned_vehicle = AsignedVehicle::where('user_id', $user->id)->where('status', 'assigned')->get()->count();
+        // if($assigned_vehicle>0){
+        //     return response()->json([
+        //         'status' => false, 
+        //         'message' => "You already have an assigned vehicle. Please use it or return it before booking a new one."
+        //     ], 404);
+        // }
+
+
+        $RentalPrice = RentalPrice::where('product_id', $request->product_id)->where('subscription_type', $request->subscription_type)->first();
+        if(!$RentalPrice){
+            return response()->json([
+                'status' => false, 
+                 'message' => "This vehicle is not available for the selected duration."
+            ], 404);
+        }
+
+        $total_amount = $RentalPrice->deposit_amount+$RentalPrice->rental_amount;
+        if($request->total_amount!=$total_amount){
+            return response()->json([
+                'status' => false, 
+                  'message' => "The total amount does not match the required amount. Please check and try again."
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try{
+            $existing_order = Order::where('user_id', $request->user_id)->where('rent_status', 'await')->orderBy('id', 'DESC')->first();
+            if($existing_order){
+                $existing_order->update([
+                    'user_id' => $request->user_id,
+                    'product_id' => (int)$request->product_id,
+                    'deposit_amount' =>$RentalPrice->deposit_amount,
+                    'rental_amount' => $RentalPrice->rental_amount,
+                    'total_price' => $total_amount,
+                    'final_amount' => $total_amount,
+                    'quantity' => 1,
+                    'payment_mode' => "Online",
+                    // 'shipping_address' => $request->shipping_address,
+                    'rent_duration' => $RentalPrice->duration,
+                    'rent_status' => "await",
+                ]);
+                $order = $existing_order;
+            }else{
+                // dd($RentalPrice);
+                $order = Order::create([
+                    'user_id' => $request->user_id,
+                    'order_type' => 'Rent',
+                    'order_number' => generateOrderNumber(),
+                    'product_id' => (int)$request->product_id,
+                    'deposit_amount' =>$RentalPrice->deposit_amount,
+                    'rental_amount' => $RentalPrice->rental_amount,
+                    'total_price' => $total_amount,
+                    'final_amount' => $total_amount,
+                    'quantity' => 1,
+                    'payment_mode' => "Online",
+                    // 'shipping_address' => $request->shipping_address,
+                    'rent_duration' => $RentalPrice->duration,
+                    'rent_status' => "await",
+                ]);
+            }
+                
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Order created successfully.',
+                    'order' => $order,
+                ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create order.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function myActiveSubscription(){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        $order = Order::with('vehicle','product')->where('user_id', $user->id)->whereIn('rent_status', ['await','active', 'suspended'])->first();
+        if($order){
+            $data= [
+                'id' => $order->id,
+                'order_type' =>$order->order_type,
+                'order_number'=>$order->order_number,
+                'deposit_amount'=>$order->deposit_amount,
+                'rental_amount'=>$order->rental_amount,
+                'final_amount'=>$order->final_amount,
+                'payment_mode'=>$order->payment_mode,
+                'payment_status'=>$order->payment_status,
+                'rent_duration'=>$order->rent_duration.' Days',
+                'rent_status'=>$order->rent_status,
+                'model'=>$order->product?$order->product->title:"N/A",
+                'vehicle'=>$order->vehicle?$order->vehicle->stock->vehicle_number:"N/A",
+                'vehicle_status' =>$order->vehicle?$order->vehicle->status:"N/A",
+                'rent_start_date' =>$order->vehicle?$order->vehicle->start_date:"N/A",
+                'rent_end_date' =>$order->vehicle?$order->vehicle->end_date:"N/A",
+                'assigned_at' =>$order->vehicle?$order->vehicle->assigned_at:"N/A",
+            ];
+            return response()->json([
+                'status' => true, 
+                'data' => $data, 
+                'message' => "You have a subscription."
+            ], 200);
+        }else{
+            return response()->json([
+                'status' => false, 
+                'message' => "No active subscription found."
+            ], 404);
+        }
+        
+
     }
 
 }

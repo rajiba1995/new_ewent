@@ -12,7 +12,7 @@ class CustomerAdd extends Component
 {
     use WithFileUploads;
     public $customer_id, $name, $email, $mobile, $address, $city, $pincode;
-    public $image, $driving_license, $govt_id_card, $cancelled_cheque, $current_address_proof;
+    public $image, $driving_licence, $govt_id_card, $cancelled_cheque, $current_address_proof;
 
 
     public function mount(){
@@ -44,7 +44,7 @@ class CustomerAdd extends Component
             'city' => 'nullable|string|max:255',
             'pincode' => 'nullable|digits:6',
             'image' => 'nullable|image|max:1024', // Max 1MB
-            'driving_license' => 'nullable|file|max:2048', // Max 2MB
+            'driving_licence' => 'nullable|file|max:2048', // Max 2MB
             'govt_id_card' => 'nullable|file|max:2048', // Max 2MB
             'cancelled_cheque' => 'nullable|file|max:2048', // Max 2MB
             'current_address_proof' => 'nullable|file|max:2048', // Max 2MB
@@ -52,7 +52,7 @@ class CustomerAdd extends Component
 
         // Save the files to storage if they exist
         $imagePath = $this->image ? storeFileWithCustomName($this->image, 'uploads/user') : null;
-        $drivingLicensePath = $this->driving_license ? storeFileWithCustomName($this->driving_license, 'uploads/driving_licenses') : null;
+        $drivingLicensePath = $this->driving_licence ? storeFileWithCustomName($this->driving_licence, 'uploads/driving_licences') : null;
         $govtIdPath = $this->govt_id_card ? storeFileWithCustomName($this->govt_id_card, 'uploads/govt_id_cards') : null;
         $cancelledChequePath = $this->cancelled_cheque ? storeFileWithCustomName($this->cancelled_cheque, 'uploads/cancelled_cheque') : null;
         $addressProofPath = $this->current_address_proof ? storeFileWithCustomName($this->current_address_proof, 'uploads/current_address_proof') : null;
@@ -69,7 +69,7 @@ class CustomerAdd extends Component
             'city' => $this->city,
             'pincode' => $this->pincode,
             'profile_image' => $imagePath,
-            'driving_license' => $drivingLicensePath,
+            'driving_licence' => $drivingLicensePath,
             'govt_id_card' => $govtIdPath,
             'cancelled_cheque' => $cancelledChequePath,
             'current_address_proof' => $addressProofPath,

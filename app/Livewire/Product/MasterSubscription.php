@@ -15,7 +15,7 @@ class MasterSubscription extends Component
     use WithPagination;
     public $subscriptionId = null;
     public $asset = null;
-    public $model,$models,$subscription_type,$duration,$diposit_amount,$rental_amount;
+    public $model,$models,$subscription_type,$duration,$deposit_amount,$rental_amount;
 
     
     protected function rules()
@@ -31,7 +31,7 @@ class MasterSubscription extends Component
                 }),
             ],
             'duration' => 'required|integer|min:1',
-            'diposit_amount' => 'required|numeric|min:0',
+            'deposit_amount' => 'required|numeric|min:0',
             'rental_amount' => 'required|numeric|min:0',
         ];
     }
@@ -41,7 +41,7 @@ class MasterSubscription extends Component
         'model.exists' => 'The selected model is invalid.',
         'subscription_type.required' => 'The subscription type is required.',
         'duration.required' => 'The duration is required.',
-        'diposit_amount.required' => 'The deposit amount is required.',
+        'deposit_amount.required' => 'The deposit amount is required.',
         'rental_amount.required' => 'The rental amount is required.',
     ];
     public function mount()
@@ -64,7 +64,7 @@ class MasterSubscription extends Component
             'product_id' => $this->model,
             'subscription_type' => $this->subscription_type,
             'duration' => $this->duration,
-            'diposit_amount' => $this->diposit_amount,
+            'deposit_amount' => $this->deposit_amount,
             'rental_amount' => $this->rental_amount,
         ]);
         
@@ -78,7 +78,7 @@ class MasterSubscription extends Component
         $this->model = $subscription->product_id;
         $this->subscription_type = $subscription->subscription_type;
         $this->duration = $subscription->duration;
-        $this->diposit_amount = $subscription->diposit_amount;
+        $this->deposit_amount = $subscription->deposit_amount;
         $this->rental_amount = $subscription->rental_amount;
     }
 
@@ -95,7 +95,7 @@ class MasterSubscription extends Component
                 })->ignore($this->subscriptionId), // Ignore current record when updating
             ],
             'duration' => 'required|integer|min:1',
-            'diposit_amount' => 'required|numeric|min:0',
+            'deposit_amount' => 'required|numeric|min:0',
             'rental_amount' => 'required|numeric|min:0',
         ], [
             'subscription_type.unique' => 'This subscription type already exists.',
@@ -107,7 +107,7 @@ class MasterSubscription extends Component
             'product_id' => $this->model,
             'subscription_type' => $this->subscription_type,
             'duration' => $this->duration,
-            'diposit_amount' => $this->diposit_amount,
+            'deposit_amount' => $this->deposit_amount,
             'rental_amount' => $this->rental_amount,
         ]);
     
@@ -133,7 +133,7 @@ class MasterSubscription extends Component
 
     public function refresh()
     {
-        $this->reset(['model', 'subscription_type', 'duration','diposit_amount','rental_amount', 'subscriptionId', 'asset']);
+        $this->reset(['model', 'subscription_type', 'duration','deposit_amount','rental_amount', 'subscriptionId', 'asset']);
         $this->search = ''; // Reset the search filter
     }
     public function render()

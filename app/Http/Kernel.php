@@ -64,6 +64,12 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'auth.user' => \App\Http\Middleware\EnsureUserIsAuthenticated::class, // Custom middleware
+        'auth.user' => \App\Http\Middleware\EnsureUserIsAuthenticated::class, 
+        'token.session' => \App\Http\Middleware\TokenSession::class,
+    ];
+    
+    protected $middlewareAliases = [
+        'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        'token.session' => \App\Http\Middleware\TokenSession::class, // If using custom middleware
     ];
 }
