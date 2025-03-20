@@ -155,7 +155,7 @@ class AuthController extends Controller
        
         // Attempt login
         if (Auth::attempt([$loginField => $request->username, 'password' => $request->password])) {
-            $user = Auth::user();
+            $user = Auth::guard('sanctum')->user();
 
             // Use user's name as the token name
             $tokenName = str_replace(' ', '_', $user->name) . '_' . $user->id . '_token';
@@ -454,10 +454,11 @@ class AuthController extends Controller
         ], 200); 
     }
     public function updateDocument(Request $request){
-         // Validate the request data
-        //  dd($request->all());
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
         $validator = Validator::make($request->all(), [
-            'id' => 'required|exists:users,id',
             'driving_licence' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'driving_licence_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
@@ -477,8 +478,8 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('id', $request->id)->first();
-
+        $user = User::where('id', $user->id)->first();
+        // dd($request->hasFile('driving_licence'));
        // Handle image upload (if provided)
         if ($request->hasFile('driving_licence') || $request->hasFile('driving_licence_back')) {
             $driving_licence = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
@@ -486,7 +487,7 @@ class AuthController extends Controller
             $driving_licence_back = storeFileWithCustomName($request->file('driving_licence_back'), 'uploads/driving_licences');
             $user->driving_licence_back = $driving_licence_back;
             $user->driving_licence_status = 1;
-           
+          
             UserKycLog::updateOrCreate( 
             [
                 'user_id' => $user->id, 
@@ -836,11 +837,11 @@ class AuthController extends Controller
             return $item;
         })->toArray();
 
-        dd($documents);
+        // dd($documents);
         // Return the data if found
         return response()->json([
             'status' => true,
-            'response' => $data,
+            'response' => $documents,
             'message' => 'User Document Status',
         ], 200);
     }

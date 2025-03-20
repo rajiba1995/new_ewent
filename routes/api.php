@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\OrderController;
 
@@ -13,7 +14,7 @@ Route::prefix('customer')->group(function () {
         Route::post('resetPassword', [AuthController::class, 'resetPassword']);
 
      // Protected routes for authenticated users
-     Route::middleware('auth:sanctum')->group(function () {
+     Route::middleware(['auth.sanctum.custom'])->group(function () {
         // User Profile Route
         Route::get('profile', [AuthController::class, 'userProfile']);
         Route::get('home-page',[AuthController::class,'HomePage']);

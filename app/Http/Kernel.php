@@ -38,8 +38,6 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            'throttle:api',
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -66,6 +64,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'auth.user' => \App\Http\Middleware\EnsureUserIsAuthenticated::class, 
         'token.session' => \App\Http\Middleware\TokenSession::class,
+        'auth.sanctum.custom' => \App\Http\Middleware\SanctumAuthMiddleware::class,
     ];
     
     protected $middlewareAliases = [
