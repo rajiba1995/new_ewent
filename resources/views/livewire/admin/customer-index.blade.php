@@ -43,6 +43,14 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
+        
+        /* 17-03-2025 */
+        .side-modal {
+            height: 100vh;
+        }
+        .side-modal-content {
+            height: calc(100vh - 110px);
+        }
     </style>
     <div class="col-lg-12 justify-content-left">
        <h5 class="mb-0">Rider Management</h5>
@@ -178,7 +186,12 @@
                                                     </div>
                                                 </td>
                                                 <td class="align-middle text-start">{{$un_user->customer_id?$un_user->customer_id:"...."}}</td>
-                                                <td class="align-middle text-start">150</td>
+                                                <td class="align-middle text-start">
+                                                    @php
+                                                        $kyc_data = App\Models\UserKycLog::where('user_id', $un_user->id)->orderBy('id', 'ASC')->first();
+                                                    @endphp
+                                                    {{ $kyc_data?date('d M y h:i A', strtotime($kyc_data->created_at)):"N/A" }}
+                                                </td>
                                                 <td class="align-middle text-sm text-center">
                                                     <div class="form-check form-switch">
                                                         <input 
@@ -192,7 +205,7 @@
                                                 <td class="align-middle text-end px-4">
                                                     <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
                                                             wire:click="showCustomerDetails({{ $un_user->id}})">
-                                                        View Details
+                                                        View
                                                     </button>
                                                 </td>
                                             </tr>
@@ -210,12 +223,13 @@
                                     <thead>
                                         <tr>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer ID</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Order</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Spent</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Actions</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">KYC Verified Date/Time</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Current Employer</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Deposit Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rental Status</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -244,27 +258,27 @@
                                                             <a href="{{ route('admin.customer.details', $v_user->id) }}"
                                                                 class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($v_user->name) }}</span>
                                                             </a>
-                                                            <small class="text-truncate">{{ $v_user->email }} | {{$v_user->country_code}} {{ $v_user->mobile }}</small>
+                                                            <small class="text-truncate">{{ $v_user->email }} </small>
+                                                            {{-- | {{$v_user->country_code}} {{ $v_user->mobile }} --}}
                                                         <div>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle text-start">{{$v_user->customer_id?$v_user->customer_id:"...."}}</td>
-                                                <td class="align-middle text-start">150</td>
+                                                <td class="align-middle text-start">{{$v_user->kyc_uploaded_at?date('d M y h:i A', strtotime($v_user->kyc_uploaded_at)):"N/A"}}</td>
+                                                <td class="align-middle text-start">N/A</td>
                                                 <td class="align-middle text-start">{{env('APP_CURRENCY')}}5000</td>
                                                 <td class="align-middle text-sm text-center">
-                                                    <div class="form-check form-switch">
-                                                        <input 
-                                                            class="form-check-input ms-auto" 
-                                                            type="checkbox" 
-                                                            id="flexSwitchCheckDefault{{ $v_user->id }}" 
-                                                            wire:click="toggleStatus({{ $v_user->id }})"
-                                                            @if($v_user->status) checked @endif>
-                                                    </div>
+                                                    <span class="badge bg-label-success mb-0 cursor-pointer">PAID</span>
+                                                    <span class="badge bg-label-warning mb-0 cursor-pointer">DUE</span>
+                                                </td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <span class="badge bg-label-success mb-0 cursor-pointer">PAID</span>
+                                                    <span class="badge bg-label-warning mb-0 cursor-pointer">DUE</span>
                                                 </td>
                                                 <td class="align-middle text-end px-4">
-                                                    <a href="{{ route('admin.customer.details', $v_user->id) }}" title="View Details of {{ ucwords($v_user->name) }}">
-                                                        <span class="control"></span>
-                                                    </a>
+                                                    <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                        wire:click="showCustomerDetails({{ $v_user->id}})">
+                                                    View
+                                                </button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -429,16 +443,16 @@
                                 </div>
                                 <!-- Document Name -->
                                 <div>
-                                    <span class="fw-medium text-truncate text-dark">Driving Licence</span>
+                                    <span class="fw-medium text-truncate text-dark">Driving License</span>
                                 </div>
                             </div>
-                            @if($selectedCustomer->driving_licence_status>0)
+                            @if($selectedCustomer->driving_license_status>0)
                                 <div class="d-flex">
                                 <div class="col-6">
                                     <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                         <div class="p-2">
                                         <div class="cursor-pointer">
-                                        <img src="{{asset($selectedCustomer->driving_licence)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                        <img src="{{asset($selectedCustomer->driving_license)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
                                         </div>
                                         <div class="text-center fw-medium text-truncate">Front</div>
                                         </div>
@@ -448,7 +462,7 @@
                                         <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                             <div class="p-2">
                                             <div class="cursor-pointer">
-                                            <img src="{{asset($selectedCustomer->driving_licence_back)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                            <img src="{{asset($selectedCustomer->driving_license_back)}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
                                             </div>
                                             <div class="text-center fw-medium text-truncate">Back</div>
                                             </div>
@@ -457,30 +471,30 @@
                                 </div>
                                 <div class="d-flex my-4">
                                     <div class="col-4 text-center cursor-pointer">
-                                        <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                        <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->driving_license)}}','{{asset($selectedCustomer->driving_license_back)}}','Driving License')">Preview</span>
                                     </div>
                                     <div class="col-4 text-center cursor-pointer">
-                                        @if($selectedCustomer->driving_licence_status==2)
+                                        @if($selectedCustomer->driving_license_status==2)
                                             <span class="badge rounded-pill bg-label-success">
                                                 <i class="ri-check-line"></i> Approved
                                             </span>
                                         @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','driving_licence_status','Driving Licence',{{$selectedCustomer->id}})">
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','driving_license_status','Driving License',{{$selectedCustomer->id}})">
                                                  Approve
                                             </span>
                                         @endif
                                     </div>
                                     <div class="col-4 text-center cursor-pointer">
-                                        @if($selectedCustomer->driving_licence_status==3)
+                                        @if($selectedCustomer->driving_license_status==3)
                                             <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
                                         @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('driving_licence_status','Driving Licence',{{$selectedCustomer->id}})">Reject</span>
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('driving_license_status','Driving License',{{$selectedCustomer->id}})">Reject</span>
                                         @endif
                                     </div>
                                 </div>
                             @else
                                 <div class="alert alert-danger">
-                                    Driving licence not uploaded
+                                    Driving license not uploaded
                                 </div>
                             @endif
                         </div>
@@ -522,21 +536,26 @@
                                     </div>
                                 </div>
                                 <div class="d-flex my-4">
-                                    <div class="col-6 text-center cursor-pointer">
-                                        <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                    <div class="col-4 text-center cursor-pointer">
+                                        <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->govt_id_card)}}','{{asset($selectedCustomer->govt_id_card_back)}}','Govt ID Card')"> Preview</span>
                                     </div>
-                                    <div class="col-6 text-center cursor-pointer">
-                                        <select 
-                                            class="badge-select 
-                                                {{ $selectedCustomer->govt_id_card_status == 0 ? 'bg-label-warning' : 
-                                                ($selectedCustomer->govt_id_card_status == 1 ? 'bg-label-info' : 
-                                                ($selectedCustomer->govt_id_card_status == 2 ? 'bg-label-success' : 'bg-label-danger')) }}" 
-                                            wire:model="status" 
-                                            wire:change="updateStatus({{$selectedCustomer->id}},'govt_id_card_status', $event.target.value)" >
-                                            <option value="1" {{$selectedCustomer->govt_id_card_status==1?"selected":""}} class="text-info">Uploaded</option>
-                                            <option value="2" {{$selectedCustomer->govt_id_card_status==2?"selected":""}} class="text-success">Verified</option>
-                                            <option value="3" {{$selectedCustomer->govt_id_card_status==3?"selected":""}} class="text-danger">Rejected</option>
-                                        </select>
+                                    <div class="col-4 text-center cursor-pointer">
+                                        @if($selectedCustomer->govt_id_card_status==2)
+                                            <span class="badge rounded-pill bg-label-success">
+                                                <i class="ri-check-line"></i> Approved
+                                            </span>
+                                        @else
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','govt_id_card_status','Govt ID Card',{{$selectedCustomer->id}})">
+                                                 Approve
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="col-4 text-center cursor-pointer">
+                                        @if($selectedCustomer->govt_id_card_status==3)
+                                            <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
+                                        @else
+                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('govt_id_card_status','Govt ID Card',{{$selectedCustomer->id}})">Reject</span>
+                                        @endif
                                     </div>
                                 </div>
                             @else
@@ -546,100 +565,158 @@
                             @endif
                         </div>
                         <div style="border-bottom: 1px solid #8d58ff;" class="mb-3">
-                            <div class="d-flex align-items-center mb-3">
+                            @if($selectedCustomer->cancelled_cheque_status>0)
+                                <div class="d-flex align-items-center mb-3">
                                 <!-- Icon -->
                                 <div class="avatar me-3" style=" width:1.5rem; height: 1.5rem;">
-                                  <div class="avatar-initial rounded 
-                                        bg-label-dark document_type">
+                                    <div class="avatar-initial rounded 
+                                            bg-label-dark document_type">
                                     <i class="ri-bank-line ri-15px"></i>
-                                  </div>
+                                    </div>
                                 </div>
                                 <!-- Document Name -->
                                 <div>
                                     <span class="fw-medium text-truncate text-dark">Cancelled Cheque</span>
                                 </div>
-                            </div>
-                            <div class="d-flex">
-                               <div class="col-6">
-                                <div class="card academy-content shadow-none border mx-2" style="width:150px">
-                                    <div class="p-2">
-                                      <div class="cursor-pointer">
-                                       <img src="https://demos.themeselection.com/materio-bootstrap-html-laravel-admin-template/demo/assets/img/elements/20.jpg" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
-                                      </div>
-                                      <div class="text-center fw-medium text-truncate">Front</div>
-                                    </div>
                                 </div>
-                               </div>
-                                <div class="col-6">
-                                    <div class="card academy-content shadow-none border mx-2" style="width:150px">
+                                <div class="d-flex">
+                                    <div class="col-12">
+                                        <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                         <div class="p-2">
-                                          <div class="cursor-pointer">
-                                           <img src="https://demos.themeselection.com/materio-bootstrap-html-laravel-admin-template/demo/assets/img/elements/20.jpg" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
-                                          </div>
-                                          <div class="text-center fw-medium text-truncate">Back</div>
+                                            <div class="cursor-pointer">
+                                            <img src="{{asset($selectedCustomer->cancelled_cheque)}}" alt=""
+                                                style="max-width: 150px;max-height: 130px; width: 100%;">
+                                            </div>
+                                            <div class="text-center fw-medium text-truncate">Front</div>
+                                        </div>
                                         </div>
                                     </div>
+                                    {{-- <div class="col-6">
+                                        <div class="card academy-content shadow-none border mx-2" style="width:150px">
+                                        <div class="p-2">
+                                            <div class="cursor-pointer">
+                                            <img src="{{asset($selectedCustomer->cancelled_cheque_back)}}" alt=""
+                                                style="max-width: 150px;max-height: 130px; width: 100%;">
+                                            </div>
+                                            <div class="text-center fw-medium text-truncate">Back</div>
+                                        </div>
+                                        </div>
+                                    </div> --}}
                                 </div>
-                            </div>
-                            <div class="d-flex my-4">
+                                <div class="d-flex my-4">
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-secondary">Preview</span>
+                                    <span class="badge rounded-pill bg-label-secondary"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-success"><i class="ri-check-line"></i> Approve</span>
+                                    @if($selectedCustomer->cancelled_cheque_status==2)
+                                    <span class="badge rounded-pill bg-label-success">
+                                    <i class="ri-check-line"></i> Approved
+                                    </span>
+                                    @else
+                                    <span class="badge rounded-pill bg-label-secondary"
+                                    wire:click="updateLog('2','cancelled_cheque_status','Cancelled Cheque',{{$selectedCustomer->id}})">
+                                    Approve
+                                    </span>
+                                    @endif
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Reject</span>
+                                    @if($selectedCustomer->cancelled_cheque_status==3)
+                                    <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i>
+                                    Rejected</span>
+                                    @else
+                                    <span class="badge rounded-pill bg-label-secondary"
+                                    wire:click="OpenRejectForm('cancelled_cheque_status','Cancelled Cheque',{{$selectedCustomer->id}})">Reject</span>
+                                    @endif
                                 </div>
-                            </div>
+                                </div>
+                            @else
+                                <div class="alert alert-danger">
+                                    Cancelled Cheque not uploaded
+                                </div>
+                            @endif
                         </div>
                         <div style="border-bottom: 1px solid #8d58ff;" class="mb-3">
-                            <div class="d-flex align-items-center mb-3">
+                            @if($selectedCustomer->current_address_proof_status>0)
+                                <div class="d-flex align-items-center mb-3">
                                 <!-- Icon -->
                                 <div class="avatar me-3" style=" width:1.5rem; height: 1.5rem;">
-                                  <div class="avatar-initial rounded 
-                                        bg-label-dark document_type">
+                                    <div class="avatar-initial rounded 
+                                            bg-label-dark document_type">
                                     <i class="ri-home-line ri-15px"></i>
-                                  </div>
+                                    </div>
                                 </div>
                                 <!-- Document Name -->
                                 <div>
                                     <span class="fw-medium text-truncate text-dark">Current Address Proof</span>
                                 </div>
-                            </div>
-                            <div class="d-flex">
-                               <div class="col-6">
-                                <div class="card academy-content shadow-none border mx-2" style="width:150px">
-                                    <div class="p-2">
-                                      <div class="cursor-pointer">
-                                       <img src="https://demos.themeselection.com/materio-bootstrap-html-laravel-admin-template/demo/assets/img/elements/20.jpg" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
-                                      </div>
-                                      <div class="text-center fw-medium text-truncate">Front</div>
-                                    </div>
                                 </div>
-                               </div>
+                                <div class="d-flex">
                                 <div class="col-6">
                                     <div class="card academy-content shadow-none border mx-2" style="width:150px">
-                                        <div class="p-2">
-                                          <div class="cursor-pointer">
-                                           <img src="https://demos.themeselection.com/materio-bootstrap-html-laravel-admin-template/demo/assets/img/elements/20.jpg" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
-                                          </div>
-                                          <div class="text-center fw-medium text-truncate">Back</div>
+                                    <div class="p-2">
+                                        <div class="cursor-pointer">
+                                        <img src="{{asset($selectedCustomer->current_address_proof)}}" alt=""
+                                            style="max-width: 150px;max-height: 130px; width: 100%;">
                                         </div>
+                                        <div class="text-center fw-medium text-truncate">Front</div>
+                                    </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="d-flex my-4">
+                                <div class="col-6">
+                                    <div class="card academy-content shadow-none border mx-2" style="width:150px">
+                                    <div class="p-2">
+                                        <div class="cursor-pointer">
+                                        <img src="{{asset($selectedCustomer->current_address_proof_back)}}" alt=""
+                                            style="max-width: 150px;max-height: 130px; width: 100%;">
+                                        </div>
+                                        <div class="text-center fw-medium text-truncate">Back</div>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="d-flex my-4">
                                 <div class="col-4 text-center cursor-pointer">
                                     <span class="badge rounded-pill bg-label-secondary"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-success"><i class="ri-check-line"></i> Approve</span>
+                                    @if($selectedCustomer->current_address_proof_back==2)
+                                    <span class="badge rounded-pill bg-label-success">
+                                    <i class="ri-check-line"></i> Approved
+                                    </span>
+                                    @else
+                                    <span class="badge rounded-pill bg-label-secondary"
+                                    wire:click="updateLog('2','current_address_proof_back','Current Address Proof',{{$selectedCustomer->id}})">
+                                    Approve
+                                    </span>
+                                    @endif
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Reject</span>
+                                    @if($selectedCustomer->current_address_proof_back==3)
+                                    <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i>
+                                    Rejected</span>
+                                    @else
+                                    <span class="badge rounded-pill bg-label-secondary"
+                                    wire:click="OpenRejectForm('current_address_proof_back','Current Address Proof',{{$selectedCustomer->id}})">Reject</span>
+                                    @endif
                                 </div>
-                            </div>
+                                </div>
+                            @else
+                                <div class="alert alert-danger">
+                                    Current address proof not uploaded
+                                </div>
+                            @endif
+                        </div>
+                        <div class="text-center">
+                            @if($selectedCustomer->is_verified=="verified")
+                            <button type="button" wire:click="VerifyKyc('unverified',{{$selectedCustomer->id}})" class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
+                                KYC VERIFIED
+                            </button>
+                            @endif
+                            @if($selectedCustomer->is_verified=="unverified")
+                                <button type="button" wire:click="VerifyKyc('vefiry',{{$selectedCustomer->id}})" class="btn btn-danger text-white mb-0 custom-input-sm ms-2">
+                                    VERIFY KYC
+                                </button>
+                            @endif
                         </div>
                     </div>
                     <div class="tab-pane fade" id="navs-justified-history" role="tabpanel">
@@ -655,7 +732,7 @@
                                         </div>
                                         @if($logs->remarks)
                                             <code>Remarks</code>
-                                            <p class="mt-1 mb-3">{{$logs->remarks}}</p>
+                                            <p class="mt-1 mb-3"><small>{{$logs->remarks}}</small></p>
                                         @endif
                                     </div>
                                     </li>
@@ -698,6 +775,36 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-danger" wire:click="updateLog('3','{{$field}}','{{$document_type}}',{{$id}})">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    @if ($isPreviewimageModal)
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0, 0, 0, 0.5);z-index: 99999;">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ $document_type }}</h5>
+                        <button type="button" class="btn-close" wire:click="closePreviewImage"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <div class="card academy-content shadow-none border mx-2">
+                                <div class="p-2">
+                                    <div class="cursor-pointer">
+                                        <img src="{{$preview_front_image}}" alt="" width="100%">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card academy-content shadow-none border mx-2 my-2">
+                                <div class="p-2">
+                                    <div class="cursor-pointer">
+                                        <img src="{{$preview_back_image}}" alt="" width="100%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

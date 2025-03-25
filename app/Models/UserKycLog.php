@@ -8,7 +8,7 @@ class UserKycLog extends Model
 {
     protected $table = "user_kyc_logs";
     protected $fillable = [
-       'user_id', 'document_type', 'status', 'remarks', 'created_by', 'created_at', 'updated_at'
+       'user_id', 'document_type', 'status', 'remarks', 'created_by', 'message','created_at', 'updated_at'
     ];
 
     public function user()

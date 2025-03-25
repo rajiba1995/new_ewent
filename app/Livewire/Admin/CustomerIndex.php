@@ -21,6 +21,8 @@ class CustomerIndex extends Component
     public $selectedCustomer = null; // Stores the selected customer data
     public $isModalOpen = false; // Track modal visibility
     public $isRejectModal = false; // Track modal visibility
+    public $isPreviewimageModal = false;
+    public $preview_front_image, $preview_back_image;
 
     /**
      * Search button click handler to reset pagination.
@@ -42,12 +44,14 @@ class CustomerIndex extends Component
             return false;
         }
         $remarks = null;
+        $message = $document_type." is successfully verified for KYC.";
         if($status==3){
             if(empty($this->remarks)){
                 session()->flash('remarks', 'Please enter a remark for the rejection reason.');
                 return false;
             }
             $remarks = $this->remarks;
+            $message = $document_type." has been rejected. Please upload a valid document.";
         }
 
         $log = UserKycLog::create([
@@ -55,6 +59,7 @@ class CustomerIndex extends Component
             'document_type' => $document_type,
             'status' => $status,
             'remarks' => $remarks,
+            'message' => $message,
             'created_by' => Auth::guard('admin')->user()->id, // Corrected Auth syntax
         ]);
         // Update the field value and save
@@ -72,7 +77,38 @@ class CustomerIndex extends Component
         $this->id = $id; // Changed from $this->id to avoid conflicts
         $this->isRejectModal = true;
     }
+    public function OpenPreviewImage($front_image, $back_image,$document_type)
+    {   
+        $this->preview_front_image = $front_image;
+        $this->preview_back_image = $back_image;
+        $this->document_type = $document_type;
+        $this->isPreviewimageModal = true;
+    }
 
+    public function VerifyKyc($status, $id){
+        $user = User::find($id);
+        if($user){
+            if($status=="vefiry"){
+                $user->kyc_uploaded_at = date('Y-m-d h:i:s');
+                $user->kyc_verified_by = Auth::guard('admin')->user()->id;
+                $user->is_verified = "verified";
+            }else{
+                $user->kyc_uploaded_at = date('Y-m-d h:i:s');
+                $user->kyc_verified_by = Auth::guard('admin')->user()->id;
+                $user->is_verified = "unverified";
+            }
+            $user->save();
+            $this->showCustomerDetails($id);
+            // Optionally, show a confirmation message
+            session()->flash('modal_message', 'KYC status updated successfully.');
+        }
+    }
+
+    public function closePreviewImage()
+    {
+        $this->isPreviewimageModal = false;
+        $this->reset(['preview_front_image', 'preview_back_image','document_type']);
+    }
     public function closeRejectModal()
     {
         $this->isRejectModal = false;
