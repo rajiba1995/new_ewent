@@ -258,6 +258,13 @@
 .document_type i::before{
     font-size: 15px;
 }
+.engagement_header{
+    font-size: 10px;
+    text-transform: uppercase;
+}
+.action_btn_padding{
+    padding: 4px 16px !important;
+}
 
 
 

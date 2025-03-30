@@ -163,10 +163,10 @@
                                                                         @endif
                                                                     </thead>
                                                                     <tbody class="table-border-bottom-0">
-                                                                        <tr>
+                                                                        {{-- <tr>
                                                                             <td>Stock Qty.</td>
                                                                             <td>{{$product->stock_qty}}</td>
-                                                                        </tr>
+                                                                        </tr> --}}
                                                                         <tr>
                                                                             <td>Features</td>
                                                                             <td>

@@ -47,6 +47,31 @@ class User extends Authenticatable
   public function userAddress(){
         return $this->hasMany(UserAddress::class);
   }
+  public function latest_order(){
+    return $this->hasOne(Order::class)->latest('id');
+  }
+  public function await_order(){
+    return $this->hasOne(Order::class)
+    ->where('rent_status', 'await')
+    ->orderBy('id', 'DESC');
+  }
+  public function ready_to_assign_order(){
+    return $this->hasOne(Order::class)
+    ->where('payment_status', 'completed')
+    ->where('rent_status', 'ready to assign')
+    ->orderBy('id', 'DESC');
+  }
+  public function active_order(){
+    return $this->hasOne(Order::class)
+    ->where('payment_status', 'completed')
+    ->where('rent_status', 'active')
+    ->orderBy('id', 'DESC');
+  }
+  public function active_vehicle(){
+    return $this->hasOne(AsignedVehicle::class)
+    ->where('status', 'assigned')
+    ->orderBy('id', 'DESC');
+  }
   public function doc_logs(){
         return $this->hasMany(UserKycLog::class);
   }

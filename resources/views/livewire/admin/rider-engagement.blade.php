@@ -51,12 +51,15 @@
         .side-modal-content {
             height: calc(100vh - 110px);
         }
+        .table{
+            font-size: 12px;
+        }
     </style>
     <div class="col-lg-12 justify-content-left">
        <h5 class="mb-0">Rider Management</h5>
        <div>
             <small class="text-dark fw-medium">Riders</small>
-            <small class="text-light fw-medium arrow">Verification</small>
+            <small class="text-light fw-medium arrow">Engagement</small>
        </div>
     </div>
     <div class="col-lg-12 justify-content-left">
@@ -103,39 +106,82 @@
                         <ul class="nav nav-tabs nav-fill" role="tablist">
                           <li class="nav-item" role="presentation" wire:click="tab_change(1)">
                             <button type="button" class="nav-link waves-effect {{$active_tab==1?"active":""}}" role="tab" data-bs-toggle="tab"
-                              data-bs-target="#navs-justified-home" aria-controls="navs-justified-home" aria-selected="false"
+                              data-bs-target="#navs-justified-1" aria-controls="navs-justified-1" aria-selected="false"
                               tabindex="-1">
-                              <span class="d-none d-sm-block">
+                              <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
-                                </i> Unverified <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-secondary ms-1_5 pt-50">{{count($unverified_users)}}</span>
+                                </i> All <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-secondary ms-1_5 pt-50">{{count($all_users)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                           </li>
                           <li class="nav-item" role="presentation" wire:click="tab_change(2)">
                             <button type="button" class="nav-link waves-effect {{$active_tab==2?"active":""}}" role="tab" data-bs-toggle="tab"
-                              data-bs-target="#navs-justified-profile" aria-controls="navs-justified-profile" aria-selected="false"
+                              data-bs-target="#navs-justified-2" aria-controls="navs-justified-2" aria-selected="false"
                               tabindex="-1">
-                              <span class="d-none d-sm-block">
+                              <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
-                                </i> Verified <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-success ms-1_5 pt-50">{{count($verified_users)}}</span>
+                                </i> Await <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-dark ms-1_5 pt-50">{{count($await_users)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
                           </li>
                           <li class="nav-item" role="presentation" wire:click="tab_change(3)">
                             <button type="button" class="nav-link waves-effect {{$active_tab==3?"active":""}}" role="tab" data-bs-toggle="tab"
-                              data-bs-target="#navs-justified-messages" aria-controls="navs-justified-messages" aria-selected="true">
-                              <span class="d-none d-sm-block">
+                              data-bs-target="#navs-justified-3" aria-controls="navs-justified-3" aria-selected="true">
+                              <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
-                                </i> Rejected <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($rejected_users)}}</span>
+                                </i> Ready To Assign <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-success ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
                           </li>
-                          {{-- <span class="tab-slider" style="left: 681.312px; width: 354.688px; bottom: 0px;"></span> --}}
+                          <li class="nav-item" role="presentation" wire:click="tab_change(4)">
+                            <button type="button" class="nav-link waves-effect {{$active_tab==4?"active":""}}" role="tab" data-bs-toggle="tab"
+                              data-bs-target="#navs-justified-4" aria-controls="navs-justified-4" aria-selected="true">
+                              <span class="d-none d-sm-block engagement_header">
+                                <i class="tf-icons ri-user-3-line me-1_5"></i>
+                                </i> Active <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-success ms-1_5 pt-50">{{count($active_users)}}</span>
+                                </span>
+                                <i class="ri-user-3-line ri-20px d-sm-none"></i>
+                            </button>
+                          </li>
+                          <li class="nav-item" role="presentation" wire:click="tab_change(5)">
+                            <button type="button" class="nav-link waves-effect {{$active_tab==5?"active":""}}" role="tab" data-bs-toggle="tab"
+                              data-bs-target="#navs-justified-5" aria-controls="navs-justified-5" aria-selected="true">
+                              <span class="d-none d-sm-block engagement_header">
+                                <i class="tf-icons ri-user-3-line me-1_5"></i>
+                                </i> Inactive <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
+                                </span>
+                                <i class="ri-user-3-line ri-20px d-sm-none"></i>
+                            </button>
+                          </li>
+                          <li class="nav-item" role="presentation" wire:click="tab_change(6)">
+                            <button type="button" class="nav-link waves-effect {{$active_tab==6?"active":""}}" role="tab" data-bs-toggle="tab"
+                              data-bs-target="#navs-justified-6" aria-controls="navs-justified-6" aria-selected="true">
+                              <span class="d-none d-sm-block engagement_header">
+                                <i class="tf-icons ri-user-3-line me-1_5"></i>
+                                </i> Suspended <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
+                                </span>
+                                <i class="ri-user-3-line ri-20px d-sm-none"></i>
+                            </button>
+                          </li>
+                          <li class="nav-item" role="presentation" wire:click="tab_change(7)">
+                            <button type="button" class="nav-link waves-effect {{$active_tab==7?"active":""}}" role="tab" data-bs-toggle="tab"
+                              data-bs-target="#navs-justified-7" aria-controls="navs-justified-7" aria-selected="true">
+                              <span class="d-none d-sm-block engagement_header">
+                                <i class="tf-icons ri-user-3-line me-1_5"></i>
+                                </i> Cancel Subscription Request <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
+                                </span>
+                                <i class="ri-user-3-line ri-20px d-sm-none"></i>
+                            </button>
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -149,15 +195,16 @@
                                         <tr>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider ID</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">KYC Uploaded Date/Time</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Payment Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Subscription</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">DashBoard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                        
-                                        @foreach($unverified_users as $k => $un_user)
+                                        @foreach($all_users as $k => $al_user)
                                         @php
                                             $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
                                             $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
@@ -168,43 +215,54 @@
                                                     <div class="d-flex justify-content-start align-items-center customer-name">
                                                         <div class="avatar-wrapper me-3">
                                                             <div class="avatar avatar-sm">
-                                                                @if ($un_user->profile_image)
-                                                                    <img src="{{ asset($un_user->profile_image) }}" alt="Avatar" class="rounded-circle">
+                                                                @if ($al_user->profile_image)
+                                                                    <img src="{{ asset($al_user->profile_image) }}" alt="Avatar" class="rounded-circle">
                                                                 @else
                                                                     <div class="avatar-initial rounded-circle {{$colorClass}}">
-                                                                        {{ strtoupper(substr($un_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($un_user->name, ' '), 1, 1)) }}
+                                                                        {{ strtoupper(substr($al_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($al_user->name, ' '), 1, 1)) }}
                                                                     </div>
                                                                 @endif
                                                             </div>
                                                         </div>
                                                         <div class="d-flex flex-column">
-                                                            <a href="{{ route('admin.customer.details', $un_user->id) }}"
-                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($un_user->name) }}</span>
+                                                            <a href="{{ route('admin.customer.details', $al_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($al_user->name) }}</span>
                                                             </a>
-                                                            <small class="text-truncate">{{ $un_user->email }} | {{$un_user->country_code}} {{ $un_user->mobile }}</small>
+                                                            <small class="text-truncate">{{ $al_user->email }} | {{$al_user->country_code}} {{ $al_user->mobile }}</small>
                                                         <div>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle text-start">{{$un_user->customer_id?$un_user->customer_id:"...."}}</td>
                                                 <td class="align-middle text-start">
-                                                    @php
-                                                        $kyc_data = App\Models\UserKycLog::where('user_id', $un_user->id)->orderBy('id', 'ASC')->first();
-                                                    @endphp
-                                                    {{ $kyc_data?date('d M y h:i A', strtotime($kyc_data->created_at)):"N/A" }}
+                                                    @if($al_user->latest_order)
+                                                        @if($al_user->latest_order->payment_status=="completed")
+                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                        @else
+                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">{{$al_user->latest_order?$al_user->latest_order->product->title:"N/A"}}</td>
+                                                <td class="align-middle text-start">
+                                                    @if(optional($al_user->latest_order)->subscription)
+                                                        {{ ucwords($al_user->latest_order->subscription->subscription_type) }}
+                                                    @else
+                                                        N/A
+                                                    @endif
                                                 </td>
                                                 <td class="align-middle text-sm text-center">
-                                                    <div class="form-check form-switch">
-                                                        <input 
-                                                            class="form-check-input ms-auto" 
-                                                            type="checkbox" 
-                                                            id="flexSwitchCheckDefault{{ $un_user->id }}" 
-                                                            wire:click="toggleStatus({{ $un_user->id }})"
-                                                            @if($un_user->status) checked @endif>
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
+                                                            <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
                                                     </div>
                                                 </td>
                                                 <td class="align-middle text-end px-4">
                                                     <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
-                                                            wire:click="showCustomerDetails({{ $un_user->id}})">
+                                                            wire:click="showCustomerDetails({{ $al_user->id}})">
                                                         View
                                                     </button>
                                                 </td>
@@ -213,7 +271,7 @@
                                     </tbody>
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
-                                    {{ $unverified_users->links() }} <!-- Pagination links -->
+                                    {{ $all_users->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
@@ -224,16 +282,15 @@
                                         <tr>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">KYC Verified Date/Time</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Payment Status</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Deposit Status</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rental Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Dashboard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                        
-                                        @foreach($verified_users as $k => $v_user)
+                                        @foreach($await_users as $k => $aw_user)
                                         @php
                                             $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
                                             $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
@@ -244,60 +301,56 @@
                                                     <div class="d-flex justify-content-start align-items-center customer-name">
                                                         <div class="avatar-wrapper me-3">
                                                             <div class="avatar avatar-sm">
-                                                                @if ($v_user->image)
-                                                                    <img src="{{ asset($v_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @if ($aw_user->image)
+                                                                    <img src="{{ asset($aw_user->image) }}" alt="Avatar" class="rounded-circle">
                                                                 @else
                                                                     <div class="avatar-initial rounded-circle {{$colorClass}}">
-                                                                        {{ strtoupper(substr($v_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($v_user->name, ' '), 1, 1)) }}
+                                                                        {{ strtoupper(substr($aw_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($aw_user->name, ' '), 1, 1)) }}
                                                                     </div>
                                                                 @endif
                                                             </div>
                                                         </div>
                                                         <div class="d-flex flex-column">
-                                                            <a href="{{ route('admin.customer.details', $v_user->id) }}"
-                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($v_user->name) }}</span>
+                                                            <a href="{{ route('admin.customer.details', $aw_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($aw_user->name) }}</span>
                                                             </a>
-                                                            <small class="text-truncate">{{ $v_user->email }} </small>
-                                                            {{-- | {{$v_user->country_code}} {{ $v_user->mobile }} --}}
+                                                            <small class="text-truncate">{{ $aw_user->email }} </small>
+                                                            {{-- | {{$aw_user->country_code}} {{ $aw_user->mobile }} --}}
                                                         <div>
                                                     </div>
-                                                </td>
-                                                <td class="align-middle text-start">{{$v_user->kyc_uploaded_at?date('d M y h:i A', strtotime($v_user->kyc_uploaded_at)):"N/A"}}</td>
-                                                <td class="align-middle text-start">{{$v_user->latest_order?$v_user->latest_order->product->title:"N/A"}}</td>
-                                                <td class="align-middle text-sm text-center">
-                                                    @if($v_user->latest_order)
-                                                        @if($v_user->latest_order->deposit_amount==0)
-                                                            <span class="badge bg-label-warning mb-0 cursor-pointer">DUE</span>
+                                                    <td class="align-middle text-start">
+                                                        @if($aw_user->await_order)
+                                                            @if($aw_user->await_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$aw_user->await_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$aw_user->await_order->payment_status}}</span>
+                                                            @endif
                                                         @else
-                                                            <span class="badge bg-label-success mb-0 cursor-pointer">PAID</span>
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                         @endif
-                                                    @else
-                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
-                                                    @endif
-                                                </td>
-                                                <td class="align-middle text-sm text-center">
-                                                    @if($v_user->latest_order)
-                                                        @if($v_user->latest_order->rental_amount==0)
-                                                            <span class="badge bg-label-warning mb-0 cursor-pointer">DUE</span>
-                                                        @else
-                                                            <span class="badge bg-label-success mb-0 cursor-pointer">PAID</span>
-                                                        @endif
-                                                    @else
-                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
-                                                    @endif
-                                                </td>
-                                                <td class="align-middle text-end px-4">
-                                                    <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
-                                                        wire:click="showCustomerDetails({{ $v_user->id}})">
-                                                    View
-                                                </button>
-                                                </td>
+                                                    </td>
+                                                    <td class="align-middle text-start">{{$aw_user->await_order?$aw_user->await_order->product->title:"N/A"}}</td>
+                                                    <td class="align-middle text-sm text-center">
+                                                        <div class="dropdown cursor-pointer">
+                                                            <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                            <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
+                                                                <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-middle text-end px-4">
+                                                        <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                            wire:click="showCustomerDetails({{ $aw_user->id}})">
+                                                        View
+                                                    </button>
+                                                    </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
-                                    {{ $verified_users->links() }} <!-- Pagination links -->
+                                    {{ $await_users->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
@@ -307,17 +360,17 @@
                                     <thead>
                                         <tr>
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer ID</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Order</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Spent</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Actions</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Payment Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Subscription</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                        
-                                        @foreach($rejected_users as $k => $r_user)
+                                        @foreach($ready_to_assigns as $k => $rta_user)
                                         @php
                                             $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
                                             $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
@@ -328,47 +381,169 @@
                                                     <div class="d-flex justify-content-start align-items-center customer-name">
                                                         <div class="avatar-wrapper me-3">
                                                             <div class="avatar avatar-sm">
-                                                                @if ($r_user->image)
-                                                                    <img src="{{ asset($r_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @if ($rta_user->image)
+                                                                    <img src="{{ asset($rta_user->image) }}" alt="Avatar" class="rounded-circle">
                                                                 @else
                                                                     <div class="avatar-initial rounded-circle {{$colorClass}}">
-                                                                        {{ strtoupper(substr($r_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($r_user->name, ' '), 1, 1)) }}
+                                                                        {{ strtoupper(substr($rta_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($rta_user->name, ' '), 1, 1)) }}
                                                                     </div>
                                                                 @endif
                                                             </div>
                                                         </div>
                                                         <div class="d-flex flex-column">
-                                                            <a href="{{ route('admin.customer.details', $r_user->id) }}"
-                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($r_user->name) }}</span>
+                                                            <a href="{{ route('admin.customer.details', $rta_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($rta_user->name) }}</span>
                                                             </a>
-                                                            <small class="text-truncate">{{ $r_user->email }} | {{$r_user->country_code}} {{ $r_user->mobile }}</small>
+                                                            <small class="text-truncate">{{ $rta_user->email }} | {{$rta_user->country_code}} {{ $rta_user->mobile }}</small>
                                                         <div>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle text-start">{{$r_user->customer_id?$r_user->customer_id:"...."}}</td>
-                                                <td class="align-middle text-start">150</td>
-                                                <td class="align-middle text-start">{{env('APP_CURRENCY')}}5000</td>
-                                                <td class="align-middle text-sm text-center">
-                                                    <div class="form-check form-switch">
-                                                        <input 
-                                                            class="form-check-input ms-auto" 
-                                                            type="checkbox" 
-                                                            id="flexSwitchCheckDefault{{ $r_user->id }}" 
-                                                            wire:click="toggleStatus({{ $r_user->id }})"
-                                                            @if($r_user->status) checked @endif>
-                                                    </div>
+                                                <td class="align-middle text-start">
+                                                    @if($rta_user->ready_to_assign_order)
+                                                        @if($rta_user->ready_to_assign_order->payment_status=="completed")
+                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$rta_user->ready_to_assign_order->payment_status}}</span>
+                                                        @else
+                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$rta_user->ready_to_assign_order->payment_status}}</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">{{$rta_user->ready_to_assign_order?$rta_user->ready_to_assign_order->product->title:"N/A"}}</td>
+                                                <td class="align-middle text-start">
+                                                    @if(optional($rta_user->ready_to_assign_order)->subscription)
+                                                        {{ ucwords($rta_user->ready_to_assign_order->subscription->subscription_type) }}
+                                                    @else
+                                                        N/A
+                                                    @endif
                                                 </td>
                                                 <td class="align-middle text-end px-4">
-                                                    <a href="{{ route('admin.customer.details', $r_user->id) }}" title="View Details of {{ ucwords($r_user->name) }}">
-                                                        <span class="control"></span>
-                                                    </a>
+                                                    <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                            wire:click="showCustomerDetails({{ $al_user->id}})">
+                                                        View
+                                                    </button>
+                                                </td>
+                                                <td class="align-middle text-end px-4">
+                                                    <button class="btn btn-success text-white mb-0 custom-input-sm ms-2">
+                                                        Assign
+                                                    </button>
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
-                                    {{ $rejected_users->links() }} <!-- Pagination links -->
+                                    {{ $ready_to_assigns->links() }} <!-- Pagination links -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade {{$active_tab==4?"active show":""}}" id="navs-justified-messages" role="tabpanel">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Info</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Allocated <br> Date/Time</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Expected End <br> Date/Time</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                       
+                                        @foreach($active_users as $k => $ac_user)
+                                        @php
+                                            $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
+                                            $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
+                                        @endphp
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $k + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center customer-name">
+                                                        <div class="avatar-wrapper me-3">
+                                                            <div class="avatar avatar-sm">
+                                                                @if ($ac_user->image)
+                                                                    <img src="{{ asset($ac_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @else
+                                                                    <div class="avatar-initial rounded-circle {{$colorClass}}">
+                                                                        {{ strtoupper(substr($ac_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($ac_user->name, ' '), 1, 1)) }}
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <a href="{{ route('admin.customer.details', $ac_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($ac_user->name) }}</span>
+                                                            </a>
+                                                            <small class="text-truncate">{{ $ac_user->email }} | {{$ac_user->country_code}} {{ $ac_user->mobile }}</small>
+                                                        <div>
+                                                    </div>
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if(optional($ac_user->active_vehicle)->stock && optional($ac_user->active_order)->product)
+                                                        {{ ucwords(optional($ac_user->active_vehicle->stock)->vehicle_number) }} <br>
+                                                        {{ ucwords(optional($ac_user->active_order->product)->title) }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($ac_user->active_order)
+                                                        @if($ac_user->active_order->payment_status=="completed")
+                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">PAID</span>
+                                                        @else
+                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$ac_user->active_order->payment_status}}</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($ac_user->active_order->rent_start_date)
+                                                        <small class="text-muted">{{ date('d M y h:i A', strtotime($ac_user->active_order->rent_start_date)) }}</small>
+                                                    @else
+                                                        ........
+                                                    @endif
+                                                    
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($ac_user->active_order->rent_end_date)
+                                                        <small class="text-muted">{{ date('d M y h:i A', strtotime($ac_user->active_order->rent_end_date)) }}</small>
+                                                    @else
+                                                        ........
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_active_{{$ac_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
+                                                            <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
+                                                    </div>
+                                                 </td>
+                                                <td class="align-middle text-end px-4">
+                                                    <div class="d-flex">
+                                                        <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding">
+                                                            Suspend
+                                                        </button>
+                                                        <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding">
+                                                            Deallocate
+                                                        </button>
+                                                        <button class="btn btn-outline-success waves-effect mb-0 mx-1 action_btn_padding">
+                                                            Exchange
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $active_users->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>

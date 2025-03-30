@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 // Livewire Components
 use App\Livewire\AdminLogin;
 use App\Http\Controllers\Admin\AuthController;
-use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex};
+use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
     GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate
@@ -26,7 +26,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::group(['prefix' => 'rider'], function () {
         Route::get('add', CustomerAdd::class)->name('admin.customer.add');
         Route::get('verification/list', CustomerIndex::class)->name('admin.customer.verification.list');
-        Route::get('engagement/list', CustomerIndex::class)->name('admin.customer.engagement.list');
+        Route::get('engagement/list', RiderEngagement::class)->name('admin.customer.engagement.list');
         Route::get('details/{id}', CustomerDetails::class)->name('admin.customer.details');
     });
     // Product Routes

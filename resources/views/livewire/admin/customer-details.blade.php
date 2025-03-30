@@ -144,7 +144,7 @@
             <div class="col-8">
                 <div class="nav-align-top">
                     <ul class="nav nav-pills flex-column flex-md-row mb-6 row-gap-2">
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link {{ $activeTab == 'overview' ? 'active' : '' }} waves-effect waves-light" 
                                href="javascript:void(0);" 
                                wire:click="setActiveTab('overview')">
@@ -171,7 +171,7 @@
                               wire:click="setActiveTab('documents')">
                                 <i class="ri-file-text-line me-1_5"></i>Documents
                             </a>
-                        </li>
+                        </li> --}}
                         <li class="nav-item">
                             <a class="nav-link {{ $activeTab == 'orders' ? 'active' : '' }} waves-effect waves-light" 
                               href="javascript:void(0);" 
@@ -180,7 +180,7 @@
                             </a>
                         </li>
                          <!-- Add new tabs for bike_reviews and admin_ratings -->
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link {{ $activeTab == 'bike_reviews' ? 'active' : '' }} waves-effect waves-light" 
                               href="javascript:void(0);" 
                               wire:click="setActiveTab('bike_reviews')">
@@ -193,7 +193,7 @@
                               wire:click="setActiveTab('admin_ratings')">
                                 <i class="ri-shield-star-line me-1_5"></i>Admin Ratings
                             </a>
-                        </li>
+                        </li> --}}
                     </ul>
                 </div>
                 <div class="row text-nowrap">

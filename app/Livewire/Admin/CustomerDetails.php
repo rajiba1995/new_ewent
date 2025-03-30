@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 class CustomerDetails extends Component
 {
     public $user;
-    public $activeTab = 'overview'; // Default active tab
+    public $activeTab = 'orders'; // Default active tab
     public $newPassword; // Correct naming convention
     public $confirmPassword;
     public $userId;

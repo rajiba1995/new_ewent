@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 
 
-class CustomerIndex extends Component
+class RiderEngagement extends Component
 {
     use WithPagination;
 
@@ -155,8 +155,8 @@ class CustomerIndex extends Component
     }
     public function render()
     {
-        // Query users based on the search term
-        $unverified_users = User::when($this->search, function ($query) {
+         // Query users based on the search term
+         $all_users = User::when($this->search, function ($query) {
                 $searchTerm = '%' . $this->search . '%';
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', $searchTerm)
@@ -164,11 +164,51 @@ class CustomerIndex extends Component
                     ->orWhere('email', 'like', $searchTerm)
                     ->orWhere('customer_id', 'like', $searchTerm);
                 });
-            })->with('doc_logs')
-            ->where('is_verified', 'unverified')
+            })->whereHas('latest_order')
+            ->where('is_verified', 'verified')
             ->orderBy('id', 'DESC')
             ->paginate(20);
-        $verified_users = User::with('doc_logs','latest_order')
+
+         $await_users = User::when($this->search, function ($query) {
+                $searchTerm = '%' . $this->search . '%';
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                    ->orWhere('mobile', 'like', $searchTerm)
+                    ->orWhere('email', 'like', $searchTerm)
+                    ->orWhere('customer_id', 'like', $searchTerm);
+                });
+            })->whereHas('await_order')
+            ->where('is_verified', 'verified')
+            ->orderBy('id', 'DESC')
+            ->paginate(20);
+        $ready_to_assigns = User::when($this->search, function ($query) {
+                $searchTerm = '%' . $this->search . '%';
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                    ->orWhere('mobile', 'like', $searchTerm)
+                    ->orWhere('email', 'like', $searchTerm)
+                    ->orWhere('customer_id', 'like', $searchTerm);
+                });
+            })->whereHas('ready_to_assign_order')
+            ->where('is_verified', 'verified')
+            ->orderBy('id', 'DESC')
+            ->paginate(20);
+            
+        $active_users = User::when($this->search, function ($query) {
+            $searchTerm = '%' . $this->search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                ->orWhere('mobile', 'like', $searchTerm)
+                ->orWhere('email', 'like', $searchTerm)
+                ->orWhere('customer_id', 'like', $searchTerm);
+            });
+        })->whereHas('active_order')
+        ->whereHas('active_vehicle')
+        ->where('is_verified', 'verified')
+        ->orderBy('id', 'DESC')
+        ->paginate(20);
+
+        $inactive_users = User::with('doc_logs','latest_order')
             ->when($this->search, function ($query) {
                 $searchTerm = '%' . $this->search . '%';
                 $query->where(function ($q) use ($searchTerm) {
@@ -181,23 +221,12 @@ class CustomerIndex extends Component
             ->where('is_verified', 'verified')
             ->orderBy('id', 'DESC')
             ->paginate(20);
-        $rejected_users = User::with('doc_logs')
-            ->when($this->search, function ($query) {
-                $searchTerm = '%' . $this->search . '%';
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'like', $searchTerm)
-                      ->orWhere('mobile', 'like', $searchTerm)
-                      ->orWhere('email', 'like', $searchTerm)
-                      ->orWhere('customer_id', 'like', $searchTerm);
-                });
-            })
-            ->where('is_verified', 'rejected')
-            ->orderBy('id', 'DESC')
-            ->paginate(20);
-        return view('livewire.admin.customer-index', [
-            'unverified_users' => $unverified_users,
-            'verified_users' => $verified_users,
-            'rejected_users' => $rejected_users
+        return view('livewire.admin.rider-engagement', [
+            'all_users' => $all_users,
+            'await_users' => $await_users,
+            'ready_to_assigns' => $ready_to_assigns,
+            'active_users' => $active_users,
+            'inactive_users' => $inactive_users,
         ]);
     }
 }

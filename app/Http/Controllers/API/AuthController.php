@@ -156,13 +156,13 @@ class AuthController extends Controller
         // Attempt login
         if (Auth::attempt([$loginField => $request->username, 'password' => $request->password])) {
             $user = Auth::guard('sanctum')->user();
-
+            // dd($user);
             // Use user's name as the token name
             $tokenName = str_replace(' ', '_', $user->name) . '_' . $user->id . '_token';
 
             // Delete any existing tokens with the same name before generating a new one
-            $user->tokens()->where('name', $tokenName)->delete();
-        
+            $user->tokens()->where('tokenable_id', $user->id)->delete();
+            // dd($tokenName);
             // Generate new token using Laravel Sanctum
             $token = $user->createToken($tokenName)->plainTextToken;
             $user->is_verified = CheckUserStatus($user->id);
@@ -912,7 +912,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:products,id', // Ensure 'id' column exists
             'is_driving_licence_required' => 'required', // If it's a boolean
-            'user_id' => 'required|exists:users,id', // Ensure 'id' column exists
+            'subscription_id' => 'required', // Ensure 'id' column exists
             'subscription_type' => 'required|string|max:255',
             'deposit_amount' => 'required|numeric', // Ensure it's a number
             'rental_amount' => 'required|numeric',
@@ -929,30 +929,30 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // // Check User Verification
-        // if ($user->is_verified!=="verified") {
-        //     return response()->json([
-        //         'status' => false, 
-        //         'message' => "Your KYC status is currently $user->is_verified Please verify your KYC to continue."
-        //     ], 404);
-        // }
+        // Check User Verification
+        if ($user->is_verified!=="verified") {
+            return response()->json([
+                'status' => false, 
+                'message' => "Your KYC status is currently $user->is_verified Please verify your KYC to continue."
+            ], 404);
+        }
 
-        // // Check Driving Licence Verification
-        // if ($request->is_driving_licence_required==1 && $user->driving_licence_status!=2) {
-        //     return response()->json([
-        //         'status' => false, 
-        //         'message' => "Your driving licence verification is pending. Please complete the verification to continue."
-        //     ], 404);
-        // }
+        // Check Driving Licence Verification
+        if ($request->is_driving_licence_required==1 && $user->driving_licence_status!=2) {
+            return response()->json([
+                'status' => false, 
+                'message' => "Your driving licence verification is pending. Please complete the verification to continue."
+            ], 404);
+        }
 
-        // // Assuming assigned_vehicle holds the assigned vehicle data
-        // $assigned_vehicle = AsignedVehicle::where('user_id', $user->id)->where('status', 'assigned')->get()->count();
-        // if($assigned_vehicle>0){
-        //     return response()->json([
-        //         'status' => false, 
-        //         'message' => "You already have an assigned vehicle. Please use it or return it before booking a new one."
-        //     ], 404);
-        // }
+        // Assuming assigned_vehicle holds the assigned vehicle data
+        $assigned_vehicle = AsignedVehicle::where('user_id', $user->id)->where('status', 'assigned')->get()->count();
+        if($assigned_vehicle>0){
+            return response()->json([
+                'status' => false, 
+                'message' => "You already have an assigned vehicle. Please use it or return it before booking a new one."
+            ], 404);
+        }
 
 
         $RentalPrice = RentalPrice::where('product_id', $request->product_id)->where('subscription_type', $request->subscription_type)->first();
@@ -973,15 +973,16 @@ class AuthController extends Controller
 
         DB::beginTransaction();
         try{
-            $existing_order = Order::where('user_id', $request->user_id)->where('rent_status', 'await')->orderBy('id', 'DESC')->first();
+            $existing_order = Order::where('user_id', $user->id)->where('rent_status', 'await')->orderBy('id', 'DESC')->first();
             if($existing_order){
                 $existing_order->update([
-                    'user_id' => $request->user_id,
+                    'user_id' => $user->id,
                     'product_id' => (int)$request->product_id,
                     'deposit_amount' =>$RentalPrice->deposit_amount,
                     'rental_amount' => $RentalPrice->rental_amount,
                     'total_price' => $total_amount,
                     'final_amount' => $total_amount,
+                    'subscription_id' => (int)$RentalPrice->id,
                     'quantity' => 1,
                     'payment_mode' => "Online",
                     // 'shipping_address' => $request->shipping_address,
@@ -992,7 +993,7 @@ class AuthController extends Controller
             }else{
                 // dd($RentalPrice);
                 $order = Order::create([
-                    'user_id' => $request->user_id,
+                    'user_id' => $user->id,
                     'order_type' => 'Rent',
                     'order_number' => generateOrderNumber(),
                     'product_id' => (int)$request->product_id,
@@ -1000,6 +1001,7 @@ class AuthController extends Controller
                     'rental_amount' => $RentalPrice->rental_amount,
                     'total_price' => $total_amount,
                     'final_amount' => $total_amount,
+                    'subscription_id' => (int)$RentalPrice->id,
                     'quantity' => 1,
                     'payment_mode' => "Online",
                     // 'shipping_address' => $request->shipping_address,
