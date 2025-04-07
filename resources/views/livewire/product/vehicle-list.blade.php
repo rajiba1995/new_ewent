@@ -179,9 +179,12 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <span class="badge px-2 rounded-pill bg-label-secondary">Explore</span>
+                                                    <a href="{{route('admin.vehicle.detail', $all_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
                                                 </td>
-                                                <td>
+                                                <td class="text-center">
+                                                    <a href="{{route('admin.vehicle.update', $all_item->product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
+                                                        <i class="ri-edit-box-line ri-20px text-info"></i>
+                                                    </a>
                                                     <a href="javascript:void(0)">
                                                         <span class="control"></span>
                                                     </a>
@@ -245,7 +248,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <span class="badge px-2 rounded-pill bg-label-secondary">Explore</span>
+                                                    <a href="{{route('admin.vehicle.detail', $unassigned_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
                                                 </td>
                                                 <td>
                                                     <a href="javascript:void(0)">
@@ -312,7 +315,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <span class="badge px-2 rounded-pill bg-label-secondary">Explore</span>
+                                                    <a href="{{route('admin.vehicle.detail', $assigned_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
                                                 </td>
                                                 <td>
                                                     <a href="javascript:void(0)">

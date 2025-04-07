@@ -5,9 +5,14 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
+use App\Models\order;
+use App\Models\Stock;
+use App\Models\AsignedVehicle;
 use App\Models\UserKycLog;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Carbon\Carbon;
 
 
 class RiderEngagement extends Component
@@ -15,18 +20,26 @@ class RiderEngagement extends Component
     use WithPagination;
 
     public $search = '';
-    public $remarks,$field,$document_type,$id;
+    public $remarks,$field,$document_type,$id,$vehicle_model;
     public $active_tab = 1;
+    public $vehicles = [];
     public $customers = [];
     public $selectedCustomer = null; // Stores the selected customer data
     public $isModalOpen = false; // Track modal visibility
-    public $isRejectModal = false; // Track modal visibility
+    public $isRejectModal = false;
+    public $isAssignedModal = false;
+    public $closeAssignedtModal = false;
     public $isPreviewimageModal = false;
+    public $targetRiderId;
+    public $targetOrderId;
     public $preview_front_image, $preview_back_image;
 
     /**
      * Search button click handler to reset pagination.
      */
+    public function mount(){
+
+    }
     public function btn_search()
     {
         $this->resetPage(); // Reset to the first page
@@ -77,6 +90,71 @@ class RiderEngagement extends Component
         $this->id = $id; // Changed from $this->id to avoid conflicts
         $this->isRejectModal = true;
     }
+    public function OpenAssignedForm($rider_id,$product_id,$order_id)
+    {
+        $this->targetRiderId = $rider_id;
+        $this->targetOrderId = $order_id;
+        $this->vehicles = Stock::whereDoesntHave('assignedVehicle')->where('product_id', $product_id)->orderBy('vehicle_number')->get();
+        $this->isAssignedModal = true;
+    }
+
+    public function updateAssignRider(){
+        try {
+            if (!$this->vehicle_model) {
+                session()->flash('assign_error', 'Please select vehicle model first.');
+                    return false;
+            }
+            $assignRider = AsignedVehicle::where('order_id', $this->targetOrderId)->first();
+            if ($assignRider) {
+                session()->flash('assign_error', 'Sorry! A vehicle has already been assigned for this rider.');
+                return false;
+            }
+
+            $order = Order::find($this->targetOrderId);
+           
+            if (!$order) {
+                session()->flash('assign_error', 'Sorry! Something went wrong. Please reload the page and try again.');
+                return false;
+            }
+            if (!$order->rent_duration) {
+                session()->flash('assign_error', 'Sorry! Rent duration not found. Please set the rent duration before proceeding.');
+                return false;
+            }
+            DB::beginTransaction();
+
+                $startDate = Carbon::now();
+                $endDate = $startDate->copy()->addDays($order->rent_duration);
+
+                $log = AsignedVehicle::create([
+                    'user_id' => $this->targetRiderId,
+                    'order_id' => $this->targetOrderId,
+                    'vehicle_id' => $this->vehicle_model,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'assigned_at' => $startDate,
+                    'assigned_by' => Auth::guard('admin')->user()->id, // Corrected Auth syntax
+                ]); 
+
+                $order->rent_status = "active";
+                $order->rent_start_date = $startDate;
+                $order->rent_end_date = $endDate;
+                $order->save();
+
+            DB::commit();
+
+            session()->flash('message', 'Vehicle assigned to rider successfully.');
+            $this->isAssignedModal = false;
+            $this->active_tab = 4;
+            $this->reset(['vehicle_model','targetOrderId','targetRiderId']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+        //    dd($e->getMessage());
+            session()->flash('assign_error', 'An unexpected error occurred. Please try again later.');
+            return false;
+        }
+
+    }
     public function OpenPreviewImage($front_image, $back_image,$document_type)
     {   
         $this->preview_front_image = $front_image;
@@ -113,6 +191,11 @@ class RiderEngagement extends Component
     {
         $this->isRejectModal = false;
         $this->reset(['remarks', 'field','document_type', 'id']);
+    }
+    public function closeAssignedModal()
+    {
+        $this->isAssignedModal = false;
+        $this->reset(['vehicle_model']);
     }
 
     public function showCustomerDetails($customerId)

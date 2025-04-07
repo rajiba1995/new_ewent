@@ -255,7 +255,7 @@
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
-                                                            <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
                                                             <li><a class="dropdown-item" href="#">History</a></li>
                                                         </ul>
                                                     </div>
@@ -334,7 +334,7 @@
                                                         <div class="dropdown cursor-pointer">
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
-                                                                <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
                                                                 <li><a class="dropdown-item" href="#">History</a></li>
                                                             </ul>
                                                         </div>
@@ -419,12 +419,12 @@
                                                 </td>
                                                 <td class="align-middle text-end px-4">
                                                     <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
-                                                            wire:click="showCustomerDetails({{ $al_user->id}})">
+                                                            wire:click="showCustomerDetails({{ $rta_user->id}})">
                                                         View
                                                     </button>
                                                 </td>
                                                 <td class="align-middle text-end px-4">
-                                                    <button class="btn btn-success text-white mb-0 custom-input-sm ms-2">
+                                                    <button class="btn btn-success text-white mb-0 custom-input-sm ms-2" wire:click="OpenAssignedForm({{$rta_user->id}},{{ optional($rta_user->ready_to_assign_order)->product->id ?? 'N/A' }},{{$rta_user->ready_to_assign_order->id}})">
                                                         Assign
                                                     </button>
                                                 </td>
@@ -520,7 +520,7 @@
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_active_{{$ac_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
-                                                            <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', optional($ac_user->active_vehicle->stock)->vehicle_track_id)}}">Dashboard</a></li>
                                                             <li><a class="dropdown-item" href="#">History</a></li>
                                                         </ul>
                                                     </div>
@@ -962,6 +962,41 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-danger" wire:click="updateLog('3','{{$field}}','{{$document_type}}',{{$id}})">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    @if ($isAssignedModal)
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0, 0, 0, 0.5);z-index: 99999;">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Assign Vehicle</h5>
+                        <button type="button" class="btn-close" wire:click="closeAssignedModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Vehicle Model</label>
+                            <div>
+                                <select class="form-control border border-2 p-2" wire:model="vehicle_model">
+                                    <option value="" selected hidden>Select vehicle</option>
+                                    @foreach ($vehicles as $vehicle_index=>$vehicle_item)
+                                        <option value="{{$vehicle_item->id}}">{{$vehicle_item->vehicle_number}} | {{ optional($vehicle_item->product)->title ?? 'N/A' }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mt-2">
+                                @if(session()->has('assign_error'))
+                                <div class="alert alert-danger">
+                                    {{ session('assign_error') }}
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success" wire:click="updateAssignRider()">Assign</button>
                     </div>
                 </div>
             </div>

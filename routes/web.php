@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
-    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate
+    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail
 };
 use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex};
 
@@ -49,6 +49,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::group(['prefix' => 'vehicle'], function () {
         Route::get('/list', VehicleList::class)->name('admin.vehicle.list');
         Route::get('/create', VehicleCreate::class)->name('admin.vehicle.create');
+        Route::get('/update/{id}', VehicleUpdate::class)->name('admin.vehicle.update');
+        Route::get('/details/{vehicle_id}', VehicleDetail::class)->name('admin.vehicle.detail');
     });
     // Order Management
     Route::group(['prefix'=>'order'], function(){
