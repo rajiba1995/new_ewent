@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 // Livewire Components
 use App\Livewire\AdminLogin;
 use App\Http\Controllers\Admin\AuthController;
-use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement};
+use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement,PaymentSummary,PaymentUserSummary};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
     GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail
@@ -56,6 +56,11 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::group(['prefix'=>'order'], function(){
         Route::get('/list', OrderIndex::class)->name('admin.order.list');
         Route::get('/details/{id}', OrderDetail::class)->name('admin.order.detail');
+    });
+    // Payment Management
+    Route::group(['prefix'=>'payment'], function(){
+        Route::get('/summary', PaymentSummary::class)->name('admin.payment.summary');
+        Route::get('/user-summary', PaymentUserSummary::class)->name('admin.payment.user_summary');
     });
     // Offer Management
     Route::group(['prefix'=>'offer'], function(){

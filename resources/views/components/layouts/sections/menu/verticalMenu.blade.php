@@ -161,6 +161,30 @@
         </li>
       </ul>
     </li>
+    <li class="menu-item {{ (request()->is('admin/payment*')) ? 'open' : '' }}" style="">
+      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+        <i class="menu-icon tf-icons ri-store-line"></i>
+        <div>Payment Management</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ (request()->is('admin/payment/summary')) ? 'open' : '' }}">
+          <a href="{{route('admin.payment.summary')}}" class="menu-link">
+            <div>Summary</div>
+          </a>
+        </li>
+  
+        <li class="menu-item {{ (request()->is('admin/payment/user-summary')) ? 'open' : '' }}">
+          <a href="{{route('admin.payment.user_summary')}}" class="menu-link">
+            <div>User Summary</div>
+          </a>
+        </li>
+        <li class="menu-item {{ (request()->is('admin/vehicle/create')) ? 'open' : '' }}">
+          <a href="{{route('admin.vehicle.create')}}" class="menu-link">
+            <div>Vehicle Summary</div>
+          </a>
+        </li>
+      </ul>
+    </li>
     <li class="menu-item {{ (request()->is('admin/offer*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>
