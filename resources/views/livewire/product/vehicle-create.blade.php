@@ -42,16 +42,33 @@
                         <!-- Product Title -->
                         <div class="col-4">
                             <div class="mb-2 mt-2 form-floating form-floating-outline">
-                            <select wire:model="model"
-                                class="form-select border border-2 p-2">
-                                <option value="" selected hidden>Select model</option>
-                                @foreach($models as $model_item)
-                                <option value="{{ $model_item->id }}">{{$model_item->category->title}}|{{ $model_item->title }}</option>
-                                @endforeach
-                            </select>
-                            <label class="form-label">Model <span class="text-danger">*</span></label>
+                                <select wire:model="model"
+                                    class="form-select border border-2 p-2">
+                                    <option value="" selected hidden>Select model</option>
+                                    @foreach($models as $model_item)
+                                    <option value="{{ $model_item->id }}">{{$model_item->category->title}}|{{ $model_item->title }}</option>
+                                    @endforeach
+                                </select>
+                                <label class="form-label">Model <span class="text-danger">*</span></label>
                             </div>
                             @error('model')
+                            <p class="text-danger inputerror">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-2 mt-2 form-floating form-floating-outline">
+                                <select wire:model="vehicle_number"
+                                    class="form-select border border-2 p-2" wire:change="selectVehicle($event.target.value)">
+                                    <option value="" selected hidden>Select vehicle number</option>
+                                    @foreach($vehicles as $vehicle_item)
+                                        @if(!in_array($vehicle_item['number'], $existing_stock))
+                                            <option value="{{ $vehicle_item['number'] }}">{{ $vehicle_item['number'] }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                                <label class="form-label">Vehicle Number <span class="text-danger">*</span></label>
+                            </div>
+                            @error('vehicle_number')
                             <p class="text-danger inputerror">{{ $message }}</p>
                             @enderror
                         </div>
@@ -75,21 +92,12 @@
                             <p class="text-danger inputerror">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="col-4">
-                            <div class="form-floating form-floating-outline mb-3 mt-2">
-                            <input type="text" wire:model="vehicle_number" class="form-control border border-2 p-2"
-                                placeholder="Enter vehicle number">
-                            <label>Vehicle Number<span class="text-danger">*</span></label>
-                            </div>
-                            @error('vehicle_number')
-                            <p class="text-danger inputerror">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        
                         <div class="col-4">
                             <div class="form-floating form-floating-outline mb-3 mt-2">
                             <input type="text" wire:model="imei_number" class="form-control border border-2 p-2"
                                 placeholder="Enter imei number">
-                            <label>LOT IMEI Number<span class="text-danger">*</span></label>
+                            <label>LOT IMEI Number</label>
                             </div>
                             @error('imei_number')
                             <p class="text-danger inputerror">{{ $message }}</p>
