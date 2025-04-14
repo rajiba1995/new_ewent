@@ -155,7 +155,7 @@
                               <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
                                 </i> Inactive <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($inactive_users)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
@@ -166,7 +166,7 @@
                               <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
                                 </i> Suspended <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($suspended_users)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
@@ -527,13 +527,20 @@
                                                  </td>
                                                 <td class="align-middle text-end px-4">
                                                     <div class="d-flex">
-                                                        <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding">
-                                                            Suspend
-                                                        </button>
-                                                        <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding">
-                                                            Deallocate
-                                                        </button>
-                                                        <button class="btn btn-outline-success waves-effect mb-0 mx-1 action_btn_padding">
+                                                        @if($ac_user->vehicle_assign_status=="deallocate")
+                                                            <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding" wire:click="suspendRiderWarning({{$ac_user->id}}, {{$ac_user->active_order->id}})">
+                                                                Suspend
+                                                            </button>
+                                                            <button class="btn btn-primary text-white mb-0 mx-1 action_btn_padding" wire:click="updateUserData({{$ac_user->id}})">
+                                                                Reallocate
+                                                            </button>
+                                                        @endif
+                                                        @if($ac_user->vehicle_assign_status==null)
+                                                            <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding" wire:click="confirmDeallocate({{$ac_user->id}})">
+                                                                Deallocate
+                                                            </button>
+                                                        @endif
+                                                        <button class="btn btn-outline-success waves-effect mb-0 mx-1 action_btn_padding"  wire:click="OpenExchangeForm({{$ac_user->id}},{{ optional($ac_user->active_order)->product->id ?? 'N/A' }},{{$ac_user->active_order->id}},'{{ ucwords(optional($ac_user->active_vehicle->stock)->vehicle_number) }}')">
                                                             Exchange
                                                         </button>
                                                     </div>
@@ -544,6 +551,164 @@
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
                                     {{ $active_users->links() }} <!-- Pagination links -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade {{$active_tab==5?"active show":""}}" id="navs-justified-inactive" role="tabpanel">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Payment Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Dashboard</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                       
+                                        @foreach($inactive_users as $k => $inact_user)
+                                        @php
+                                            $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
+                                            $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
+                                        @endphp
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $k + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center customer-name">
+                                                        <div class="avatar-wrapper me-3">
+                                                            <div class="avatar avatar-sm">
+                                                                @if ($inact_user->image)
+                                                                    <img src="{{ asset($inact_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @else
+                                                                    <div class="avatar-initial rounded-circle {{$colorClass}}">
+                                                                        {{ strtoupper(substr($inact_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($inact_user->name, ' '), 1, 1)) }}
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <a href="{{ route('admin.customer.details', $inact_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($inact_user->name) }}</span>
+                                                            </a>
+                                                            <small class="text-truncate">{{ $inact_user->email }} </small>
+                                                            {{-- | {{$inact_user->country_code}} {{ $inact_user->mobile }} --}}
+                                                        <div>
+                                                    </div>
+                                                    <td class="align-middle text-start">
+                                                        @if($inact_user->await_order)
+                                                            @if($inact_user->await_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$inact_user->await_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$inact_user->await_order->payment_status}}</span>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="align-middle text-start">{{$inact_user->await_order?$inact_user->await_order->product->title:"N/A"}}</td>
+                                                    <td class="align-middle text-sm text-center">
+                                                        <div class="dropdown cursor-pointer">
+                                                            <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                            <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$inact_user->id}}">
+                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-middle text-end px-4">
+                                                        <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                            wire:click="showCustomerDetails({{ $inact_user->id}})">
+                                                        View
+                                                    </button>
+                                                    </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $inactive_users->links() }} <!-- Pagination links -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade {{$active_tab==6?"active show":""}}" id="navs-justified-inactive" role="tabpanel">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Payment Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Dashboard</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                       
+                                        @foreach($suspended_users as $k => $susp_user)
+                                        @php
+                                            $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
+                                            $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
+                                        @endphp
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $k + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center customer-name">
+                                                        <div class="avatar-wrapper me-3">
+                                                            <div class="avatar avatar-sm">
+                                                                @if ($susp_user->image)
+                                                                    <img src="{{ asset($susp_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @else
+                                                                    <div class="avatar-initial rounded-circle {{$colorClass}}">
+                                                                        {{ strtoupper(substr($susp_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($susp_user->name, ' '), 1, 1)) }}
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <a href="{{ route('admin.customer.details', $susp_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($susp_user->name) }}</span>
+                                                            </a>
+                                                            <small class="text-truncate">{{ $susp_user->email }} </small>
+                                                            {{-- | {{$susp_user->country_code}} {{ $susp_user->mobile }} --}}
+                                                        <div>
+                                                    </div>
+                                                    <td class="align-middle text-start">
+                                                        @if($susp_user->await_order)
+                                                            @if($susp_user->await_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$susp_user->await_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$susp_user->await_order->payment_status}}</span>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="align-middle text-start">{{$susp_user->await_order?$susp_user->await_order->product->title:"N/A"}}</td>
+                                                    <td class="align-middle text-sm text-center">
+                                                        <div class="dropdown cursor-pointer">
+                                                            <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                            <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
+                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-middle text-end px-4">
+                                                        <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                            wire:click="showCustomerDetails({{ $susp_user->id}})">
+                                                        View
+                                                    </button>
+                                                    </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $suspended_users->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
@@ -1002,6 +1167,41 @@
             </div>
         </div>
     @endif
+    @if ($isExchangeModal)
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0, 0, 0, 0.5);z-index: 99999;">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Exchange Vehicle</h5>
+                        <button type="button" class="btn-close" wire:click="closeExchangeModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Vehicle Model</label>
+                            <div>
+                                <select class="form-control border border-2 p-2" wire:model="vehicle_model">
+                                    <option value="" selected hidden>Select vehicle</option>
+                                    @foreach ($vehicles as $vehicle_index=>$vehicle_item)
+                                        <option value="{{$vehicle_item->id}}">{{$vehicle_item->vehicle_number}} | {{ optional($vehicle_item->product)->title ?? 'N/A' }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mt-2">
+                                @if(session()->has('exchange_error'))
+                                <div class="alert alert-danger">
+                                    {{ session('exchange_error') }}
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success" wire:click="updateExchangeModel()">Exchange Model</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
     @if ($isPreviewimageModal)
         <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0, 0, 0, 0.5);z-index: 99999;">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -1045,4 +1245,42 @@
         if (flashMessage) flashMessage.remove();
     }, 3000); // Auto-hide flash message after 3 seconds
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+         window.addEventListener('showConfirm', function (event) {
+            let itemId = event.detail[0].itemId;
+            Swal.fire({
+                title: "Deallocate Vehicle?",
+                text: "Are you sure you want to deallocate the vehicle?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, deallocate it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('updateUserData', itemId); // Livewire method
+                    // Swal.fire("Deallocated!", "The vehicle has been deallocated for this user.", "success");
+                }
+            });
+        });
+        window.addEventListener('showWarningConfirm', function (event) {
+            let itemId = event.detail[0].itemId;
+            let orderId = event.detail[0].orderId;
+            // Warning confirmation dialog for suspending a rider
+            Swal.fire({
+                title: "Suspend Rider?",
+                text: "Are you sure you want to suspend this rider? This action can be reversed later.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Suspend"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('suspendRider', itemId, orderId); // Livewire method
+                }
+            });
+        });
+    </script>
 @endsection

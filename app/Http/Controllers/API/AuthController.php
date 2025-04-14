@@ -557,12 +557,17 @@ class AuthController extends Controller
         ], 200); 
     }
     
-    public function revokeTokens($id)
+    public function revokeTokens()
     {
         try {
+
+            $user = $this->getAuthenticatedUser();
+            if ($user instanceof \Illuminate\Http\JsonResponse) {
+                return $user; // Return the response if the user is not authenticated
+            }
             // Delete tokens where tokenable_id matches the user ID
             DB::table('personal_access_tokens')
-                ->where('tokenable_id', $id)
+                ->where('tokenable_id', $user->id)
                 ->delete();
             return response()->json([
                 'status' => true,

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class User extends Authenticatable
 {
@@ -18,7 +19,7 @@ class User extends Authenticatable
    * @var array<int, string>
    */
   protected $fillable = [
-    'customer_id', 'name', 'country_code', 'mobile', 'email', 'email_verified_at', 'password', 'address', 'city', 'pincode', 'profile_image', 'driving_licence', 'driving_licence_back', 'driving_licence_status', 'govt_id_card', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque', 'cancelled_cheque_back', 'cancelled_cheque_status', 'current_address_proof', 'current_address_proof_back', 'current_address_proof_status', 'status', 'kyc_uploaded_at', 'kyc_verified_by', 'is_verified', 'remember_token'
+    'customer_id', 'name', 'country_code', 'mobile', 'email', 'email_verified_at', 'password', 'address', 'city', 'pincode', 'profile_image', 'driving_licence', 'driving_licence_back', 'driving_licence_status', 'govt_id_card', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque', 'cancelled_cheque_back', 'cancelled_cheque_status', 'current_address_proof', 'current_address_proof_back', 'current_address_proof_status', 'status', 'vehicle_assign_status', 'suspended_by', 'kyc_uploaded_at', 'kyc_verified_by', 'is_verified', 'remember_token'
   ];
 
   /**
@@ -67,6 +68,11 @@ class User extends Authenticatable
     ->where('rent_status', 'active')
     ->orderBy('id', 'DESC');
   }
+  public function accessToken()
+  {
+      return $this->hasOne(PersonalAccessToken::class, 'tokenable_id')->where('tokenable_type', User::class);
+  }
+
   public function active_vehicle(){
     return $this->hasOne(AsignedVehicle::class)
     ->where('status', 'assigned')

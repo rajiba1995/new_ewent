@@ -28,6 +28,7 @@ class RiderEngagement extends Component
     public $isModalOpen = false; // Track modal visibility
     public $isRejectModal = false;
     public $isAssignedModal = false;
+    public $isExchangeModal = false;
     public $closeAssignedtModal = false;
     public $isPreviewimageModal = false;
     public $targetRiderId;
@@ -97,6 +98,23 @@ class RiderEngagement extends Component
         $this->vehicles = Stock::whereDoesntHave('assignedVehicle')->where('product_id', $product_id)->orderBy('vehicle_number')->get();
         $this->isAssignedModal = true;
     }
+    public function OpenExchangeForm($rider_id,$product_id,$order_id,$vehicle_number)
+    {
+        $this->targetRiderId = $rider_id;
+        $this->targetOrderId = $order_id;
+        $this->vehicles = Stock::where('product_id', $product_id)
+        ->where('vehicle_number', '!=', $vehicle_number)
+        ->whereDoesntHave('assignedVehicle')
+        ->orderBy('vehicle_number')
+        ->get();
+        $this->isExchangeModal = true;
+    }
+
+    public function closeExchangeModal()
+    {
+        $this->isExchangeModal = false;
+        $this->reset(['vehicle_model']);
+    }
 
     public function updateAssignRider(){
         try {
@@ -155,6 +173,47 @@ class RiderEngagement extends Component
         }
 
     }
+    public function updateExchangeModel(){
+        try {
+            if (!$this->vehicle_model) {
+                session()->flash('exchange_error', 'Please select vehicle model first.');
+                    return false;
+            }
+
+            DB::beginTransaction();
+
+            $assignRider = AsignedVehicle::where('order_id', $this->targetOrderId)->first();
+
+                DB::table('exchange_vehicles')->insert([
+                    'user_id'      => $assignRider->user_id,
+                    'order_id'     => $assignRider->order_id,
+                    'vehicle_id'   => $assignRider->vehicle_id,
+                    'start_date'   => $assignRider->start_date,
+                    'end_date'     => $assignRider->end_date,
+                    'exchanged_by' => Auth::guard('admin')->user()->id, // Fixed typo (extra space)
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ]); 
+
+                $assignRider->vehicle_id = $this->vehicle_model;
+                $assignRider->assigned_by = Auth::guard('admin')->user()->id;
+                $assignRider->save();
+
+            DB::commit();
+
+            session()->flash('message', 'Vehicle exchange to rider successfully.');
+            $this->isExchangeModal = false;
+            $this->active_tab = 4;
+            $this->reset(['vehicle_model','targetOrderId','targetRiderId']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+        //    dd($e->getMessage());
+            session()->flash('exchange_error', 'An unexpected error occurred. Please try again later.');
+            return false;
+        }
+
+    }
     public function OpenPreviewImage($front_image, $back_image,$document_type)
     {   
         $this->preview_front_image = $front_image;
@@ -192,6 +251,7 @@ class RiderEngagement extends Component
         $this->isRejectModal = false;
         $this->reset(['remarks', 'field','document_type', 'id']);
     }
+   
     public function closeAssignedModal()
     {
         $this->isAssignedModal = false;
@@ -235,6 +295,42 @@ class RiderEngagement extends Component
     public function tab_change($value){
         $this->active_tab = $value;
         $this->search = "";
+    }
+
+    public function confirmDeallocate($id){
+        $this->dispatch('showConfirm', ['itemId' => $id]);
+    }
+    public function suspendRiderWarning($id, $orderId){
+        $this->dispatch('showWarningConfirm', ['itemId' => $id, 'orderId'=>$orderId]);
+    }
+    public function updateUserData($itemId)
+    {
+        $user = User::find($itemId);
+        if ($user) {
+            $user->vehicle_assign_status = $user->vehicle_assign_status=="deallocate"?NULL:"deallocate";
+            $user->suspended_by = Auth::guard('admin')->user()->id;
+            $user->save();
+            $this->reset_search();
+            $message = $user->vehicle_assign_status=="deallocate"?"deallocated":"reallocated";
+            session()->flash('success', 'The vehicle has been '.$message.' deallocated for this user!');
+        } 
+    }
+
+    public function suspendRider($itemId, $order_id){
+        if($itemId){
+            $user = User::find($itemId);
+            $user->vehicle_assign_status = 'suspended';
+            $user->suspended_by = Auth::guard('admin')->user()->id;
+            $user->save();
+            $order = Order::find($order_id);
+            $order->rent_status = "deallocated";
+            $order->save();
+            $AsignedVehicle = AsignedVehicle::where('order_id', $order_id)->first();
+            $AsignedVehicle->status = "deallocated";
+            $AsignedVehicle->assigned_by = Auth::guard('admin')->user()->id;
+            $AsignedVehicle->save();
+            session()->flash('success', 'The rider has been suspended and deallocated for this vehicle.');
+        }
     }
     public function render()
     {
@@ -291,7 +387,8 @@ class RiderEngagement extends Component
         ->orderBy('id', 'DESC')
         ->paginate(20);
 
-        $inactive_users = User::with('doc_logs','latest_order')
+        $inactive_users = User::with('doc_logs')
+            ->whereDoesntHave('accessToken')
             ->when($this->search, function ($query) {
                 $searchTerm = '%' . $this->search . '%';
                 $query->where(function ($q) use ($searchTerm) {
@@ -301,15 +398,32 @@ class RiderEngagement extends Component
                     ->orWhere('customer_id', 'like', $searchTerm);
                 });
             })
-            ->where('is_verified', 'verified')
+            // ->where('is_verified', 'verified')
             ->orderBy('id', 'DESC')
             ->paginate(20);
+
+        $suspended_users = User::with('doc_logs')
+            // ->whereDoesntHave('accessToken')
+            ->when($this->search, function ($query) {
+                $searchTerm = '%' . $this->search . '%';
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                    ->orWhere('mobile', 'like', $searchTerm)
+                    ->orWhere('email', 'like', $searchTerm)
+                    ->orWhere('customer_id', 'like', $searchTerm);
+                });
+            })
+            ->where('vehicle_assign_status', 'suspended')
+            ->orderBy('id', 'DESC')
+            ->paginate(20);
+
         return view('livewire.admin.rider-engagement', [
             'all_users' => $all_users,
             'await_users' => $await_users,
             'ready_to_assigns' => $ready_to_assigns,
             'active_users' => $active_users,
             'inactive_users' => $inactive_users,
+            'suspended_users' => $suspended_users,
         ]);
     }
 }
