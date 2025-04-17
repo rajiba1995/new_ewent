@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Models\Stock;
 
 class Dashboard extends Component
 {
@@ -43,8 +44,37 @@ class Dashboard extends Component
 
     public function render()
     {
+        $all_vehicles = Stock::all();
+
+        $assigned_vehicles = Stock::with('assignedVehicle')
+        ->whereHas('assignedVehicle')->get();
+
+        $unassigned_vehicles = Stock::whereDoesntHave('assignedVehicle', function ($query) {
+            $query->whereIn('status', ['assigned','sold']); // Ensure it's truly unassigned
+        })->get();
+
+        $overdue_vehicles = [];
+
+        $total = count($all_vehicles);
+        $assigned = count($assigned_vehicles);
+        $unassigned = count($unassigned_vehicles);
+        $overdue = count($overdue_vehicles);
+
+        $assigned_percent = $total > 0 ? round(($assigned / $total) * 100) : 0;
+        $unassigned_percent = $total > 0 ? round(($unassigned / $total) * 100) : 0;
+        $overdue_percent = $total > 0 ? round(($overdue / $total) * 100) : 0;
+
+        $admin = Auth::guard('admin')->user();
         return view('livewire.admin.dashboard', [
-            'data' => $this->data
+            'data' => $this->data,
+            'all_vehicles' => $total,
+            'assigned_vehicles' => $assigned,
+            'unassigned_vehicles' => $unassigned,
+            'overdue_vehicles' => $overdue,
+            'assigned_percent' => $assigned_percent,
+            'unassigned_percent' => $unassigned_percent,
+            'overdue_percent' => $overdue_percent,
+            'admin' => $admin
         ]);
     }
 }

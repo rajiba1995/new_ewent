@@ -17,77 +17,85 @@
     <!-- Transactions -->
     <div class="col-lg-12">
       <div class="card h-100">
-        <div class="card-header">
+        <div class="card-header rounded-top shadow-sm">
           <div class="d-flex align-items-center justify-content-between">
-            <h5 class="card-title m-0 me-2">Transactions</h5>
-            <div class="dropdown">
-              <button class="btn text-muted p-0" type="button" id="transactionID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="ri-more-2-line ri-24px"></i>
-              </button>
-              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="transactionID">
-                <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-                <a class="dropdown-item" href="javascript:void(0);">Share</a>
-                <a class="dropdown-item" href="javascript:void(0);">Update</a>
-              </div>
+            <div>
+              <h5 class="card-title m-0 me-2 text-primary">🎉 Dashboard</h5>
+              <p class="small mb-0">
+                <span class="h6 mb-0">Welcome to the <strong>E-went Portal</strong> 👋</span><br>
+                Manage your events, bookings, and performance insights all in one place.
+              </p>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success">Active</span><br>
+              {{-- <small>Last login: <span class="text-light">{{ $admin->last_login_at ? $admin->last_login_at->diffForHumans() : 'First login' }}</span></small> --}}
             </div>
           </div>
-          <p class="small mb-0"><span class="h6 mb-0">Total 48.5% Growth</span> 😎 this month</p>
         </div>
+        
         <div class="card-body pt-lg-10">
-          <div class="row g-6">
+          <div class="row g-4">
+            {{-- Total Vehicles --}}
             <div class="col-md-3 col-6">
-              <div class="d-flex align-items-center">
-                <div class="avatar">
-                  <div class="avatar-initial bg-primary rounded shadow-xs">
-                    <i class="ri-pie-chart-2-line ri-24px"></i>
+              <div class="card shadow border-0 text-white" style="background: linear-gradient(to right, #a8edea, #fed6e3);">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <p class="mb-1 fw-semibold">Total Vehicles</p>
+                      <h4 class="mb-0">{{ $all_vehicles }}</h4>
+                    </div>
+                    <span class="text-dark small"><i class="ri-arrow-up-line"></i></span>
                   </div>
-                </div>
-                <div class="ms-3">
-                  <p class="mb-0">Sales</p>
-                  <h5 class="mb-0">245k</h5>
                 </div>
               </div>
             </div>
+          
+            {{-- Assigned Vehicles --}}
             <div class="col-md-3 col-6">
-              <div class="d-flex align-items-center">
-                <div class="avatar">
-                  <div class="avatar-initial bg-success rounded shadow-xs">
-                    <i class="ri-group-line ri-24px"></i>
+              <div class="card shadow border-0 text-white" style="background: linear-gradient(to right, #cbb4d4, #e0c3fc);">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <p class="mb-1 fw-semibold">Assigned Vehicles</p>
+                      <h4 class="mb-0">{{ $assigned_vehicles }}</h4>
+                    </div>
+                    <span class="text-dark small"><i class="ri-arrow-up-line"></i> +{{ $assigned_percent }}%</span>
                   </div>
-                </div>
-                <div class="ms-3">
-                  <p class="mb-0">Customers</p>
-                  <h5 class="mb-0">12.5k</h5>
                 </div>
               </div>
             </div>
+          
+            {{-- Unassigned Vehicles --}}
             <div class="col-md-3 col-6">
-              <div class="d-flex align-items-center">
-                <div class="avatar">
-                  <div class="avatar-initial bg-warning rounded shadow-xs">
-                    <i class="ri-macbook-line ri-24px"></i>
+              <div class="card shadow border-0 text-white" style="background: linear-gradient(to right, #fddb92, #d1fdff);">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <p class="mb-1 fw-semibold">Unassigned Vehicles</p>
+                      <h4 class="mb-0">{{ $unassigned_vehicles }}</h4>
+                    </div>
+                    <span class="text-dark small"><i class="ri-arrow-up-line"></i> +{{ $unassigned_percent }}%</span>
                   </div>
-                </div>
-                <div class="ms-3">
-                  <p class="mb-0">Product</p>
-                  <h5 class="mb-0">1.54k</h5>
                 </div>
               </div>
             </div>
+          
+            {{-- Overdue Vehicles --}}
             <div class="col-md-3 col-6">
-              <div class="d-flex align-items-center">
-                <div class="avatar">
-                  <div class="avatar-initial bg-info rounded shadow-xs">
-                    <i class="ri-money-dollar-circle-line ri-24px"></i>
+              <div class="card shadow border-0 text-white" style="background: linear-gradient(to right, #fda085, #f6d365);">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <p class="mb-1 fw-semibold">Overdue Vehicles</p>
+                      <h4 class="mb-0">{{ $overdue_vehicles }}</h4>
+                    </div>
+                    <span class="text-dark small"><i class="ri-arrow-up-line"></i> +{{ $overdue_percent }}%</span>
                   </div>
-                </div>
-                <div class="ms-3">
-                  <p class="mb-0">Revenue</p>
-                  <h5 class="mb-0">$88k</h5>
                 </div>
               </div>
             </div>
           </div>
+          
         </div>
       </div>
     </div>

@@ -101,7 +101,7 @@
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
                           </li>
-                          <li class="nav-item" role="presentation" wire:click="tab_change(4)">
+                          {{-- <li class="nav-item" role="presentation" wire:click="tab_change(4)">
                             <button type="button" class="nav-link waves-effect {{$active_tab==4?"active":""}}" role="tab" data-bs-toggle="tab"
                               data-bs-target="#navs-justified-maintenance" aria-controls="navs-justified-maintenance" aria-selected="true">
                               <span class="d-none d-sm-block">
@@ -111,7 +111,7 @@
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
-                          </li>
+                          </li> --}}
                           <li class="nav-item" role="presentation" wire:click="tab_change(4)">
                             <button type="button" class="nav-link waves-effect {{$active_tab==4?"active":""}}" role="tab" data-bs-toggle="tab"
                               data-bs-target="#navs-justified-overdue" aria-controls="navs-justified-overdue" aria-selected="true">

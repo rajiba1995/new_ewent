@@ -82,6 +82,7 @@ class VehicleList extends Component
         ->orderBy('id', 'DESC')
         ->orderBy('product_id', 'DESC')
         ->paginate(20);
+        
         $unassigned_vehicles = Stock::whereDoesntHave('assignedVehicle', function ($query) {
             $query->whereIn('status', ['assigned','sold']); // Ensure it's truly unassigned
         })
