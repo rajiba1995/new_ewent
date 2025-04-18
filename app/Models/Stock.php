@@ -19,6 +19,11 @@ class Stock extends Model
         return $this->hasOne(AsignedVehicle::class, 'vehicle_id', 'id')
                     ->where('status', 'assigned'); // Ensure only assigned vehicles are retrieved
     }
+    public function overdueVehicle()
+    {
+        return $this->hasOne(AsignedVehicle::class, 'vehicle_id', 'id')
+                    ->where('status', 'overdue'); // Ensure only assigned vehicles are retrieved
+    }
     
     // If you want to get all assignments (history), use hasMany instead
     public function assignedVehicles()

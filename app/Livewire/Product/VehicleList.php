@@ -83,8 +83,11 @@ class VehicleList extends Component
         ->orderBy('product_id', 'DESC')
         ->paginate(20);
         
+        
         $unassigned_vehicles = Stock::whereDoesntHave('assignedVehicle', function ($query) {
             $query->whereIn('status', ['assigned','sold']); // Ensure it's truly unassigned
+        })->whereDoesntHave('overdueVehicle', function ($query) {
+            $query->whereIn('status', ['overdue']); // Ensure it's truly unassigned
         })
         ->when($this->model, function ($query) {
             $query->where('product_id', $this->model); // Assuming `model_id` is the column for filtering
@@ -100,10 +103,29 @@ class VehicleList extends Component
         })
         ->orderBy('id', 'DESC')
         ->paginate(20);
+
+        
+        $overdue_vehicles = Stock::with('overdueVehicle')
+        ->whereHas('overdueVehicle') // Ensures only assigned vehicles are fetched
+        ->when($this->model, function ($query) {
+            $query->where('product_id', $this->model); // Assuming `model_id` is the column for filtering
+        })
+        ->when($this->search, function ($query) {
+            $searchTerm = '%' . $this->search . '%';
+            $query->where('vehicle_number', 'like', $searchTerm)
+                ->orWhere('imei_number', 'like', $searchTerm)
+                ->orWhere('chassis_number', 'like', $searchTerm)
+                ->orWhere('friendly_name', 'like', $searchTerm);
+        })
+        ->orderBy('id', 'DESC')
+        ->orderBy('product_id', 'DESC')
+        ->paginate(20);
+
         return view('livewire.product.vehicle-list', [
             'all_vehicles' => $all_vehicles,
             'unassigned_vehicles' => $unassigned_vehicles,
             'assigned_vehicles' => $assigned_vehicles,
+            'overdue_vehicles' => $overdue_vehicles,
         ]);
     }
 }

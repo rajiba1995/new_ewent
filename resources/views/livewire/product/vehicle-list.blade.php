@@ -118,7 +118,7 @@
                               <span class="d-none d-sm-block">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
                                 </i> Overdue <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($all_vehicles)}}</span>
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($overdue_vehicles)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
@@ -137,9 +137,9 @@
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
+                                            {{-- <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th> --}}
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
@@ -159,6 +159,8 @@
                                                 <td>
                                                     @if($all_item->assignedVehicle)
                                                         <p class="m-0"><strong>{{$all_item->assignedVehicle->user->name}}</strong></p>
+                                                        <p class="m-0 text-sm text-success"><small>{{$all_item->assignedVehicle->user->country_code}} {{$all_item->assignedVehicle->user->mobile}}</small></p>
+                                                        <p class="m-0 text-sm text-success"><small>{{$all_item->assignedVehicle->user->email}}</small></p>
                                                     <p class="text-sm m-0"><small>Start Date: {{ date('d M y h:i A', strtotime($all_item->assignedVehicle->start_date)) }}</small></p>
                                                         <p class="text-sm m-0"><small>End Date: {{ date('d M y h:i A', strtotime($all_item->assignedVehicle->end_date)) }}</small>
                                                         </p>
@@ -169,8 +171,6 @@
                                                         </p>
                                                     @endif
                                                 </td>
-                                                <td></td>
-                                                <td></td>
                                                 <td>
                                                     @if($all_item->assignedVehicle)
                                                     <span class="badge px-2 rounded-pill bg-label-success text-sm">Assigned Vehicle</span>
@@ -206,9 +206,9 @@
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
+                                            {{-- <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th> --}}
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
@@ -238,8 +238,6 @@
                                                         </p>
                                                     @endif
                                                 </td>
-                                                <td></td>
-                                                <td></td>
                                                 <td>
                                                     @if($unassigned_item->assignedVehicle)
                                                     <span class="badge px-2 rounded-pill bg-label-success text-sm">Assigned Vehicle</span>
@@ -273,9 +271,9 @@
                                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
+                                            {{-- <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th> --}}
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
@@ -295,6 +293,8 @@
                                                 <td>
                                                     @if($assigned_item->assignedVehicle)
                                                         <p class="m-0"><strong>{{$assigned_item->assignedVehicle->user->name}}</strong></p>
+                                                        <p class="m-0 text-sm text-success"><small>{{$assigned_item->assignedVehicle->user->country_code}} {{$assigned_item->assignedVehicle->user->mobile}}</small></p>
+                                                        <p class="m-0 text-sm text-success"><small>{{$assigned_item->assignedVehicle->user->email}}</small></p>
                                                     <p class="text-sm m-0"><small>Start Date: {{ date('d M y h:i A', strtotime($assigned_item->assignedVehicle->start_date)) }}</small></p>
                                                         <p class="text-sm m-0"><small>End Date: {{ date('d M y h:i A', strtotime($assigned_item->assignedVehicle->end_date)) }}</small>
                                                         </p>
@@ -305,8 +305,6 @@
                                                         </p>
                                                     @endif
                                                 </td>
-                                                <td></td>
-                                                <td></td>
                                                 <td>
                                                     @if($assigned_item->assignedVehicle)
                                                     <span class="badge px-2 rounded-pill bg-label-success text-sm">Assigned Vehicle</span>
@@ -328,6 +326,71 @@
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
                                     {{ $assigned_vehicles->links() }} <!-- Pagination links -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade {{$active_tab==4?"active show":""}}" id="navs-justified-messages" role="tabpanel">
+                            
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($overdue_vehicles as $overdue_index => $overdue_item)
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $overdue_index + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center product-name">
+                                                        <div class="d-flex flex-column">
+                                                            <span class="badge bg-label-primary">{{$overdue_item->product?$overdue_item->product->title:"N/A"}}</span>
+                                                            <span class="text-heading fw-medium"> {{ $overdue_item->vehicle_number }}</span>
+                                                            <small class="text-truncate d-none d-sm-block"> {{ $overdue_item->imei_number }}</small></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    @if($overdue_item->overdueVehicle)
+                                                        <p class="m-0"><strong>{{$overdue_item->overdueVehicle->user->name}}</strong></p>
+                                                        <p class="m-0 text-sm text-success"><small>{{$overdue_item->overdueVehicle->user->country_code}} {{$overdue_item->overdueVehicle->user->mobile}}</small></p>
+                                                        <p class="m-0 text-sm text-success"><small>{{$overdue_item->overdueVehicle->user->email}}</small></p>
+                                                    <p class="text-sm m-0"><small>Start Date: {{ date('d M y h:i A', strtotime($overdue_item->overdueVehicle->start_date)) }}</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: {{ date('d M y h:i A', strtotime($overdue_item->overdueVehicle->end_date)) }}</small>
+                                                        </p>
+                                                    @else
+                                                        <p class="m-0">N/A</p>
+                                                        <p class="text-sm m-0"><small>Start Date: N/A</small></p>
+                                                        <p class="text-sm m-0"><small>End Date: N/A</small>
+                                                        </p>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($overdue_item->overdueVehicle)
+                                                    <span class="badge px-2 rounded-pill bg-label-danger text-sm">Overdue</span>
+                                                    @else
+                                                        <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <a href="{{route('admin.vehicle.detail', $overdue_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
+                                                </td>
+                                                <td>
+                                                    <a href="javascript:void(0)">
+                                                        <span class="control"></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $overdue_vehicles->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
