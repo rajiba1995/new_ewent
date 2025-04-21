@@ -83,8 +83,12 @@
                                                         @if($sub_item->status) checked @endif>
                                                 </div>
                                                 <button wire:click="edit({{ $sub_item->id }})" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit"><i class="ri-edit-box-line ri-20px text-info"></i></button>
-
+                                                @php
+                                                    $orders = App\Models\Order::where('subscription_id', $sub_item->id)->get()->count();
+                                                @endphp
+                                                @if($orders==0)
                                                 <button wire:click="destroy({{ $sub_item->id }})" class="btn btn-sm btn-icon delete-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Delete"> <i class="ri-delete-bin-7-line ri-20px text-danger"></i> </button>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

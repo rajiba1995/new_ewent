@@ -111,7 +111,7 @@
                               <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
                                 </i> All <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-secondary ms-1_5 pt-50">{{count($all_users)}}</span>
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-secondary ms-1_5 pt-50">{{count($all_users)+count($inactive_users)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                           </li>
@@ -267,6 +267,73 @@
                                                     </button>
                                                 </td>
                                             </tr>
+                                        @endforeach
+                                        @php
+
+                                            $inc_index = count($all_users);
+                                            
+                                        @endphp
+                                        @foreach($inactive_users as $all_inact_user)
+                                            @php
+                                                $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
+                                                $colorClass = $colors[$inc_index % count($colors)]; // Rotate colors based on index
+                                              
+                                            @endphp
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $inc_index + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center customer-name">
+                                                        <div class="avatar-wrapper me-3">
+                                                            <div class="avatar avatar-sm">
+                                                                @if ($all_inact_user->profile_image)
+                                                                    <img src="{{ asset($all_inact_user->profile_image) }}" alt="Avatar" class="rounded-circle">
+                                                                @else
+                                                                    <div class="avatar-initial rounded-circle {{$colorClass}}">
+                                                                        {{ strtoupper(substr($all_inact_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($all_inact_user->name, ' '), 1, 1)) }}
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <a href="{{ route('admin.customer.details', $all_inact_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($all_inact_user->name) }}</span>
+                                                            </a>
+                                                            <small class="text-truncate">{{ $all_inact_user->email }} | {{$all_inact_user->country_code}} {{ $all_inact_user->mobile }}</small>
+                                                        <div>
+                                                    </div>
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($all_inact_user->await_order)
+                                                        @if($all_inact_user->await_order->payment_status=="completed")
+                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$all_inact_user->await_order->payment_status}}</span>
+                                                        @else
+                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$all_inact_user->await_order->payment_status}}</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">N/A</td>
+                                                <td class="align-middle text-start">N/A</td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$all_inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$all_inact_user->id}}">
+                                                            {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                                <td class="align-middle text-end px-4">
+                                                    <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                        wire:click="showCustomerDetails({{ $all_inact_user->id}})">
+                                                    View
+                                                </button>
+                                                </td>
+                                            </tr>
+                                            @php
+                                                $inc_index++;
+                                            @endphp
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -527,22 +594,29 @@
                                                  </td>
                                                 <td class="align-middle text-end px-4">
                                                     <div class="d-flex">
-                                                        @if($ac_user->vehicle_assign_status=="deallocate")
-                                                            <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding" wire:click="suspendRiderWarning({{$ac_user->id}}, {{$ac_user->active_order->id}})">
-                                                                Suspend
+                                                        @if(optional($ac_user->active_vehicle)->status=='overdue')
+                                                            <button class="btn btn-danger text-white mb-0 mx-1 action_btn_padding">
+                                                                Overdue
                                                             </button>
-                                                            <button class="btn btn-primary text-white mb-0 mx-1 action_btn_padding" wire:click="updateUserData({{$ac_user->id}})">
-                                                                Reallocate
+                                                        @else
+                                                            @if($ac_user->vehicle_assign_status=="deallocate")
+                                                                <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding" wire:click="suspendRiderWarning({{$ac_user->id}}, {{$ac_user->active_order->id}})">
+                                                                    Suspend
+                                                                </button>
+                                                                <button class="btn btn-primary text-white mb-0 mx-1 action_btn_padding" wire:click="updateUserData({{$ac_user->id}})">
+                                                                    Reallocate
+                                                                </button>
+                                                            @endif
+                                                            @if($ac_user->vehicle_assign_status==null)
+                                                                <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding" wire:click="confirmDeallocate({{$ac_user->id}})">
+                                                                    Deallocate
+                                                                </button>
+                                                            @endif
+                                                            <button class="btn btn-outline-success waves-effect mb-0 mx-1 action_btn_padding"  wire:click="OpenExchangeForm({{$ac_user->id}},{{ optional($ac_user->active_order)->product->id ?? 'N/A' }},{{$ac_user->active_order->id}},'{{ ucwords(optional($ac_user->active_vehicle->stock)->vehicle_number) }}')">
+                                                                Exchange
                                                             </button>
                                                         @endif
-                                                        @if($ac_user->vehicle_assign_status==null)
-                                                            <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding" wire:click="confirmDeallocate({{$ac_user->id}})">
-                                                                Deallocate
-                                                            </button>
-                                                        @endif
-                                                        <button class="btn btn-outline-success waves-effect mb-0 mx-1 action_btn_padding"  wire:click="OpenExchangeForm({{$ac_user->id}},{{ optional($ac_user->active_order)->product->id ?? 'N/A' }},{{$ac_user->active_order->id}},'{{ ucwords(optional($ac_user->active_vehicle->stock)->vehicle_number) }}')">
-                                                            Exchange
-                                                        </button>
+                                                        
                                                     </div>
                                                 </td>
                                             </tr>

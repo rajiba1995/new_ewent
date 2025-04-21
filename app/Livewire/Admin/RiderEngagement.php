@@ -5,8 +5,10 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
-use App\Models\order;
+use App\Models\Order;
 use App\Models\Stock;
+use App\Models\Payment;
+use App\Models\PaymentItem;
 use App\Models\AsignedVehicle;
 use App\Models\UserKycLog;
 use Illuminate\Support\Facades\DB;
@@ -158,6 +160,18 @@ class RiderEngagement extends Component
                 $order->rent_end_date = $endDate;
                 $order->save();
 
+                $payment = Payment::where('order_id', $order->id)
+                    ->where('order_type', 'new_subscription')
+                    ->latest('id')
+                    ->first();
+
+                if ($payment) {
+                    PaymentItem::where('payment_id', $payment->id)
+                        ->where('payment_for', 'new_subscription')
+                        ->update(['vehicle_id' => $this->vehicle_model]);
+                }
+
+
             DB::commit();
 
             session()->flash('message', 'Vehicle assigned to rider successfully.');
@@ -198,6 +212,17 @@ class RiderEngagement extends Component
                 $assignRider->vehicle_id = $this->vehicle_model;
                 $assignRider->assigned_by = Auth::guard('admin')->user()->id;
                 $assignRider->save();
+
+                $payment = Payment::where('order_id', $assignRider->order_id)
+                    ->where('order_type', 'new_subscription')
+                    ->latest('id')
+                    ->first();
+
+                if ($payment) {
+                    PaymentItem::where('payment_id', $payment->id)
+                        ->where('payment_for', 'new_subscription')
+                        ->update(['vehicle_id' => $this->vehicle_model]);
+                }
 
             DB::commit();
 

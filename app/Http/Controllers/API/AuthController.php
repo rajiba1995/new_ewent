@@ -9,6 +9,8 @@ use App\Models\WhyEwent;
 use App\Models\UserKycLog;
 use App\Models\Faq;
 use App\Models\Product;
+use App\Models\Payment;
+use App\Models\PaymentItem;
 use App\Models\Offer;
 use App\Models\RentalPrice;
 use App\Models\Order;
@@ -20,6 +22,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -917,7 +920,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:products,id', // Ensure 'id' column exists
             'is_driving_licence_required' => 'required', // If it's a boolean
-            'subscription_id' => 'required', // Ensure 'id' column exists
+            // 'subscription_id' => 'required', // Ensure 'id' column exists
             'subscription_type' => 'required|string|max:255',
             'deposit_amount' => 'required|numeric', // Ensure it's a number
             'rental_amount' => 'required|numeric',
@@ -929,8 +932,8 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed. Please check the errors below.',
-                'errors' => $validator->errors()->first(), // Return all errors instead of only the first
+                // 'message' => 'Validation failed. Please check the errors below.',
+                'message' => $validator->errors()->first(), // Return all errors instead of only the first
             ], 422);
         }
 
@@ -959,7 +962,6 @@ class AuthController extends Controller
             ], 404);
         }
 
-
         $RentalPrice = RentalPrice::where('product_id', $request->product_id)->where('subscription_type', $request->subscription_type)->first();
         if(!$RentalPrice){
             return response()->json([
@@ -978,25 +980,55 @@ class AuthController extends Controller
 
         DB::beginTransaction();
         try{
-            $existing_order = Order::where('user_id', $user->id)->where('rent_status', 'await')->orderBy('id', 'DESC')->first();
+            $existing_order = Order::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
             if($existing_order){
-                $existing_order->update([
-                    'user_id' => $user->id,
-                    'product_id' => (int)$request->product_id,
-                    'deposit_amount' =>$RentalPrice->deposit_amount,
-                    'rental_amount' => $RentalPrice->rental_amount,
-                    'total_price' => $total_amount,
-                    'final_amount' => $total_amount,
-                    'subscription_id' => (int)$RentalPrice->id,
-                    'quantity' => 1,
-                    'payment_mode' => "Online",
-                    // 'shipping_address' => $request->shipping_address,
-                    'rent_duration' => $RentalPrice->duration,
-                    'rent_status' => "await",
-                ]);
-                $order = $existing_order;
+                if($existing_order->rent_status =="await"){
+                    $existing_order->update([
+                        'user_id' => $user->id,
+                        'product_id' => (int)$request->product_id,
+                        'deposit_amount' =>$RentalPrice->deposit_amount,
+                        'rental_amount' => $RentalPrice->rental_amount,
+                        'total_price' => $total_amount,
+                        'final_amount' => $total_amount,
+                        'subscription_id' => (int)$RentalPrice->id,
+                        'quantity' => 1,
+                        'payment_mode' => "Online",
+                        // 'shipping_address' => $request->shipping_address,
+                        'rent_duration' => $RentalPrice->duration,
+                        'rent_status' => "await",
+                    ]);
+                    $order = $existing_order;
+                    $message = "Order updated successfully";
+                    DB::commit();
+    
+                    return response()->json([
+                        'status' => true,
+                        'message' => $message,
+                        'order' => $order,
+                    ], 200);
+    
+                } elseif ($existing_order->rent_status == "ready to assign") {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'You already have an order. Please wait for the cab to be assigned by the admin or cancel the order to proceed.',
+                    ], 404);
+                } elseif ($existing_order->user->vehicle_assign_status == "deallocate") {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'You have been deallocated. Please return the vehicle and contact the admin.',
+                    ], 403);
+                } elseif ($existing_order->rent_status == "active") {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'You already have an active order. Please complete it before creating a new one.',
+                    ], 404);
+                } elseif ($existing_order->rent_status == "suspended") {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Sorry! Your account is suspended. Please contact the administrator for assistance.',
+                    ], 403);
+                }   
             }else{
-                // dd($RentalPrice);
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_type' => 'Rent',
@@ -1008,21 +1040,23 @@ class AuthController extends Controller
                     'final_amount' => $total_amount,
                     'subscription_id' => (int)$RentalPrice->id,
                     'quantity' => 1,
-                    'payment_mode' => "Online",
+                    'payment_status' => "pending",
                     // 'shipping_address' => $request->shipping_address,
                     'rent_duration' => $RentalPrice->duration,
                     'rent_status' => "await",
                 ]);
-            }
-                
-
+    
+                $message = "Order created successfully";
+    
                 DB::commit();
-
+    
                 return response()->json([
                     'status' => true,
-                    'message' => 'Order created successfully.',
+                    'message' => $message,
                     'order' => $order,
                 ], 200);
+            }
+           
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1034,12 +1068,200 @@ class AuthController extends Controller
         }
     }
 
+    public function bookingNewPayment($order_id){
+        DB::beginTransaction();
+        try{
+            $order = Order::find($order_id);
+            if($order->payment_status=="completed"){
+                return response()->json([
+                    'status' => false,
+                    'message' => "Payment already completed for this subscription.",
+                ], 403);
+            }else{
+                $payment = new Payment;
+                $payment->order_id = $order->id;
+                $payment->order_type = 'new_subscription';
+                $payment->payment_method = 'PhonePay';
+                $payment->payment_status = 'completed';
+                $payment->transaction_id = date('dmyhis');
+                $payment->amount = $order->final_amount;
+                $payment->payment_date = date('Y-m-d h:i:s');
+                $payment->save();
+                if($payment){
+                    // Deposit Amount
+                    $payment_item = new PaymentItem;
+                    $payment_item->payment_id = $payment->id;
+                    $payment_item->payment_for = 'new_subscription';
+                    $payment_item->duration = $order->rent_duration;
+                    $payment_item->type = 'deposit';
+                    $payment_item->amount = $order->deposit_amount;
+                    $payment_item->save();
+
+                    // Rental Amount
+                    $payment_item = new PaymentItem;
+                    $payment_item->payment_id = $payment->id;
+                    $payment_item->payment_for = 'new_subscription';
+                    $payment_item->duration = $order->rent_duration;
+                    $payment_item->type = 'rental';
+                    $payment_item->amount = $order->rental_amount;
+                    $payment_item->save();
+                }
+
+                $order->payment_mode = "Online";
+                $order->payment_status = "completed";
+                $order->rent_status = "ready to assign";
+                $order->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Payment has been successfully created.",
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update payment.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function bookingRenewPayment($order_id){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+            
+        $order = Order::with('subscription')->find($order_id);
+        if(!$order){
+            return response()->json([
+                'status' => false,
+                'message' => "Order not found.",
+            ], 404);
+        }
+        $assignRider = AsignedVehicle::where('order_id', $order->id)->first();
+        if($assignRider->status!="overdue"){
+            return response()->json([
+                'status' => false,
+                'message' => "Renewal not allowed. Please try after the subscription end date.",
+            ], 403);
+        }
+
+        DB::beginTransaction();
+        try{
+
+            $payment = new Payment;
+            $payment->order_id = $order->id;
+            $payment->order_type = 'renewal_subscription';
+            $payment->payment_method = 'PhonePay';
+            $payment->payment_status = 'completed';
+            $payment->transaction_id = date('dmyhis');
+            $payment->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
+            $payment->payment_date = date('Y-m-d h:i:s');
+            $payment->save();
+
+            if($payment){
+                // Rental Amount
+                $payment_item = new PaymentItem;
+                $payment_item->payment_id = $payment->id;
+                $payment_item->payment_for = 'renewal_subscription';
+                $payment_item->type = 'rental';
+                $payment_item->vehicle_id = $assignRider->vehicle_id;
+                $payment_item->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
+                $payment_item->duration = $order->subscription ? $order->subscription->duration : $order->rent_duration;
+                $payment_item->save();
+
+                // Update Order
+                $startDate = Carbon::parse($assignRider->end_date);
+                $endDate = $startDate->copy()->addDays($payment_item->duration);
+                
+                $order->payment_mode = "Online";
+                $order->payment_status = "completed";
+                $order->rental_amount = $payment_item->amount;
+                $order->total_price = $order->deposit_amount+$payment_item->amount;
+                $order->final_amount = $order->deposit_amount+$payment_item->amount;
+                $order->rent_duration = $payment_item->duration;
+                $order->rent_start_date = $startDate;
+                $order->rent_end_date = $endDate;
+                $order->save();
+
+                
+
+                DB::table('exchange_vehicles')->insert([
+                    'status'       => "renewal",
+                    'user_id'      => $assignRider->user_id,
+                    'order_id'     => $assignRider->order_id,
+                    'vehicle_id'   => $assignRider->vehicle_id,
+                    'start_date'   => $assignRider->start_date,
+                    'end_date'     => $assignRider->end_date,
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ]); 
+
+                $assignRider->start_date = $startDate;
+                $assignRider->end_date = $endDate;
+                $assignRider->status = "assigned";
+                $assignRider->save();
+
+                DB::commit();
+                
+                return response()->json([
+                    'status' => true,
+                    'message' => "Payment completed and subscription renewed successfully.",
+                ], 200);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update payment.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function bookingCancel($order_id){
+        DB::beginTransaction();
+        try{
+
+            $order = Order::find($order_id);
+            if($order->rent_status=="await"){
+                $order->payment_mode = NULL;
+                $order->payment_status = 'pending';
+                $order->rent_status = 'cancelled';
+                $order->save();
+                DB::commit();
+                return response()->json([
+                    'status' => true,
+                    'message' => "Order has been successfully cancelled.",
+                ], 200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "Cannot cancel. Contact admin.",
+                ], 403);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update payment.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function myActiveSubscription(){
         $user = $this->getAuthenticatedUser();
         if ($user instanceof \Illuminate\Http\JsonResponse) {
             return $user; // Return the response if the user is not authenticated
         }
-        $order = Order::with('vehicle','product')->where('user_id', $user->id)->whereIn('rent_status', ['await','active', 'suspended'])->first();
+        $order = Order::with('vehicle','product')->whereIn('rent_status', ['await', 'active', 'ready to assign', 'suspended', 'deallocated'])->where('user_id', $user->id)->first();
         if($order){
             $data= [
                 'id' => $order->id,
@@ -1055,9 +1277,9 @@ class AuthController extends Controller
                 'model'=>$order->product?$order->product->title:"N/A",
                 'vehicle'=>$order->vehicle?$order->vehicle->stock->vehicle_number:"N/A",
                 'vehicle_status' =>$order->vehicle?$order->vehicle->status:"N/A",
-                'rent_start_date' =>$order->vehicle?$order->vehicle->start_date:"N/A",
-                'rent_end_date' =>$order->vehicle?$order->vehicle->end_date:"N/A",
-                'assigned_at' =>$order->vehicle?$order->vehicle->assigned_at:"N/A",
+                'rent_start_date' =>$order->vehicle?date('d-m-Y h:i a', strtotime($order->vehicle->start_date)):"N/A",
+                'rent_end_date' =>$order->vehicle?date('d-m-Y h:i a', strtotime($order->vehicle->end_date)):"N/A",
+                'assigned_at' =>$order->vehicle?date('d-m-Y h:i a', strtotime($order->vehicle->assigned_at)):"N/A",
             ];
             return response()->json([
                 'status' => true, 

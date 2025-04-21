@@ -75,7 +75,7 @@ class User extends Authenticatable
 
   public function active_vehicle(){
     return $this->hasOne(AsignedVehicle::class)
-    ->where('status', 'assigned')
+    ->whereIn('status', ['assigned','overdue'])
     ->orderBy('id', 'DESC');
   }
   public function doc_logs(){
