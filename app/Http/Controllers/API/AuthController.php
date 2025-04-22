@@ -862,13 +862,85 @@ class AuthController extends Controller
         return response()->json(['status'=>true, 'response'=>$data, 'message'=>'Offer Listing'], 200);
     }
 
-    public function OrderHistory($user_id){
-        $data = Order::where('user_id', $user_id)->orderBy('id', 'DESC')->get();
+    public function OrderHistory(){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        $data = Order::with('product','vehicle','exchange_vehicle')->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
         if(count($data)==0){
             return response()->json(['status'=>false, 'message'=>'oder not found!'], 404);
         }
+        $result = [];
+        foreach($data as $key=>$item){
+            $histories = $item->exchange_vehicle()->orderBy('id', 'ASC')->get();
+          
+            $result[$key]=[
+                'order_number' => $item->order_number,
+                'model' => $item->product ? $item->product->title : "N/A",
+                'subscription_type' => $item->subscription ? ucwords($item->subscription->subscription_type) : "N/A",
+                'deposit_amount'=>$item->deposit_amount,
+                'rental_amount'=>$item->rental_amount,
+                'payment_status'=>ucwords($item->payment_status),
+                'rent_duration'=>$item->rent_duration.' Days',
+                'status'=>$item->rent_status,
+                'order_date'=>date('d-m-Y h:i A', strtotime($item->created_at)),
+            ];
+            foreach($histories as $index=>$history){
+                $result[$key]['history'][$index]=[
+                    'vehicle'=>$history->stock?$history->stock->vehicle_number:"N/A",
+                    'start_date'=>date('d-m-Y h:i A', strtotime($history->start_date)),
+                    'end_date'=>date('d-m-Y h:i A', strtotime($history->end_date)),
+                    'status'=>ucwords($history->status),
+                    'date'=>date('d-m-Y h:i A', strtotime($history->exchanged_at)),
+                ];
+            }
+            $last_index = count($histories)+1;
+            if(isset($item->vehicle)){
+                $last_item = $item->vehicle;
+                $result[$key]['history'][$last_index]=[
+                    'vehicle'=>$last_item->stock?$last_item->stock->vehicle_number:"N/A",
+                    'start_date'=>date('d-m-Y h:i A', strtotime($last_item->start_date)),
+                    'end_date'=>date('d-m-Y h:i A', strtotime($last_item->end_date)),
+                    'status'=>ucwords($last_item->status),
+                    'date'=>date('d-m-Y h:i A', strtotime($last_item->assigned_at)),
+                ];
+            }
+            
+        }
 
-        return response()->json(['status'=>true, 'response'=>$data, 'message'=>'Order Listing'],200);
+        return response()->json(['status'=>true, 'response'=>$result, 'message'=>'Order Listing'],200);
+    }
+
+    public function paymentHistory(){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+
+        $data = Order::with('product','subscription','payments')->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
+        $result = [];
+
+        foreach($data as $key => $item) {
+           
+            foreach($item->payments as $index=>$sub_item){
+                $result[$index] = [
+                    'order_number' => $item->order_number,
+                    'model' => $item->product ? $item->product->title : "N/A",
+                    'subscription_type' => $item->subscription ? ucwords($item->subscription->subscription_type) : "N/A",
+                    'payment_for' => ucwords(str_replace('_', ' ', $sub_item->order_type)),
+                    'amount'=>$sub_item->amount,
+                    'transaction_id'=>$sub_item->transaction_id,
+                    'payment_method'=>ucwords($sub_item->payment_method),
+                    'payment_date'=>date('d-m-Y h:i A', strtotime($sub_item->payment_date)),
+                ];
+            }
+        }
+        return response()->json([
+            'status' => true,
+            'order' => $result,
+        ], 200);
+      
     }
     public function SellOrderHistory($user_id){
         $data = Order::where('user_id', $user_id)->where('order_type', 'Sell')->orderBy('id', 'DESC')->get();
@@ -1277,9 +1349,9 @@ class AuthController extends Controller
                 'model'=>$order->product?$order->product->title:"N/A",
                 'vehicle'=>$order->vehicle?$order->vehicle->stock->vehicle_number:"N/A",
                 'vehicle_status' =>$order->vehicle?$order->vehicle->status:"N/A",
-                'rent_start_date' =>$order->vehicle?date('d-m-Y h:i a', strtotime($order->vehicle->start_date)):"N/A",
-                'rent_end_date' =>$order->vehicle?date('d-m-Y h:i a', strtotime($order->vehicle->end_date)):"N/A",
-                'assigned_at' =>$order->vehicle?date('d-m-Y h:i a', strtotime($order->vehicle->assigned_at)):"N/A",
+                'rent_start_date' =>$order->vehicle?date('d-m-Y h:i A', strtotime($order->vehicle->start_date)):"N/A",
+                'rent_end_date' =>$order->vehicle?date('d-m-Y h:i A', strtotime($order->vehicle->end_date)):"N/A",
+                'assigned_at' =>$order->vehicle?date('d-m-Y h:i A', strtotime($order->vehicle->assigned_at)):"N/A",
             ];
             return response()->json([
                 'status' => true, 

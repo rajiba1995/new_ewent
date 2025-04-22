@@ -21,10 +21,17 @@ class Order extends Model
     public function subscription(){
         return $this->belongsTo(RentalPrice::class, 'subscription_id', 'id');
     }
+    public function payments(){
+        return $this->hasMany(Payment::class, 'order_id', 'id');
+    }
 
     public function vehicle()
     {
         return $this->hasOne(AsignedVehicle::class);
+    }
+    public function exchange_vehicle()
+    {
+        return $this->hasMany(ExchangeVehicle::class);
     }
     // public function offer(){
     //     return $this->belongsTo(Offer::class, 'offer_id', 'id');

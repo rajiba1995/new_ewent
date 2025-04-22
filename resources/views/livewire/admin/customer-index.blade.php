@@ -617,7 +617,7 @@
                                 </div>
                                 <div class="d-flex my-4">
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                    <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->cancelled_cheque)}}','','Cancelled Cheque')"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
                                     @if($selectedCustomer->cancelled_cheque_status==2)
@@ -688,7 +688,7 @@
                                 </div>
                                 <div class="d-flex my-4">
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                    <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->current_address_proof)}}','{{asset($selectedCustomer->current_address_proof_back)}}','Current Address Proof')"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
                                     @if($selectedCustomer->current_address_proof_back==2)

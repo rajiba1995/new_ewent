@@ -31,7 +31,7 @@ Route::prefix('customer')->group(function () {
         Route::get('revokeTokens', [AuthController::class, 'revokeTokens']);
 
         Route::get('offer-list', [AuthController::class,'OfferList']);
-        Route::get('order-history/{user_id}', [AuthController::class,'OrderHistory']);
+        Route::get('order-history', [AuthController::class,'OrderHistory']);
         Route::get('sell-order-history/{user_id}', [AuthController::class,'SellOrderHistory']);
         Route::get('rent-order-history/{user_id}', [AuthController::class,'RentOrderHistory']);
         Route::get('order-details/{order_id}', [AuthController::class, 'OrderDetails']);
@@ -47,5 +47,6 @@ Route::prefix('customer')->group(function () {
         Route::post('apply/coupon', [OrderController::class, 'ApplyCoupon']);
        
         Route::post('order/create', [OrderController::class, 'createOrder']);
+        Route::get('payment/history', [AuthController::class, 'paymentHistory']);
     });
 });
