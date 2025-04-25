@@ -179,7 +179,13 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{route('admin.vehicle.detail', $all_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_item_item_{{$all_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_item_item_{{$all_item->id}}">
+                                                            <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $all_item->vehicle_track_id)}}">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                                 <td class="text-center">
                                                     <a href="{{route('admin.vehicle.update', $all_item->product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
@@ -246,7 +252,13 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{route('admin.vehicle.detail', $unassigned_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_unassigned_item_{{$unassigned_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_unassigned_item_{{$unassigned_item->id}}">
+                                                            <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $unassigned_item->vehicle_track_id)}}">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <a href="javascript:void(0)">
@@ -313,7 +325,13 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{route('admin.vehicle.detail', $assigned_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_assigned_item_{{$assigned_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_assigned_item_{{$assigned_item->id}}">
+                                                            <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $assigned_item->vehicle_track_id)}}">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <a href="javascript:void(0)">
@@ -378,7 +396,13 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{route('admin.vehicle.detail', $overdue_item->vehicle_track_id)}}" class="badge px-2 rounded-pill bg-label-secondary">Explore</a>
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_overdue_item_item_{{$overdue_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_overdue_item_item_{{$overdue_item->id}}">
+                                                            <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $overdue_item->vehicle_track_id)}}">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <a href="javascript:void(0)">

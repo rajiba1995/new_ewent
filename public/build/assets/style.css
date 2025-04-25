@@ -651,6 +651,10 @@
     margin-bottom: 0px !important;
 }
 
+.movement_overflow{
+    height: 400px;
+    overflow-y: auto;
+}
 
 
 

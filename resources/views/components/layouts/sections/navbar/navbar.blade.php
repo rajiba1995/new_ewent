@@ -40,10 +40,10 @@ $adminUser = Auth::guard('admin')->user();
       <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
         <!-- Search -->
         <div class="navbar-nav align-items-center">
-          <div class="nav-item d-flex align-items-center">
+          {{-- <div class="nav-item d-flex align-items-center">
             <i class="ri-search-line ri-22px me-1_5"></i>
             <input type="text" class="form-control border-0 shadow-none ps-1 ps-sm-2 ms-50" placeholder="Search..." aria-label="Search...">
-          </div>
+          </div> --}}
         </div>
         <!-- /Search -->
         <ul class="navbar-nav flex-row align-items-center ms-auto">
@@ -76,10 +76,10 @@ $adminUser = Auth::guard('admin')->user();
                   </div>
                 </a>
               </li>
-              <li>
+              {{-- <li>
                 <div class="dropdown-divider"></div>
-              </li>
-              <li>
+              </li> --}}
+              {{-- <li>
                 <a class="dropdown-item" href="javascript:void(0);">
                   <i class="ri-user-3-line ri-22px me-2"></i>
                   <span class="align-middle">My Profile</span>
@@ -99,7 +99,7 @@ $adminUser = Auth::guard('admin')->user();
                     <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger h-px-20 d-flex align-items-center justify-content-center">4</span>
                   </span>
                 </a>
-              </li>
+              </li> --}}
               <li>
                 <div class="dropdown-divider"></div>
               </li>

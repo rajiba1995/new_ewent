@@ -25,7 +25,7 @@ class Dashboard extends Component
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "User-Authentication: _kpbswcRHnxsgBCaYeLE",
+            "User-Authentication: " . env('LOCONAV_TOKEN'),
             "Accept: application/json"
         ]);
 

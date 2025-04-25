@@ -10,6 +10,7 @@ use App\Models\ProductType;
 use App\Models\RentalPrice;
 use App\Models\ProductImage;
 use App\Models\ProductFeature;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule; // Import the Rule class
 
 class UpdateProduct extends Component
@@ -142,107 +143,121 @@ class UpdateProduct extends Component
     
     public function updateProduct()
     {
-        $this->validate([
-            'category_id' => 'nullable',
-            'sub_category_id' => 'nullable',
-           'title' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('products', 'title')->ignore($this->productId),
-            ],
-            'product_sku' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('products', 'product_sku')->ignore($this->productId),
-            ],
-            // 'short_desc' => 'required|string|max:255',
-            // 'long_desc' => 'required|string',
-            'image' => $this->image instanceof \Illuminate\Http\UploadedFile ? 'nullable|mimes:jpg,jpeg,png,gif' : 'nullable',
-            'base_price' => $this->is_selling ? 'required|numeric' : 'nullable',
-            'display_price' => $this->is_selling ? 'required|numeric' : 'nullable',
-            // 'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
-            'features.*.title' => 'required|string|max:255', // Validate each feature title
-            'rental_prices.*.duration' => $this->is_rent ? 'required|numeric' : 'nullable',
-            'rental_prices.*.duration_type' => $this->is_rent ? 'required|string' : 'nullable',
-            'rental_prices.*.price' => $this->is_rent ? 'required|numeric' : 'nullable',
-        ]);
+        
+            $this->validate([
+                'category_id' => 'nullable',
+                'sub_category_id' => 'nullable',
+            'title' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'title')->ignore($this->productId),
+                ],
+                'product_sku' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'product_sku')->ignore($this->productId),
+                ],
+                // 'short_desc' => 'required|string|max:255',
+                // 'long_desc' => 'required|string',
+                'image' => $this->image instanceof \Illuminate\Http\UploadedFile ? 'nullable|mimes:jpg,jpeg,png,gif' : 'nullable',
+                'base_price' => $this->is_selling ? 'required|numeric' : 'nullable',
+                'display_price' => $this->is_selling ? 'required|numeric' : 'nullable',
+                // 'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
+                'features.*.title' => 'required|string|max:255', // Validate each feature title
+                // 'rental_prices.*.duration' => $this->is_rent ? 'required|numeric' : 'nullable',
+                // 'rental_prices.*.duration_type' => $this->is_rent ? 'required|string' : 'nullable',
+                // 'rental_prices.*.price' => $this->is_rent ? 'required|numeric' : 'nullable',
+            ]);
+        DB::beginTransaction();
 
-        // Handle image upload
-        if ($this->image && $this->image instanceof \Illuminate\Http\UploadedFile) {
-                $imagePath = storeFileWithCustomName($this->image, 'uploads/product');
-            } else {
-                $imagePath = $this->image; // Use the old image if not updated
+        try {
+            // Handle image upload
+            if ($this->image && $this->image instanceof \Illuminate\Http\UploadedFile) {
+                    $imagePath = storeFileWithCustomName($this->image, 'uploads/product');
+                } else {
+                    $imagePath = $this->image; // Use the old image if not updated
+                }
+
+            // Find the product and update details
+            $product = Product::find($this->productId);
+            $selectedProductTypesString = implode(',', $this->selectedProductTypes);
+            $product->update([
+                'category_id' => $this->category_id,
+                'sub_category_id' => $this->sub_category_id,
+                'title' => ucwords($this->title),
+                'product_sku' => strtoupper($this->product_sku),
+                'types' => $selectedProductTypesString,
+                'short_desc' => $this->short_desc,
+                'long_desc' => $this->long_desc,
+                'image' => $imagePath,
+                'meta_title' => $this->meta_title,
+                'meta_keyword' => $this->meta_keyword,
+                'meta_description' => $this->meta_description,
+                'is_rent' => $this->is_rent,
+                'is_selling' => $this->is_selling,
+                'base_price' => $this->base_price,
+                'display_price' => $this->display_price,
+                // 'per_rent_price' => $this->per_rent_price,
+            ]);
+            // Update rental_price
+            //  foreach ($this->rental_prices as $rental_item) {
+            //     if (!empty($rental_item['id'])) {
+            //         // Update existing feature
+            //         RentalPrice::where('id', $rental_item['id'])->update([
+            //            'duration_type' => $rental_item['duration_type'],
+            //             'duration' => $rental_item['duration'],
+            //             'price' => $rental_item['price'],
+            //         ]);
+            //     } else {
+            //         RentalPrice::create([
+            //             'product_id' => $product->id,
+            //             'duration_type' => $rental_item['duration_type'],
+            //             'duration' => $rental_item['duration'],
+            //             'price' => $rental_item['price'],
+            //         ]);
+            //     }
+            // }
+            // Update features
+            foreach ($this->features as $feature) {
+                if (!empty($feature['id'])) {
+                    // Update existing feature
+                    ProductFeature::where('id', $feature['id'])->update(['title' => $feature['title']]);
+                } else {
+                    // Add new feature
+                    ProductFeature::create([
+                        'product_id' => $this->productId,
+                        'title' => $feature['title'],
+                    ]);
+                }
             }
 
-        // Find the product and update details
-        $product = Product::find($this->productId);
-        $selectedProductTypesString = implode(',', $this->selectedProductTypes);
-        $product->update([
-            'category_id' => $this->category_id,
-            'sub_category_id' => $this->sub_category_id,
-            'title' => ucwords($this->title),
-            'product_sku' => strtoupper($this->product_sku),
-            'types' => $selectedProductTypesString,
-            'short_desc' => $this->short_desc,
-            'long_desc' => $this->long_desc,
-            'image' => $imagePath,
-            'meta_title' => $this->meta_title,
-            'meta_keyword' => $this->meta_keyword,
-            'meta_description' => $this->meta_description,
-            'is_rent' => $this->is_rent,
-            'is_selling' => $this->is_selling,
-            'base_price' => $this->base_price,
-            'display_price' => $this->display_price,
-            // 'per_rent_price' => $this->per_rent_price,
-        ]);
-         // Update rental_price
-         foreach ($this->rental_prices as $rental_item) {
-            if (!empty($rental_item['id'])) {
-                // Update existing feature
-                RentalPrice::where('id', $rental_item['id'])->update([
-                   'duration_type' => $rental_item['duration_type'],
-                    'duration' => $rental_item['duration'],
-                    'price' => $rental_item['price'],
-                ]);
-            } else {
-                RentalPrice::create([
-                    'product_id' => $product->id,
-                    'duration_type' => $rental_item['duration_type'],
-                    'duration' => $rental_item['duration'],
-                    'price' => $rental_item['price'],
-                ]);
+            // Handle multiple image uploads
+            foreach ($this->multipleImages as $image) {
+                if ($image instanceof \Illuminate\Http\UploadedFile) {
+                    // $imagePath = $image->store('uploads/product/multiple', 'public');
+                    $imagePath = storeFileWithCustomName($image, 'uploads/product-images');
+                    ProductImage::create([
+                        'product_id' => $this->productId,
+                        'image' => $imagePath,
+                    ]);
+                }
             }
+
+            DB::commit();
+            session()->flash('message', 'Model updated successfully!');
+            return redirect()->route('admin.product.index');
+
+        } catch (\Exception $e) {
+            // Rollback the transaction if an exception occurs
+            DB::rollBack();
+            // dd($e->getMessage());
+            // Log the exception for debugging
+            // \Log::error('Error uploading CSV data: ' . $e->getMessage());
+            session()->flash('error', 'Error uploading CSV data: ' . $e->getMessage());
+            return;
         }
-        // Update features
-        foreach ($this->features as $feature) {
-            if (!empty($feature['id'])) {
-                // Update existing feature
-                ProductFeature::where('id', $feature['id'])->update(['title' => $feature['title']]);
-            } else {
-                // Add new feature
-                ProductFeature::create([
-                    'product_id' => $this->productId,
-                    'title' => $feature['title'],
-                ]);
-            }
-        }
-
-        // Handle multiple image uploads
-        foreach ($this->multipleImages as $image) {
-            if ($image instanceof \Illuminate\Http\UploadedFile) {
-                // $imagePath = $image->store('uploads/product/multiple', 'public');
-                $imagePath = storeFileWithCustomName($image, 'uploads/product-images');
-                ProductImage::create([
-                    'product_id' => $this->productId,
-                    'image' => $imagePath,
-                ]);
-            }
-        }
-
-        session()->flash('message', 'Model updated successfully!');
-        return redirect()->route('admin.product.index');
     }
 
 

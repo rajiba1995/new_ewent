@@ -37,31 +37,33 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 47.855 47.855" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><path d="M23.928 19.371c-5.675 0-10.866 2.886-13.885 7.719a2.5 2.5 0 0 0 4.241 2.648c2.099-3.361 5.705-5.367 9.644-5.367s7.544 2.006 9.644 5.367a2.497 2.497 0 0 0 3.444.797 2.5 2.5 0 0 0 .796-3.445c-3.018-4.833-8.208-7.719-13.884-7.719z" style="" fill="#010002" data-original="#010002" class=""></path><path d="M47.476 21.07C42.365 12.883 33.562 7.996 23.928 7.996S5.492 12.883.38 21.07a2.5 2.5 0 1 0 4.241 2.648c4.192-6.714 11.41-10.722 19.307-10.722s15.115 4.008 19.307 10.722a2.498 2.498 0 0 0 3.444.796 2.5 2.5 0 0 0 .797-3.444z" style="" fill="#010002" data-original="#010002" class=""></path><circle cx="23.928" cy="35.745" r="4.114" style="" fill="#010002" data-original="#010002" class=""></circle></g></svg>
                             </figure>
                             <figcaption>
+                                <h5>{{$movement['status']}}</h5>
                                 <h6>Last Online</h6>
-                                <span>February, 25, 2025, 5:45 PM</span>
+                                <span>{{$movement['time_ago']}}</span><br>
+                                <span>{{$movement['last_online']}}</span>
                             </figcaption>
                         </div>
 
-                        <div class="battery-holder mb-5">
+                        {{-- <div class="battery-holder mb-5">
                             <span>SOC</span>
                             <div class="horri-battery">
                                 <div class="battery-round"></div>
                                 <div class="battery-inner" data-width="30%" style="width:30%;"></div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="pill-box mb-5">
                             <div class="box">
-                                <input type="checkbox" for="ignation" name="ignation">
+                                <input type="checkbox" for="ignation" name="ignation" {{$ignation_status=='ON'?"checked":""}}>
                                 <div class="color-box"></div>
                                 <span class="icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 64 64" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><path d="M55.019 27.497H30.154A13.468 13.468 0 0 0 4 32.026c.22 14.54 19.71 18.625 25.784 5.468l2.69 1.77a.997.997 0 0 0 1.25-.12l3.938-3.829 3.73 3.81a1.027 1.027 0 0 0 .74.3.974.974 0 0 0 .72-.33l3.389-3.77 4.139 3.84a1.022 1.022 0 0 0 1.18.13l7.568-4.31a.876.876 0 0 0 .29-.25 4.978 4.978 0 0 0-4.4-7.238zm-41.811 8.278a3.75 3.75 0 0 1 0-7.498 3.75 3.75 0 0 1 0 7.498z" fill="#000000" opacity="1" data-original="#000000" class=""></path><path d="M13.208 30.276a1.75 1.75 0 0 0 0 3.5 1.75 1.75 0 0 0 0-3.5z" fill="#000000" opacity="1" data-original="#000000" class=""></path></g></svg>
                                 </span>
                                 <h6>Ignation State</h6>
-                                <span class="value">ON</span>
+                                <span class="value">{{$ignation_status}}</span>
                             </div>
 
-                            <div class="box">
+                            {{-- <div class="box">
                                 <input type="checkbox" for="session" name="session">
                                 <div class="color-box"></div>
                                 <span class="icon">
@@ -69,27 +71,29 @@
                                 </span>
                                 <h6>Session</h6>
                                 <span class="value">ON</span>
-                            </div>
+                            </div> --}}
 
                             <div class="box">
                                 <input type="checkbox" for="travel" name="travel">
                                 <div class="color-box"></div>
                                 <span class="icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 53 53" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><path d="M37.64 10.77c.39.4.64.95.64 1.55v15.04c0 1.21-.98 2.19-2.19 2.19s-2.2-.98-2.2-2.19H26.5c-2.29 0-4.13-1.85-4.13-4.12V22l-10.04-.04c-1.55-.01-2.16 1.17-2.31 1.55-.15.36-.55 1.62.54 2.71l5.16 5.16c1.96 1.97 2.51 4.77 1.46 7.34-1.07 2.56-3.45 4.15-6.21 4.15H5.61c-.58 0-1.11-.24-1.5-.62-.38-.38-.61-.91-.61-1.5 0-1.16.94-2.11 2.11-2.11h5.36c1.54.01 2.15-1.18 2.31-1.54.14-.36.55-1.63-.55-2.73l-5.16-5.16c-1.95-1.95-2.51-4.77-1.45-7.32 1.06-2.56 3.44-4.16 6.21-4.15.1 0 7.53-.04 10.04-.06v-1.23c0-2.28 1.84-4.12 4.13-4.12h7.39v-.01a2.198 2.198 0 0 1 3.75-1.55zM49.5 24.48c0 .55-.22 1.05-.58 1.41-.36.36-.86.58-1.41.58h-7.23v-3.98h7.23c1.1 0 1.99.89 1.99 1.99zM47.51 17.19h-7.23v-3.97h7.23a1.987 1.987 0 0 1 1.41 3.39c-.36.36-.86.58-1.41.58z" fill="#000000" opacity="1" data-original="#000000" class=""></path></g></svg>
+                                    <i class="fa-solid fa-road"></i>
                                 </span>
-                                <h6>Total Travelled</h6>
-                                <span class="value">856km</span>
+                                
+                                <h6>Today Travelled</h6>
+                                <span class="value">{{$day_wise_distance_travelled['value']}}{{$day_wise_distance_travelled['unit']}}</span>
                             </div>
 
                             <div class="box">
-                                <input type="checkbox" for="range" name="range">
+                                <input type="checkbox" for="speed" name="speed">
                                 <div class="color-box"></div>
                                 <span class="icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><g data-name="3 Battery"><path d="M354.44 68.79H157.56A32.62 32.62 0 0 0 125 101.37v361.05A32.62 32.62 0 0 0 157.56 495h196.88A32.62 32.62 0 0 0 387 462.42v-361a32.62 32.62 0 0 0-32.56-32.63zm-43.6 231.76a27.76 27.76 0 0 1-9.36 20.85l-69.08 61.24a6.24 6.24 0 0 1-10.09-6.57l16.32-51.25a9.45 9.45 0 0 0-9-12.32 28.46 28.46 0 0 1-28.47-28.5 28.49 28.49 0 0 1 7.65-19.41l77.49-83.06a6.24 6.24 0 0 1 10.52 6.11l-22.62 73.17a9.27 9.27 0 0 0 8.85 12 27.78 27.78 0 0 1 27.79 27.73zM307.18 34.84A17.86 17.86 0 0 0 289.34 17h-66.68a17.86 17.86 0 0 0-17.84 17.84v21.95h102.36z" fill="#000000" opacity="1" data-original="#000000" class=""></path></g></g></svg>
+                                    <i class="fa-solid fa-tachometer-alt"></i>
                                 </span>
-                                <h6>Remaining Range</h6>
-                                <span class="value">66km</span>
+                                <h6>{{$speedData['display_name']}}</h6>
+                                <span class="value" id="vehicle-speed">{{$speedData['value']}} {{$speedData['unit']}}</span>
                             </div>
+                            
 
                         </div>
 
@@ -108,10 +112,10 @@
                 @if($map['success']==true)
                     <div class="heading-group">
                         <h5>Live Location</h5>
-                        <a href="#" class="avarage-btm">
+                        {{-- <a href="#" class="avarage-btm">
                             <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 64 64" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><g data-name="Layer 81"><path d="M57.29 4.71h-12.5a2 2 0 0 0 0 4h10.5v10.5a2 2 0 0 0 4 0V6.71a2 2 0 0 0-2-2zM19.21 4.71H6.71a2 2 0 0 0-2 2v12.5a2 2 0 0 0 4 0V8.71h10.5a2 2 0 0 0 0-4zM19.21 55.29H8.71v-10.5a2 2 0 0 0-4 0v12.5a2 2 0 0 0 2 2h12.5a2 2 0 0 0 0-4zM57.29 42.79a2 2 0 0 0-2 2v10.5h-10.5a2 2 0 0 0 0 4h12.5a2 2 0 0 0 2-2v-12.5a2 2 0 0 0-2-2z" fill="#000000" opacity="1" data-original="#000000"></path></g></g></svg>
                             fullscreen
-                        </a>
+                        </a> --}}
                     </div>
 
                     <div class="map-view text-center p-4">
@@ -143,15 +147,15 @@
 
     <div class="full-info-area mt-5">
         <ul class="tab-nav">
-            <li><a href="#tab1">Battery Metrics</a></li>
-            <li><a href="#tab2">Motor Metrics</a></li>
+            {{-- <li><a href="#tab1">Battery Metrics</a></li>
+            <li><a href="#tab2">Motor Metrics</a></li> --}}
             <li><a href="#tab3">Today Trips</a></li>
-            <li><a href="#tab4">Odometter Logs</a></li>
+            {{-- <li><a href="#tab4">Odometter Logs</a></li> --}}
             <li><a href="#tab5">Historical Logs</a></li>
             <li><a href="#tab6">Immobilize History</a></li>
         </ul>
         <div class="tab-content-holder">
-            <div class="tab-content" id="tab1">
+            {{-- <div class="tab-content" id="tab1">
                 <div class="pill-box pill-box-new mb-5">
                     <div class="box">
                         <span class="icon">
@@ -195,7 +199,7 @@
 
                 </div>
 
-            <div class="row">
+                <div class="row">
                     <div class="col-md-3">
                         <div class="white-part p-4 battery-text-style">
                             <h5>Cell Temp 1</h5>
@@ -236,11 +240,11 @@
                             </div>
                         </div>
                     </div>
-            </div>
+                </div>
 
-            </div>
+            </div> --}}
 
-            <div class="tab-content" id="tab2">
+            {{-- <div class="tab-content" id="tab2">
                 <div class="pill-box pill-box-new mb-5">
                     <div class="box">
                         <span class="icon">
@@ -283,15 +287,147 @@
                     </div>
 
                 </div>
-            </div>
+            </div> --}}
 
             <div class="tab-content" id="tab3">
-                ascasccsac
+                @if($day_wise_distance_timeline && null !== $day_wise_distance_timeline['stats'])
+                <div class="pill-box pill-box-new mb-5">
+                    @if(isset($day_wise_distance_timeline['stats']['distance']))
+                        <div class="box">
+                            <span class="icon">
+                                <i class="fa-solid fa-road"></i>
+                            </span>
+                            <h6>Total Travel</h6>
+                            <span class="value">{{$day_wise_distance_timeline['stats']['distance']['value']}} {{$day_wise_distance_timeline['stats']['distance']['unit']}}</span>
+                        </div>
+                    @endif
+                    @if(isset($day_wise_distance_timeline['stats']['runningTime']))
+                        <div class="box">
+                            <span class="icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </span>
+                            <h6>Running Time</h6>
+                            <span class="value">{{$day_wise_distance_timeline['stats']['runningTime']['value']}} {{$day_wise_distance_timeline['stats']['runningTime']['unit']}}</span>
+                        </div>
+                    @endif
+                    @if(isset($day_wise_distance_timeline['stats']['stoppageTime']))
+                        <div class="box">
+                            <span class="icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </span>
+                            <h6>Stoppage Time</h6>
+                            <span class="value">{{$day_wise_distance_timeline['stats']['stoppageTime']['value']}} {{$day_wise_distance_timeline['stats']['stoppageTime']['unit']}}</span>
+                        </div>
+                    @endif
+                    @if(isset($day_wise_distance_timeline['stats']['offlineTime']))
+                        <div class="box">
+                            <span class="icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </span>
+                            <h6>Offline Time</h6>
+                            <span class="value">{{$day_wise_distance_timeline['stats']['offlineTime']['value']}} {{$day_wise_distance_timeline['stats']['offlineTime']['unit']}}</span>
+                        </div>
+                    @endif
+                    @if(isset($day_wise_distance_timeline['stats']['averageSpeed']))
+                        <div class="box">
+                            <span class="icon">
+                                <i class="fa-solid fa-tachometer-alt"></i>
+                            </span>
+                            <h6>Average Speed</h6>
+                            <span class="value">{{$day_wise_distance_timeline['stats']['averageSpeed']['value']}} {{$day_wise_distance_timeline['stats']['averageSpeed']['unit']}}</span>
+                        </div>
+                    @endif
+                </div>
+                @else
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="white-part p-5">
+                                <div class="alert alert-danger">
+                                    Data not found!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                <div class="row my-5">
+                    <div class="col-md-4">
+                        <div class="white-part p-5">
+                            <div class="heading-group">
+                                <h5>Day Locations</h5>
+                            </div>
+                            @if($day_wise_distance_timeline && null !== $day_wise_distance_timeline['startLocation'] && null !== $day_wise_distance_timeline['endLocation'])
+                                <ul class="icon-list">
+                                    <li><i class="fa-solid fa-circle-arrow-right"></i> Start Location: <br>
+                                        <span>
+                                            <strong>Address:</strong> {{$day_wise_distance_timeline['startLocation']['address']}}
+                                        </span>
+                                    </li>
+                                    <li><i class="fa-solid fa-circle-arrow-right"></i> End Location: <br>
+                                        <span>
+                                            <strong>Address:</strong> {{$day_wise_distance_timeline['endLocation']['address']}}
+                                        </span>
+                                    </li>
+                                </ul>
+                            @else
+                                <div class="alert alert-danger">
+                                   Data not found!
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="white-part p-5">
+
+                            <div class="heading-group">
+                                <h5>Vehicle Movement Timeline</h5>
+                            </div>
+                           
+                            <div class="movement_overflow">
+                                @if($day_wise_distance_timeline && null !== $day_wise_distance_timeline['timeline'])
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Movement Status</th>
+                                                <th>Start Location</th>
+                                                <th>End Location</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($day_wise_distance_timeline['timeline'] as $timeline)
+                                                <tr>
+                                                    <td class="text-{{$timeline['movementStatus']=="Moving"?"success":"danger"}}">{{$timeline['movementStatus']}}</td>
+                                                    <td>
+                                                        <strong>Start Time:</strong> {{ \Carbon\Carbon::createFromTimestamp($timeline['startLocation']['timestamp'])->setTimezone('Asia/Kolkata')->format('F d, Y, g:i A T') }} <br>
+                                                        <strong>Address:</strong> <small>{{$timeline['endLocation']['address']}}</small>
+                                                    </td>
+                                                    <td>
+                                                        <strong>Stop Time:</strong> {{ \Carbon\Carbon::createFromTimestamp($timeline['endLocation']['timestamp'])->setTimezone('Asia/Kolkata')->format('F d, Y, g:i A T') }} <br>
+                                                        <strong>Address:</strong> <small>{{$timeline['endLocation']['address']}}</small>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="3">
+                                                        <div class="alert alert-danger">
+                                                            Data not found!
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        
+                                        </tbody>
+                                    </table>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="tab-content" id="tab4">
+            {{-- <div class="tab-content" id="tab4">
                 ascasccsac
-            </div>
+            </div> --}}
 
             <div class="tab-content" id="tab5">
                 ascasccsac

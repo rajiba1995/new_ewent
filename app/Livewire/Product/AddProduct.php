@@ -72,9 +72,9 @@ class AddProduct extends Component
             'display_price' => $this->is_selling ? 'required|numeric' : 'nullable',
             // 'per_rent_price' => $this->is_rent ? 'required|numeric' : 'nullable',
             'features.*.title' => 'required|string|max:255',
-            'rental_prices.*.duration' => $this->is_rent ? 'required|numeric' : 'nullable',
-            'rental_prices.*.duration_type' => $this->is_rent ? 'required|string' : 'nullable',
-            'rental_prices.*.price' => $this->is_rent ? 'required|numeric' : 'nullable',
+            // 'rental_prices.*.duration' => $this->is_rent ? 'required|numeric' : 'nullable',
+            // 'rental_prices.*.duration_type' => $this->is_rent ? 'required|string' : 'nullable',
+            // 'rental_prices.*.price' => $this->is_rent ? 'required|numeric' : 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -121,16 +121,16 @@ class AddProduct extends Component
                     'title' => $feature['title'],
                 ]);
             }
-            if(count($this->rental_prices)>0){
-                foreach ($this->rental_prices as $rental_item) {
-                    RentalPrice::create([
-                        'product_id' => $product->id,
-                        'duration_type' => $rental_item['duration_type'],
-                        'duration' => $rental_item['duration'],
-                        'price' => $rental_item['price'],
-                    ]);
-                }
-            }
+            // if(count($this->rental_prices)>0){
+            //     foreach ($this->rental_prices as $rental_item) {
+            //         RentalPrice::create([
+            //             'product_id' => $product->id,
+            //             'duration_type' => $rental_item['duration_type'],
+            //             'duration' => $rental_item['duration'],
+            //             'price' => $rental_item['price'],
+            //         ]);
+            //     }
+            // }
             // Handle multiple images upload
             if ($this->multipleImages) {
                 foreach ($this->multipleImages as $image) {
