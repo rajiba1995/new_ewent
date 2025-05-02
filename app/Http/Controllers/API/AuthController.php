@@ -1000,6 +1000,7 @@ class AuthController extends Controller
         ]);
         
        
+        
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
@@ -1008,7 +1009,7 @@ class AuthController extends Controller
                 'message' => $validator->errors()->first(), // Return all errors instead of only the first
             ], 422);
         }
-
+        // dd($validator);
         // Check User Verification
         if ($user->is_verified!=="verified") {
             return response()->json([
@@ -1017,6 +1018,12 @@ class AuthController extends Controller
             ], 404);
         }
 
+        if ($user->vehicle_assign_status == "suspended") {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sorry! Your account is suspended. Please contact the administrator for assistance.',
+            ], 404);
+        } 
         // Check Driving Licence Verification
         if ($request->is_driving_licence_required==1 && $user->driving_licence_status!=2) {
             return response()->json([
@@ -1049,12 +1056,13 @@ class AuthController extends Controller
                   'message' => "The total amount does not match the required amount. Please check and try again."
             ], 404);
         }
-
+// dd($validator);
         DB::beginTransaction();
         try{
             $existing_order = Order::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+          
             if($existing_order){
-                if($existing_order->rent_status =="await"){
+                if($existing_order->rent_status =="pending"){
                     $existing_order->update([
                         'user_id' => $user->id,
                         'product_id' => (int)$request->product_id,
@@ -1067,7 +1075,7 @@ class AuthController extends Controller
                         'payment_mode' => "Online",
                         // 'shipping_address' => $request->shipping_address,
                         'rent_duration' => $RentalPrice->duration,
-                        'rent_status' => "await",
+                        'rent_status' => "pending",
                     ]);
                     $order = $existing_order;
                     $message = "Order updated successfully";
@@ -1079,7 +1087,7 @@ class AuthController extends Controller
                         'order' => $order,
                     ], 200);
     
-                } elseif ($existing_order->rent_status == "ready to assign") {
+                }elseif ($existing_order->rent_status == "ready to assign") {
                     return response()->json([
                         'status' => false,
                         'message' => 'You already have an order. Please wait for the cab to be assigned by the admin or cancel the order to proceed.',
@@ -1099,8 +1107,9 @@ class AuthController extends Controller
                         'status' => false,
                         'message' => 'Sorry! Your account is suspended. Please contact the administrator for assistance.',
                     ], 403);
-                }   
-            }else{
+                } 
+            }
+            // else{
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_type' => 'Rent',
@@ -1115,23 +1124,24 @@ class AuthController extends Controller
                     'payment_status' => "pending",
                     // 'shipping_address' => $request->shipping_address,
                     'rent_duration' => $RentalPrice->duration,
-                    'rent_status' => "await",
+                    'rent_status' => "pending",
                 ]);
-    
+
                 $message = "Order created successfully";
-    
+
                 DB::commit();
-    
+
                 return response()->json([
                     'status' => true,
                     'message' => $message,
                     'order' => $order,
                 ], 200);
-            }
+
            
 
         } catch (\Exception $e) {
             DB::rollBack();
+            // dd($e->getMessage());
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to create order.',
@@ -1301,7 +1311,7 @@ class AuthController extends Controller
         try{
 
             $order = Order::find($order_id);
-            if($order->rent_status=="await"){
+            if($order->rent_status=="pending"){
                 $order->payment_mode = NULL;
                 $order->payment_status = 'pending';
                 $order->rent_status = 'cancelled';
@@ -1333,7 +1343,7 @@ class AuthController extends Controller
         if ($user instanceof \Illuminate\Http\JsonResponse) {
             return $user; // Return the response if the user is not authenticated
         }
-        $order = Order::with('vehicle','product')->whereIn('rent_status', ['await', 'active', 'ready to assign', 'suspended', 'deallocated'])->where('user_id', $user->id)->first();
+        $order = Order::with('vehicle','product')->whereIn('rent_status', ['pending', 'active', 'ready to assign', 'suspended', 'deallocated'])->where('user_id', $user->id)->first();
         if($order){
             $data= [
                 'id' => $order->id,

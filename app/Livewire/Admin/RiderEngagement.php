@@ -322,38 +322,47 @@ class RiderEngagement extends Component
         $this->search = "";
     }
 
-    public function confirmDeallocate($id){
-        $this->dispatch('showConfirm', ['itemId' => $id]);
+    public function confirmDeallocate($order_id){
+        $this->dispatch('showConfirm', ['itemId' => $order_id]);
     }
-    public function suspendRiderWarning($id, $orderId){
-        $this->dispatch('showWarningConfirm', ['itemId' => $id, 'orderId'=>$orderId]);
+    public function suspendRiderWarning($id){
+        $this->dispatch('showWarningConfirm', ['itemId' => $id]);
     }
     public function updateUserData($itemId)
     {
-        $user = User::find($itemId);
-        if ($user) {
-            $user->vehicle_assign_status = $user->vehicle_assign_status=="deallocate"?NULL:"deallocate";
-            $user->suspended_by = Auth::guard('admin')->user()->id;
-            $user->save();
+        $order = Order::find($itemId);
+        if ($order) {
+
+            $AsignedVehicle = AsignedVehicle::where('order_id', $itemId)->first();
+            $AsignedVehicle->deallocated_at = date('Y-m-d h:i:s');
+            $AsignedVehicle->deallocated_by = Auth::guard('admin')->user()->id;
+            $AsignedVehicle->status = "returned";
+            $AsignedVehicle->save();
+
+            $order->return_date = date('Y-m-d h:i:s');
+            $order->rent_status = 'returned';
+            $order->save();
             $this->reset_search();
-            $message = $user->vehicle_assign_status=="deallocate"?"deallocated":"reallocated";
-            session()->flash('success', 'The vehicle has been '.$message.' deallocated for this user!');
+            // $message = $user->vehicle_assign_status=="deallocate"?"deallocated":"reallocated";
+            session()->flash('success', 'The vehicle has been deallocated deallocated for this user!');
         } 
     }
 
-    public function suspendRider($itemId, $order_id){
+    public function suspendRider($itemId){
         if($itemId){
             $user = User::find($itemId);
             $user->vehicle_assign_status = 'suspended';
             $user->suspended_by = Auth::guard('admin')->user()->id;
             $user->save();
-            $order = Order::find($order_id);
-            $order->rent_status = "deallocated";
-            $order->save();
-            $AsignedVehicle = AsignedVehicle::where('order_id', $order_id)->first();
-            $AsignedVehicle->status = "deallocated";
-            $AsignedVehicle->assigned_by = Auth::guard('admin')->user()->id;
-            $AsignedVehicle->save();
+
+            // dd($user);
+            // $order = Order::find($order_id);
+            // $order->rent_status = "deallocated";
+            // $order->save();
+            // $AsignedVehicle = AsignedVehicle::where('order_id', $order_id)->first();
+            // $AsignedVehicle->status = "deallocated";
+            // $AsignedVehicle->assigned_by = Auth::guard('admin')->user()->id;
+            // $AsignedVehicle->save();
             session()->flash('success', 'The rider has been suspended and deallocated for this vehicle.');
         }
     }
@@ -368,12 +377,29 @@ class RiderEngagement extends Component
                     ->orWhere('email', 'like', $searchTerm)
                     ->orWhere('customer_id', 'like', $searchTerm);
                 });
-            })->whereHas('latest_order')
+            })
+            // ->whereHas('latest_order')
             ->where('is_verified', 'verified')
+            ->whereNull('vehicle_assign_status')
             ->orderBy('id', 'DESC')
             ->paginate(20);
 
          $await_users = User::when($this->search, function ($query) {
+            $searchTerm = '%' . $this->search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                ->orWhere('mobile', 'like', $searchTerm)
+                ->orWhere('email', 'like', $searchTerm)
+                ->orWhere('customer_id', 'like', $searchTerm);
+            });
+        })
+        ->doesntHave('await_order')
+        ->where('is_verified', 'verified')
+        ->whereNull('vehicle_assign_status')
+        ->orderBy('id', 'DESC')
+        ->paginate(20);
+
+         $pending_orders = User::when($this->search, function ($query) {
                 $searchTerm = '%' . $this->search . '%';
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', $searchTerm)
@@ -381,7 +407,8 @@ class RiderEngagement extends Component
                     ->orWhere('email', 'like', $searchTerm)
                     ->orWhere('customer_id', 'like', $searchTerm);
                 });
-            })->whereHas('await_order')
+            })
+            ->whereHas('pending_order')
             ->where('is_verified', 'verified')
             ->orderBy('id', 'DESC')
             ->paginate(20);
@@ -445,6 +472,7 @@ class RiderEngagement extends Component
         return view('livewire.admin.rider-engagement', [
             'all_users' => $all_users,
             'await_users' => $await_users,
+            'pending_orders' => $pending_orders,
             'ready_to_assigns' => $ready_to_assigns,
             'active_users' => $active_users,
             'inactive_users' => $inactive_users,

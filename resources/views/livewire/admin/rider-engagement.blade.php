@@ -127,6 +127,18 @@
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
                           </li>
+                          {{-- <li class="nav-item" role="presentation" wire:click="tab_change(8)">
+                            <button type="button" class="nav-link waves-effect {{$active_tab==8?"active":""}}" role="tab" data-bs-toggle="tab"
+                              data-bs-target="#navs-justified-8" aria-controls="navs-justified-8" aria-selected="false"
+                              tabindex="-1">
+                              <span class="d-none d-sm-block engagement_header">
+                                <i class="tf-icons ri-user-3-line me-1_5"></i>
+                                </i> Payment Pending <span
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-dark ms-1_5 pt-50">{{count($pending_orders)}}</span>
+                                </span>
+                                <i class="ri-user-3-line ri-20px d-sm-none"></i>
+                            </button>
+                          </li> --}}
                           <li class="nav-item" role="presentation" wire:click="tab_change(3)">
                             <button type="button" class="nav-link waves-effect {{$active_tab==3?"active":""}}" role="tab" data-bs-toggle="tab"
                               data-bs-target="#navs-justified-3" aria-controls="navs-justified-3" aria-selected="true">
@@ -407,6 +419,9 @@
                                                         </div>
                                                     </td>
                                                     <td class="align-middle text-end px-4">
+                                                        <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding" wire:click="suspendRiderWarning({{$aw_user->id}})">
+                                                            Suspend
+                                                        </button>
                                                         <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
                                                             wire:click="showCustomerDetails({{ $aw_user->id}})">
                                                         View
@@ -418,6 +433,85 @@
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
                                     {{ $await_users->links() }} <!-- Pagination links -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade {{$active_tab==8?"active show":""}}" id="navs-justified-profile" role="tabpanel">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Payment Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Dashboard</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                       
+                                        @foreach($pending_orders as $k => $pend_order)
+                                        @php
+                                            $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
+                                            $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
+                                        @endphp
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $k + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center customer-name">
+                                                        <div class="avatar-wrapper me-3">
+                                                            <div class="avatar avatar-sm">
+                                                                @if ($pend_order->image)
+                                                                    <img src="{{ asset($pend_order->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @else
+                                                                    <div class="avatar-initial rounded-circle {{$colorClass}}">
+                                                                        {{ strtoupper(substr($pend_order->name, 0, 1)) }}{{ strtoupper(substr(strrchr($pend_order->name, ' '), 1, 1)) }}
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <a href="{{ route('admin.customer.details', $pend_order->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($pend_order->name) }}</span>
+                                                            </a>
+                                                            <small class="text-truncate">{{ $pend_order->email }} </small>
+                                                            {{-- | {{$pend_order->country_code}} {{ $pend_order->mobile }} --}}
+                                                        <div>
+                                                    </div>
+                                                    <td class="align-middle text-start">
+                                                        @if($pend_order->pending_order)
+                                                            @if($pend_order->pending_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$pend_order->pending_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$pend_order->pending_order->payment_status}}</span>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="align-middle text-start">{{$pend_order->pending_order?$pend_order->pending_order->product->title:"N/A"}}</td>
+                                                    <td class="align-middle text-sm text-center">
+                                                        <div class="dropdown cursor-pointer">
+                                                            <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$pend_order->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                            <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$pend_order->id}}">
+                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-middle text-end px-4">
+                                                        <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                            wire:click="showCustomerDetails({{ $pend_order->id}})">
+                                                        View
+                                                    </button>
+                                                    </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $pending_orders->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
@@ -599,16 +693,13 @@
                                                                 Overdue
                                                             </button>
                                                         @else
-                                                            @if($ac_user->vehicle_assign_status=="deallocate")
-                                                                <button class="btn btn-warning text-white mb-0 mx-1 action_btn_padding" wire:click="suspendRiderWarning({{$ac_user->id}}, {{$ac_user->active_order->id}})">
-                                                                    Suspend
-                                                                </button>
+                                                            {{-- @if($ac_user->vehicle_assign_status=="deallocate")
                                                                 <button class="btn btn-primary text-white mb-0 mx-1 action_btn_padding" wire:click="updateUserData({{$ac_user->id}})">
                                                                     Reallocate
                                                                 </button>
-                                                            @endif
+                                                            @endif --}}
                                                             @if($ac_user->vehicle_assign_status==null)
-                                                                <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding" wire:click="confirmDeallocate({{$ac_user->id}})">
+                                                                <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding" wire:click="confirmDeallocate({{$ac_user->active_order->id}})">
                                                                     Deallocate
                                                                 </button>
                                                             @endif
@@ -1340,7 +1431,6 @@
         });
         window.addEventListener('showWarningConfirm', function (event) {
             let itemId = event.detail[0].itemId;
-            let orderId = event.detail[0].orderId;
             // Warning confirmation dialog for suspending a rider
             Swal.fire({
                 title: "Suspend Rider?",
@@ -1352,7 +1442,7 @@
                 confirmButtonText: "Yes, Suspend"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.call('suspendRider', itemId, orderId); // Livewire method
+                    @this.call('suspendRider', itemId); // Livewire method
                 }
             });
         });
