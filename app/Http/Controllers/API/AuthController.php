@@ -1009,7 +1009,6 @@ class AuthController extends Controller
                 'message' => $validator->errors()->first(), // Return all errors instead of only the first
             ], 422);
         }
-        // dd($validator);
         // Check User Verification
         if ($user->is_verified!=="verified") {
             return response()->json([
@@ -1080,6 +1079,7 @@ class AuthController extends Controller
                     $order = $existing_order;
                     $message = "Order updated successfully";
                     DB::commit();
+                    $this->bookingNewPayment($order->id);
     
                     return response()->json([
                         'status' => true,
@@ -1131,6 +1131,8 @@ class AuthController extends Controller
 
                 DB::commit();
 
+                $this->bookingNewPayment($order->id);
+
                 return response()->json([
                     'status' => true,
                     'message' => $message,
@@ -1151,6 +1153,7 @@ class AuthController extends Controller
     }
 
     public function bookingNewPayment($order_id){
+       
         DB::beginTransaction();
         try{
             $order = Order::find($order_id);
@@ -1173,6 +1176,7 @@ class AuthController extends Controller
                     // Deposit Amount
                     $payment_item = new PaymentItem;
                     $payment_item->payment_id = $payment->id;
+                    $payment_item->product_id = $order->product_id;
                     $payment_item->payment_for = 'new_subscription';
                     $payment_item->duration = $order->rent_duration;
                     $payment_item->type = 'deposit';
@@ -1182,6 +1186,7 @@ class AuthController extends Controller
                     // Rental Amount
                     $payment_item = new PaymentItem;
                     $payment_item->payment_id = $payment->id;
+                    $payment_item->product_id = $order->product_id;
                     $payment_item->payment_for = 'new_subscription';
                     $payment_item->duration = $order->rent_duration;
                     $payment_item->type = 'rental';

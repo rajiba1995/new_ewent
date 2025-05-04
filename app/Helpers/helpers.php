@@ -313,6 +313,47 @@ if(!function_exists('PincodeId')){
         return 1;
     }
 }
+if(!function_exists('GetIgnitionStatus')){
+    function GetIgnitionStatus($vehicle_id){
+        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/telematics/last_known';
+        $payload = [
+            "vehicleIds" => [$vehicle_id],
+            "sensors" => [
+                "gps",
+                "vehicleBatteryLevel",
+                "numberOfSatellites"
+            ]
+        ];
+
+        $ch = curl_init($vehiclesUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true); // Set as POST request
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "User-Authentication: " . env('LOCONAV_TOKEN'),
+            "Accept: application/json",
+            "Content-Type: application/json"
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload)); // Pass JSON body
+
+        $vehiclesResponse = curl_exec($ch);
+        curl_close($ch);
+
+        $response = json_decode($vehiclesResponse, true);
+        if($response['success']==true){
+            $VehicleLastKnow = $response['data']['values'][0];
+
+            if (
+                isset($VehicleLastKnow['gps']) &&
+                isset($VehicleLastKnow['gps']['ignition']) &&
+                isset($VehicleLastKnow['gps']['ignition']['value'])
+            ) {
+                return $VehicleLastKnow['gps']['ignition']['value'];
+            }
+        }else{
+           return "OFF";
+        }
+    }
+}
 
 
 

@@ -139,7 +139,7 @@
                                             <a href="{{route('admin.product.update',$product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
                                                 <i class="ri-edit-box-line ri-20px text-info"></i>
                                             </a>
-                                            <button wire:click="destroy({{ $product->id }})" class="btn btn-sm btn-icon delete-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Delete">
+                                            <button wire:click="DeleteItem({{ $product->id }})" class="btn btn-sm btn-icon delete-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Delete">
                                                 <i class="ri-delete-bin-7-line ri-20px text-danger"></i>
                                             </button>
                                             <a href="{{route('admin.product.stocks.vehicle',$product->id)}}">
@@ -209,3 +209,26 @@
         <div class="loader"></div>
       </div>
 </div>
+@section('page-script')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    window.addEventListener('showConfirm', function (event) {
+        let itemId = event.detail[0].itemId;
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.call('destroy', itemId); // Calls Livewire method directly
+                // Swal.fire("Deleted!", "Your item has been deleted.", "success");
+            }
+        });
+    });
+</script>
+@endsection
+

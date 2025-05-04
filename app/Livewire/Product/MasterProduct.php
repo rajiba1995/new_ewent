@@ -26,6 +26,9 @@ class MasterProduct extends Component
         $this->resetPage(); // Reset to the first page
     }
 
+    public function DeleteItem($id){
+        $this->dispatch('showConfirm', ['itemId' => $id]);
+    }
     public function destroy($productId)
     {
         $product = Product::findOrFail($productId);

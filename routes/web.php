@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement,PaymentSummary,PaymentUserSummary};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
-    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail
+    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail,VehiclePaymentSummary
 };
 use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex};
 
@@ -51,6 +51,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
         Route::get('/create', VehicleCreate::class)->name('admin.vehicle.create');
         Route::get('/update/{id}', VehicleUpdate::class)->name('admin.vehicle.update');
         Route::get('/details/{vehicle_id}', VehicleDetail::class)->name('admin.vehicle.detail');
+        Route::get('/payment/summary/{vehicle_id}', VehiclePaymentSummary::class)->name('admin.vehicle.payment-summary');
     });
     // Order Management
     Route::group(['prefix'=>'order'], function(){
@@ -59,7 +60,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     });
     // Payment Management
     Route::group(['prefix'=>'payment'], function(){
-        Route::get('/summary', PaymentSummary::class)->name('admin.payment.summary');
+        Route::get('/summary/{model_id?}/{vehicle_id?}', PaymentSummary::class)->name('admin.payment.summary');
         Route::get('/user-summary', PaymentUserSummary::class)->name('admin.payment.user_summary');
     });
     // Offer Management

@@ -53,7 +53,7 @@
         </li>
       </ul>
     </li>
-    <li class="menu-item {{ (request()->is('admin/master*')) ? 'open' : '' }}">
+    {{-- <li class="menu-item {{ (request()->is('admin/master*')) ? 'open' : '' }}">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-stock-line"></i>
         <div>Location Management</div>
@@ -70,7 +70,7 @@
           </a>
         </li>
       </ul>
-    </li>
+    </li> --}}
     <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-stock-line"></i>

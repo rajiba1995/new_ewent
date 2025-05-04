@@ -59,6 +59,12 @@ class Product extends Model
     {
         return $this->hasMany(RentalPrice::class)->orderBy('duration', 'ASC');
     }
+    public function stock_item(){
+        return $this->hasMany(Stock::class, 'product_id', 'id');
+    }
+    public function payment_item(){
+        return $this->hasMany(PaymentItem::class, 'product_id', 'id');
+    }
     public function ProductImages()
     {
         return $this->hasMany(ProductImage::class);

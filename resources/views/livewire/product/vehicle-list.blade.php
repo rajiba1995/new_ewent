@@ -140,7 +140,7 @@
                                             {{-- <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th> --}}
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            {{-- <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Ignition Status</th> --}}
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
@@ -178,22 +178,31 @@
                                                         <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                {{-- <td>
+                                                    @php
+                                                        $ignition_status = GetIgnitionStatus($all_item->vehicle_track_id);
+                                                    @endphp
+                                                     @if($ignition_status=="ON")
+                                                     <span class="badge px-2 rounded-pill bg-label-success text-sm">{{$ignition_status}}</span>
+                                                     @else
+                                                         <span class="badge px-2 rounded-pill bg-label-danger text-sm">OFF</span>
+                                                     @endif
+                                                </td> --}}
+                                                <td class="text-end">
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_item_item_{{$all_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_item_item_{{$all_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $all_item->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary',[$all_item->product_id,$all_item->id])}}">Payment Summary</a></li>
+                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
                                                         </ul>
+                                                        <span>
+                                                            <a href="{{route('admin.vehicle.update', $all_item->product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
+                                                                <i class="ri-edit-box-line ri-20px text-info"></i>
+                                                            </a>
+                                                        </span>
                                                     </div>
-                                                </td>
-                                                <td class="text-center">
-                                                    <a href="{{route('admin.vehicle.update', $all_item->product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
-                                                        <i class="ri-edit-box-line ri-20px text-info"></i>
-                                                    </a>
-                                                    <a href="javascript:void(0)">
-                                                        <span class="control"></span>
-                                                    </a>
+                                                   
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -215,7 +224,7 @@
                                             {{-- <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th> --}}
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            {{-- <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th> --}}
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
@@ -251,19 +260,15 @@
                                                         <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td class="text-end">
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_unassigned_item_{{$unassigned_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_unassigned_item_{{$unassigned_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $unassigned_item->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
+                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
                                                         </ul>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <a href="javascript:void(0)">
-                                                        <span class="control"></span>
-                                                    </a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -286,7 +291,7 @@
                                             {{-- <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SOC</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Ignition State</th> --}}
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            {{-- <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th> --}}
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
@@ -324,19 +329,15 @@
                                                         <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td class="text-end">
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_assigned_item_{{$assigned_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_assigned_item_{{$assigned_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $assigned_item->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
+                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
                                                         </ul>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <a href="javascript:void(0)">
-                                                        <span class="control"></span>
-                                                    </a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -357,7 +358,7 @@
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model/Number/lot IMEI</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider/Subscription</th>
                                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Vehicle Status</th>
-                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th>
+                                            {{-- <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Dashboard</th> --}}
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
                                         </tr>
                                     </thead>
@@ -395,19 +396,15 @@
                                                         <span class="badge px-2 rounded-pill bg-label-warning text-sm">Unassigned Vehicle</span>
                                                     @endif
                                                 </td>
-                                                <td>
+                                                <td class="text-end">
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_overdue_item_item_{{$overdue_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_overdue_item_item_{{$overdue_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $overdue_item->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
+                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
                                                         </ul>
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <a href="javascript:void(0)">
-                                                        <span class="control"></span>
-                                                    </a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -442,3 +439,4 @@
     }, 3000); // Auto-hide flash message after 3 seconds
 </script>
 @endsection
+
