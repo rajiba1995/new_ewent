@@ -10,7 +10,7 @@
         
         </div>
         <div class="d-flex align-content-center flex-wrap gap-2">
-            <a class="btn btn-dark btn-sm" href="{{route('admin.order.list')}}" role="button">
+            <a class="btn btn-dark btn-sm" href="{{route('admin.customer.details',$order->user_id )}}" role="button">
                 <i class="ri-arrow-go-back-line ri-16px me-0 me-sm-2 align-baseline"></i>
                 Back
             </a>
@@ -59,53 +59,50 @@
                                             SL No
                                         </th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                            products
+                                            Model
                                         </th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                            price
+                                            Deposit Amount
                                         </th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle" width="25%">
-                                            qty
+                                            Rental Amount
                                         </th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">
-                                            total
+                                            Total
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($order_items as $k=>$item)
-                                        <tr>
-                                            <td class="align-middle text-center">{{$k+1}}</td>
-                                            <td class="sorting_1">
-                                                @if($item->product)
-                                                <a href="{{route('admin.product.update', $item->product->id)}}">
-                                                    <div class="d-flex justify-content-start align-items-center product-name">
-                                                        <div class="avatar-wrapper me-3">
-                                                            <div class="avatar avatar-sm rounded-2 bg-label-secondary"><img
-                                                                    src="{{asset($item->product->image)}}"
-                                                                    alt="product-Wooden Chair" class="rounded-2"></div>
-                                                        </div>
-                                                        <div class="d-flex flex-column">
-                                                            <span class="text-nowrap text-heading fw-medium">{{$item->product->title}}</span>
-                                                            <small
-                                                                class="text-truncate d-none d-sm-block">{{$item->product->types}}</small></div>
+                                    <tr>
+                                        <td class="align-middle text-center">1</td>
+                                        <td class="sorting_1">
+                                            @if($order->product)
+                                            <a href="javascript:void(0)">
+                                                <div class="d-flex justify-content-start align-items-center product-name">
+                                                    <div class="avatar-wrapper me-3">
+                                                        <div class="avatar avatar-sm rounded-2 bg-label-secondary"><img
+                                                                src="{{asset($order->product->image)}}"
+                                                                alt="product-Wooden Chair" class="rounded-2"></div>
                                                     </div>
-                                                </a>
-                                                @else
-                                                    N/A
-                                                @endif
-                                            </td>
-                                            <td class="align-middle text-center">
-                                                {{env('APP_CURRENCY')}}{{$item->price}}
-                                            </td>
-                                            <td class="align-middle text-center">
-                                                {{$item->quantity}}
-                                            </td>
-                                            <td class="align-middle text-center">
-                                                {{env('APP_CURRENCY')}}{{$item->total_price}}
-                                            </td>
-                                        </tr>
-                                    @endforeach
+                                                    <div class="d-flex flex-column">
+                                                        <span class="text-nowrap text-heading fw-medium">{{$order->product->title}}</span>
+                                                        </div>
+                                                </div>
+                                            </a>
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            {{env('APP_CURRENCY')}}{{$order->deposit_amount}}
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            {{env('APP_CURRENCY')}}{{$order->rental_amount}}
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            {{env('APP_CURRENCY')}}{{$order->total_price}}
+                                        </td>
+                                    </tr>
                                     @if($order->offer_id)
                                         <tr>
                                             <td colspan="3" class="text-end">
@@ -142,89 +139,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card mb-6">
-                    <div class="card-header">
-                        <h5 class="card-title m-0">Bike Ride Activity</h5>
-                    </div>
-                    <div class="card-body mt-3">
-                        <ul class="timeline pb-0 mb-0">
-                            @foreach($activities as $activity)
-                                @php
-                                    // Define status colors
-                                    $statusColors = [
-                                        'Ride Booked' => 'warning',
-                                        'Payment Received' => 'success',
-                                        'Ride Canceled' => 'danger',
-                                        'Vehicle Assigned' => 'info',
-                                        'Ride Started' => 'primary',
-                                        'Ride Completed' => 'success',
-                                    ];
-                                    
-                                    $color = $statusColors[$activity->status] ?? 'secondary';
-                                @endphp
-                                
-                                <li class="timeline-item timeline-item-transparent border-{{ $color }}">
-                                    <span class="timeline-point timeline-point-{{ $color }}"></span>
-                                    <div class="timeline-event">
-                                        <div class="timeline-header mb-1">
-                                            <h6 class="mb-0">{{ $activity->status }} 
-                                                @if($activity->status == 'Ride Booked') (Order ID: #{{ $activity->order->order_number }}) @endif
-                                                @if($activity->status == 'Vehicle Assigned') (Vehicle No: {{ $activity->vehicle->vehicle_number }}) @endif
-                                            </h6>
-                                            <small class="text-muted">{{ $activity->created_at->format('l, d M Y h:i A') }}</small>
-                                        </div>
-                                        <p class="mt-1 mb-3">{{ $activity->description ?? 'No additional details.' }}</p>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title">Update Ride Status</h5>
-                        </div>
-                        <div class="card-body">
-                            @if (session()->has('status_success'))
-                                <div class="alert alert-success">{{ session('status_success') }}</div>
-                            @endif
-                            @if (session()->has('status_error'))
-                                <div class="alert alert-danger">{{ session('status_error') }}</div>
-                            @endif
-                    
-                            <form wire:submit.prevent="updateStatus">
-                                <div class="mb-3">
-                                    <label for="status" class="form-label">Select Status</label>
-                                    <select id="status" class="form-control " wire:model="status">
-                                        <option value="">-- Select Status --</option>
-                                        {{-- <option value="Ride Booked">Ride Booked</option>
-                                        <option value="Payment Received">Payment Received</option> --}}
-                                        <option value="Ride Canceled">Ride Canceled</option>
-                                        <option value="Vehicle Assigned">Vehicle Assigned</option>
-                                        <option value="Ride Started">Ride Started</option>
-                                        <option value="Ride Completed">Ride Completed</option>
-                                    </select>
-                                    @error('status') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
-                                {{-- <div class="mb-3">
-                                    <label for="rideId" class="form-label">Ride ID</label>
-                                    <input type="text" id="rideId" class="form-control" wire:model="rideId" placeholder="Enter Ride ID">
-                                    @error('rideId') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div> --}}
-                    
-                                <div class="text-end">
-                                    <button type="submit" class="btn btn-primary">Update Status</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                </div>
-                
             </div>
         </div>
     </div>

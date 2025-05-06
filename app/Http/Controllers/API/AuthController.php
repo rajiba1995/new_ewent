@@ -735,6 +735,47 @@ class AuthController extends Controller
             'message' => 'Getting product details.'
         ], 200);
     }
+
+    public function ProductFilter(Request $request)
+    {
+        $search = $request->input('filter');
+        // If no filter value is provided, return empty array
+        if (!$search) {
+            return response()->json([
+                'status' => true,
+                'data' => [],
+                'message' => 'No search value provided.',
+            ], 200);
+        }
+    
+        // Proceed with filtering if search term exists
+        $products = Product::query()
+            ->select(
+                'id',
+                'title',
+                'position',
+                'types',
+                'short_desc',
+                'is_driving_licence_required',
+                'image',
+                'status'
+            )
+            ->where('status', 1)
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('types', 'like', '%' . $search . '%');
+            })
+            ->orderBy('position', 'ASC')
+            ->orderBy('title', 'ASC')
+            ->get();
+    
+        return response()->json([
+            'status' => true,
+            'data' => $products,
+            'message' => count($products) > 0 ? 'Getting product list.' : 'Data not found!',
+        ], 200);
+    }
+    
     public function HomePage()
     {
         // Fetching the banners
@@ -1314,7 +1355,6 @@ class AuthController extends Controller
     public function bookingCancel($order_id){
         DB::beginTransaction();
         try{
-
             $order = Order::find($order_id);
             if($order->rent_status=="pending"){
                 $order->payment_mode = NULL;

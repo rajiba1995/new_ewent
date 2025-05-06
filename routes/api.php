@@ -22,6 +22,7 @@ Route::prefix('customer')->group(function () {
         Route::get('faqs', [AuthController::class, 'fetchFaqs']);
         Route::get('product-list', [AuthController::class, 'ProductList']);
         Route::get('product-details/{id}', [AuthController::class, 'ProductDetails']);
+        Route::get('product/filter', [AuthController::class, 'ProductFilter']);
         
         // Change Password Route
         Route::post('changePassword', [AuthController::class, 'changePassword']);

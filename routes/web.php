@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 // Livewire Components
 use App\Livewire\AdminLogin;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CronController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement,PaymentSummary,PaymentUserSummary};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
@@ -81,4 +82,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
         Route::get('/city', CityIndex::class)->name('admin.city.index');
         Route::get('/pincodes', PincodeIndex::class)->name('admin.pincode.index');
     });
+});
+
+// Cron 
+Route::group(['prefix'=>'cron'], function(){
+    Route::get('/vehicles/daily-timeline', [CronController::class,'DailyVehicleLog']);
 });

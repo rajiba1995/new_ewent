@@ -50,7 +50,10 @@
                         <div class="vehicle-card">
                             <img src="{{ asset($item->product->image) }}" alt="Vehicle Image" class="vehicle-image">
                             <h3 class="vehicle-number">{{ $item->vehicle_number }}</h3>
-                                @if ($vehicleData = VehicleStatus($item->id)) 
+                                @php
+                                    $vehicleData = VehicleStatus($item->id);
+                                @endphp
+                                @if (!empty($vehicleData) && !empty($vehicleData['order_id']))
                                     <!-- This vehicle is assigned to an order -->
                                     <div class="text-center">
                                         <a href="{{route('admin.order.detail',$vehicleData['order_id'])}}"><span class="badge bg-label-{{$vehicleData['class']}} mb-0 cursor-pointer" title="">{{$vehicleData['message']}}</span></a>

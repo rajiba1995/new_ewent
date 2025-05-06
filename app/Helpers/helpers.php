@@ -245,10 +245,11 @@ if(!function_exists('PincodeStatus')){
 }
 if(!function_exists('VehicleStatus')){
     function VehicleStatus($id){
-        $data = AsignedVehicle::with('order_item')->where('vehicle_id', $id)->whereIn('status', ['sold','assigned'])->orderBy('id','DESC')->first();
+        $data = AsignedVehicle::with('order')->where('vehicle_id', $id)->whereIn('status', ['sold','assigned'])->orderBy('id','DESC')->first();
+        
         if($data){
             $return = [];
-            $return['order_id']= $data->order_item?$data->order_item->order_id:null;
+            $return['order_id']= $data->order?$data->order->id:null;
             if($data->status=="assigned"){
                 $return['class'] = "warning";
                 $return['message'] = "Assigned Now";
@@ -258,7 +259,7 @@ if(!function_exists('VehicleStatus')){
             }
             return $return; //Assigned
         }
-        return null; //Not Assigned
+        return null; // Return null instead of empty array
     }
 }
 if(!function_exists('vehicleLog')){
