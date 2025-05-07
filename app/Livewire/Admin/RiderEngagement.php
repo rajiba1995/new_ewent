@@ -203,7 +203,7 @@ class RiderEngagement extends Component
                     'order_id'     => $assignRider->order_id,
                     'vehicle_id'   => $assignRider->vehicle_id,
                     'start_date'   => $assignRider->start_date,
-                    'end_date'     => $assignRider->end_date,
+                    'end_date'     => now(),
                     'exchanged_by' => Auth::guard('admin')->user()->id, // Fixed typo (extra space)
                     'created_at'   => now(),
                     'updated_at'   => now(),
@@ -334,14 +334,27 @@ class RiderEngagement extends Component
         if ($order) {
 
             $AsignedVehicle = AsignedVehicle::where('order_id', $itemId)->first();
-            $AsignedVehicle->deallocated_at = date('Y-m-d h:i:s');
-            $AsignedVehicle->deallocated_by = Auth::guard('admin')->user()->id;
-            $AsignedVehicle->status = "returned";
-            $AsignedVehicle->save();
+            // $AsignedVehicle->deallocated_at = date('Y-m-d h:i:s');
+            // $AsignedVehicle->deallocated_by = Auth::guard('admin')->user()->id;
+            // $AsignedVehicle->status = "returned";
+            // $AsignedVehicle->save();
 
             $order->return_date = date('Y-m-d h:i:s');
             $order->rent_status = 'returned';
             $order->save();
+
+            DB::table('exchange_vehicles')->insert([
+                'status'       => "returned",
+                'user_id'      => $AsignedVehicle->user_id,
+                'order_id'     => $AsignedVehicle->order_id,
+                'vehicle_id'   => $AsignedVehicle->vehicle_id,
+                'start_date'   => $AsignedVehicle->start_date,
+                'end_date'     => $AsignedVehicle->end_date,
+                'exchanged_by' => Auth::guard('admin')->user()->id, 
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ]);
+            $AsignedVehicle->delete();
             $this->reset_search();
             // $message = $user->vehicle_assign_status=="deallocate"?"deallocated":"reallocated";
             session()->flash('success', 'The vehicle has been deallocated deallocated for this user!');

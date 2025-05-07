@@ -15,10 +15,13 @@ class ExchangeVehicle extends Model
     public function user(){
         return $this->belongsTo(User::class,'user_id','id');
     }
+    public function admin(){
+        return $this->belongsTo(Admin::class,'exchanged_by','id');
+    }
     public function stock(){
         return $this->belongsTo(Stock::class,'vehicle_id','id');
     }
-    public function order_item(){
-        return $this->belongsTo(OrderItem::class,'order_item_id','id');
+    public function order(){
+        return $this->belongsTo(Order::class,'order_id','id');
     }
 }

@@ -4,10 +4,16 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\AsignedVehicle;
+use App\Models\ExchangeVehicle;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Pagination\Paginator;
+use Livewire\WithPagination; // Import WithPagination trait
 
 class CustomerDetails extends Component
 {
+    use WithPagination;
     public $user;
     public $activeTab = 'orders'; // Default active tab
     public $newPassword; // Correct naming convention
@@ -15,6 +21,9 @@ class CustomerDetails extends Component
     public $userId;
     public $showEditModal = false;
     public $documents = [];
+    public $data = [];
+    public $customer_total_order = 0;
+    public $total_payment_amount = 0;
 
     // Rules for updating the password
     protected $rules = [
@@ -22,14 +31,37 @@ class CustomerDetails extends Component
         'confirmPassword' => 'required|same:newPassword',
     ];
 
+    public $search = '';
+
+    public function boot()
+    {
+        Paginator::useBootstrap();
+    }
+
     public function mount($id)
     {
         // Fetch the user by ID or fail
         $this->user = User::findOrFail($id);
         $this->userId = $id;
         $this->GetDocumentStatus();
+        $this->customer_total_order = Order::where('user_id', $id)->count();
+        $this->total_payment_amount = Order::where('user_id', $id)->whereHas('payments', function ($query){
+            $query->where('payment_status', 'completed');
+        })->sum('rental_amount');
     }
 
+    public function searchButtonClicked()
+    {
+        $this->resetPage(); // Reset to the first page
+    }
+
+   
+    public function resetSearch()
+    {
+        $this->reset('search'); // Reset the search term
+        $this->resetPage();     // Reset pagination
+    }
+    
     public function GetDocumentStatus()
     {
         $this->documents = [
@@ -140,11 +172,29 @@ class CustomerDetails extends Component
         $this->activeTab = $tab;
     }
 
+
     /**
      * Render the Livewire component.
      */
     public function render()
     {
-        return view('livewire.admin.customer-details');
+         // Fetching the assigned vehicle
+        $assignedVehicle = AsignedVehicle::where('status', 'assigned')
+        ->where('user_id', $this->userId)
+        ->first();
+
+        $exchangeVehicles  = ExchangeVehicle::with('stock')
+        // ->whereIn('status', ['renewal', 'returned'])
+        ->where('user_id', $this->userId)->orderBy('id', 'DESC')->paginate(10);
+
+        // Adding assigned vehicle at the start (if it exists)
+        if ($assignedVehicle) {
+            $assignedVehicle->exchanged_by = $assignedVehicle->assigned_by;
+            $exchangeVehicles->getCollection()->prepend($assignedVehicle);
+        }
+
+        return view('livewire.admin.customer-details',[
+            'history'=>$exchangeVehicles ,
+        ]);
     }
 }

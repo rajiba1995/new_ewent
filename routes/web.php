@@ -62,7 +62,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     // Payment Management
     Route::group(['prefix'=>'payment'], function(){
         Route::get('/summary/{model_id?}/{vehicle_id?}', PaymentSummary::class)->name('admin.payment.summary');
-        Route::get('/user-summary', PaymentUserSummary::class)->name('admin.payment.user_summary');
+        Route::get('/user-history/{user_id}', PaymentUserSummary::class)->name('admin.payment.user_history');
     });
     // Offer Management
     Route::group(['prefix'=>'offer'], function(){

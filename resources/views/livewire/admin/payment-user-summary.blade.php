@@ -1,136 +1,107 @@
-<div>
-    <div class="card my-4">
-        <div class="card-header pb-0">
-          <h6>Payment Summary</h6>
-          <div class="row my-3 g-2 align-items-end">
+<div class="row mb-4">
+    <div class="col-lg-12 col-md-6 mb-md-0 mb-4">
+        <div class="row gx-4 mb-4">
+            <div class="col-auto my-auto">
+              <div class="h-100">
+                <h5 class="mb-1">Customer Details</h5>
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
+              <div class="nav-wrapper position-relative end text-end">
+                <!-- Back Button -->
+                <a class="btn btn-dark btn-sm" href="javascript:history.back();" role="button">
+                  <i class="ri-arrow-go-back-line ri-16px me-0 me-sm-2 align-baseline"></i>
+                  Back
+                </a>
+              </div>
+            </div>
+        </div>
+        <div class="row">
+            @if(session()->has('message'))
+                <div class="alert alert-success" id="flashMessage">
+                    {{ session('message') }}
+                </div>
+            @endif
             
-            <!-- Rider Filter -->
-            <div class="col-md-3">
-              <label for="rider" class="form-label text-uppercase small">Select Riders</label>
-              <select id="rider" wire:model="rider" class="form-select border border-2 p-2 custom-input-sm">
-                <option value="">All Riders</option>
-                <option value="1">ImranHashmi</option>
-                <option value="2">JohnDoe</option>
-              </select>
-            </div>
-      
-            <!-- Product Type -->
-            <div class="col-md-2">
-              <label class="form-label text-uppercase small">Product Type</label>
-              <select wire:model="productType" class="form-select border border-2 p-2 custom-input-sm">
-                <option value="">All Types</option>
-                <option value="Rental Renewal Charges Weekly">Rental Renewal Charges Weekly</option>
-              </select>
-            </div>
-      
-            <!-- Payment Status -->
-            <div class="col-md-2">
-              <label class="form-label text-uppercase small">Payment Status</label>
-              <select wire:model="paymentStatus" class="form-select border border-2 p-2 custom-input-sm">
-                <option value="">All</option>
-                <option value="created">Created</option>
-                <option value="paid">Paid</option>
-              </select>
-            </div>
-      
-            <!-- Start Date -->
-            <div class="col-md-2">
-              <label class="form-label text-uppercase small">Start Date</label>
-              <input type="date" wire:model="startDate" class="border border-2 p-2 custom-input-sm form-control">
-            </div>
-      
-            <!-- End Date -->
-            <div class="col-md-2">
-              <label class="form-label text-uppercase small">End Date</label>
-              <input type="date" wire:model="endDate" class="border border-2 p-2 custom-input-sm form-control">
-            </div>
-      
-            <!-- Export Button -->
-            <div class="col-md-1 d-grid">
-              <button wire:click="exportExcel" class="btn btn-primary mt-3">
-                <i class="ri-download-line"></i> Export
-              </button>
-            </div>
-          </div>
+            @if(session()->has('error'))
+                <div class="alert alert-danger" id="flashMessage">
+                    {{ session('error') }}
+                </div>
+            @endif
         </div>
-      
-        <div class="card-body px-0 pb-2">
-          <div class="table-responsive p-0">
-            <table class="table align-items-center mb-0 product-list">
-              <thead>
-                <tr>
-                  <th>Select</th>
-                  <th>Rider Name / Mobile</th>
-                  <th>Product Type</th>
-                  <th class="text-center">Vehicle Type</th>
-                  <th class="text-center">Amount</th>
-                  <th>Transaction ID</th>
-                  <th class="text-center">Status</th>
-                  <th class="text-center">Action</th>
-                  <th class="text-center">Payment Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>ImranHashmi / 8882813229</td>
-                    <td>Rental Renewal Charges Weekly</td>
-                    <td class="text-center">Kyari</td>
-                    <td class="text-center">₹0</td>
-                    <td>Order_Q7pZ5KwxolOw5Q</td>
-                    <td class="text-center">
-                      <span class="badge bg-info text-dark">Created</span>
-                    </td>
-                    <td class="text-center">
-                      <button class="btn btn-sm btn-outline-dark">Sync Payment</button>
-                    </td>
-                    <td class="text-center">17 Mar 2025<br>4:20 PM</td>
-                  </tr>
-                  <tr>
-                    <td><input type="checkbox"></td>
-                    <td>ImranHashmi / 8882813229</td>
-                    <td>Rental Renewal Charges Weekly</td>
-                    <td class="text-center">Kyari</td>
-                    <td class="text-center">₹0</td>
-                    <td>Order_Q7pMJsUn1t7erE</td>
-                    <td class="text-center">
-                      <span class="badge bg-info text-dark">Created</span>
-                    </td>
-                    <td class="text-center">
-                      <button class="btn btn-sm btn-outline-dark">Sync Payment</button>
-                    </td>
-                    <td class="text-center">17 Mar 2025<br>4:08 PM</td>
-                  </tr>
-                  <tr>
-                    <td><input type="checkbox"></td>
-                    <td>ImranHashmi / 8882813229</td>
-                    <td>Rental Renewal Charges Weekly</td>
-                    <td class="text-center">Kyari</td>
-                    <td class="text-center">₹1995</td>
-                    <td>Order-661345185075</td>
-                    <td class="text-center">
-                      <span class="badge bg-success">Paid</span>
-                    </td>
-                    <td class="text-center">NA</td>
-                    <td class="text-center">17 Mar 2025<br>4:07 PM</td>
-                  </tr>
-                  <tr>
-                    <td><input type="checkbox"></td>
-                    <td>ImranHashmi / 8882813229</td>
-                    <td>Rental Renewal Charges Weekly</td>
-                    <td class="text-center">Kyari</td>
-                    <td class="text-center">₹1995</td>
-                    <td>Order524625563049</td>
-                    <td class="text-center">
-                      <span class="badge bg-success">Paid</span>
-                    </td>
-                    <td class="text-center">NA</td>
-                    <td class="text-center">17 Mar 2025<br>4:04 PM</td>
-                  </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="row text-nowrap">
+                      <!--/ DataTable with Buttons -->
+                      <div class="card card-action mb-6">
+                          <div class="card-header align-items-center flex-wrap gap-2">
+                            <h5 class="card-action-title mb-0">Ride History</h5>
+                          </div>
+                          <div class="card-body">
+                            <div class="accordion accordion-arrow-left">
+                              <div class="accordion-item">
+                                <div class="accordion-collapse">
+                                  <div class="accordion-body table-responsive text-nowrap p-0">
+                                    <table class="table table-striped">
+                                      <thead>
+                                          <tr>
+                                            <th class="h6">Vehicle</th>
+                                            <th class="h6">Start Date</th>
+                                            <th class="h6">End Date</th>
+                                            <th class="h6">Rent</th>
+                                            <th class="h6">Rent Status</th>
+                                            <th class="h6">Action By</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                        @foreach ($history as $item)
+                                          <tr>
+                                            <td class="">
+                                                <small class="text-dark"> {{$item->stock?$item->stock->vehicle_number:"N/A"}}</small><br>
+                                                <small><code>{{ $item->stock && $item->stock->product ? $item->stock->product->title : "N/A" }}</code></small>
+
+                                            </td>
+                                            <td class="">
+                                                <small class="text-muted">{{ date('d M y h:i A', strtotime($item->start_date)) }}</small>
+                                            </td>
+                                            <td class="">
+                                              <small class="text-muted">{{ date('d M y h:i A', strtotime($item->end_date)) }}</small>
+                                            </td>
+                                            <td class="">
+                                              <small class="text-muted">{{ $item->order?ENV('APP_CURRENCY').''.number_format($item->order->rental_amount):0.00 }}</small>
+                                            </td>
+                                            <td class="">
+                                              <small class="text-muted">{{ ucwords($item->status)}}</small>
+                                            </td>
+                                            <td class="">
+                                              @if($item->exchanged_by)
+                                                <small class="text-primary">{{$item->admin?$item->admin->email:'....'}}</small>
+                                              @elseif($item->assigned_by)
+                                                <small class="text-primary">{{$item->admin?$item->admin->email:'....'}}</small>
+                                              @else
+                                                <small class="text-success">{{$item->user?$item->user->email:"N/A"}}</small>
+                                              @endif
+                                              
+                                            </td>
+                                          </tr>
+                                        @endforeach
+                                      </tbody>
+                                    </table>
+                                    <div class="d-flex justify-content-end mt-2">
+                                      {{ $history->links('pagination::bootstrap-4') }}
+                                  </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                      </div>
+                </div>
+            </div>
         </div>
-      </div>
-      
+    </div>
+    <div class="loader-container" wire:loading>
+      <div class="loader"></div>
+    </div>
 </div>
+

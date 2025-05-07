@@ -21,4 +21,8 @@ class AsignedVehicle extends Model
     public function order(){
         return $this->belongsTo(Order::class,'order_id','id');
     }
+
+    public function admin(){
+        return $this->belongsTo(Admin::class,'assigned_by','id');
+    }
 }

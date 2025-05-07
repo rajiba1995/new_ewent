@@ -268,7 +268,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
                                                             {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -332,7 +332,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$all_inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$all_inact_user->id}}">
                                                             {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -414,7 +414,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -496,7 +496,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$pend_order->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$pend_order->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -682,7 +682,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_active_{{$ac_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', optional($ac_user->active_vehicle->stock)->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="#">History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
                                                         </ul>
                                                     </div>
                                                  </td>
@@ -779,7 +779,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$inact_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -858,7 +858,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="#">History</a></li>
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>

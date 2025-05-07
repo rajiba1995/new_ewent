@@ -1295,6 +1295,7 @@ class AuthController extends Controller
                 // Rental Amount
                 $payment_item = new PaymentItem;
                 $payment_item->payment_id = $payment->id;
+                $payment_item->product_id = $order->product_id;
                 $payment_item->payment_for = 'renewal_subscription';
                 $payment_item->type = 'rental';
                 $payment_item->vehicle_id = $assignRider->vehicle_id;
