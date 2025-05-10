@@ -268,7 +268,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
                                                             {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -332,7 +332,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$all_inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$all_inact_user->id}}">
                                                             {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $all_inact_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -414,7 +414,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $aw_user->id)}}">History</a></li> --}}
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -496,7 +496,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$pend_order->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$pend_order->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $pend_order->id)}}">History</a></li> --}}
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -682,7 +682,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_active_{{$ac_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', optional($ac_user->active_vehicle->stock)->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $ac_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                  </td>
@@ -779,7 +779,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$inact_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $inact_user->id)}}">History</a></li> --}}
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -858,7 +858,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history')}}">History</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li> --}}
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -1122,7 +1122,7 @@
                                 </div>
                                 <div class="d-flex my-4">
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                    <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->cancelled_cheque)}}','{{asset($selectedCustomer->cancelled_cheque_back)}}','Cancelled Cheque')"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
                                     @if($selectedCustomer->cancelled_cheque_status==2)
@@ -1193,27 +1193,27 @@
                                 </div>
                                 <div class="d-flex my-4">
                                 <div class="col-4 text-center cursor-pointer">
-                                    <span class="badge rounded-pill bg-label-secondary"> Preview</span>
+                                    <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->current_address_proof)}}','{{asset($selectedCustomer->current_address_proof_back)}}','Current Address Proof')"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    @if($selectedCustomer->current_address_proof_back==2)
+                                    @if($selectedCustomer->current_address_proof_status==2)
                                     <span class="badge rounded-pill bg-label-success">
                                     <i class="ri-check-line"></i> Approved
                                     </span>
                                     @else
                                     <span class="badge rounded-pill bg-label-secondary"
-                                    wire:click="updateLog('2','current_address_proof_back','Current Address Proof',{{$selectedCustomer->id}})">
+                                    wire:click="updateLog('2','current_address_proof_status','Current Address Proof',{{$selectedCustomer->id}})">
                                     Approve
                                     </span>
                                     @endif
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    @if($selectedCustomer->current_address_proof_back==3)
+                                    @if($selectedCustomer->current_address_proof_status==3)
                                     <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i>
                                     Rejected</span>
                                     @else
                                     <span class="badge rounded-pill bg-label-secondary"
-                                    wire:click="OpenRejectForm('current_address_proof_back','Current Address Proof',{{$selectedCustomer->id}})">Reject</span>
+                                    wire:click="OpenRejectForm('current_address_proof_status','Current Address Proof',{{$selectedCustomer->id}})">Reject</span>
                                     @endif
                                 </div>
                                 </div>

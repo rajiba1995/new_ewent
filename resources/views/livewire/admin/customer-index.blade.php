@@ -691,24 +691,24 @@
                                     <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->current_address_proof)}}','{{asset($selectedCustomer->current_address_proof_back)}}','Current Address Proof')"> Preview</span>
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    @if($selectedCustomer->current_address_proof_back==2)
+                                    @if($selectedCustomer->current_address_proof_status==2)
                                     <span class="badge rounded-pill bg-label-success">
                                     <i class="ri-check-line"></i> Approved
                                     </span>
                                     @else
                                     <span class="badge rounded-pill bg-label-secondary"
-                                    wire:click="updateLog('2','current_address_proof_back','Current Address Proof',{{$selectedCustomer->id}})">
+                                    wire:click="updateLog('2','current_address_proof_status','Current Address Proof',{{$selectedCustomer->id}})">
                                     Approve
                                     </span>
                                     @endif
                                 </div>
                                 <div class="col-4 text-center cursor-pointer">
-                                    @if($selectedCustomer->current_address_proof_back==3)
+                                    @if($selectedCustomer->current_address_proof_status==3)
                                     <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i>
                                     Rejected</span>
                                     @else
                                     <span class="badge rounded-pill bg-label-secondary"
-                                    wire:click="OpenRejectForm('current_address_proof_back','Current Address Proof',{{$selectedCustomer->id}})">Reject</span>
+                                    wire:click="OpenRejectForm('current_address_proof_status','Current Address Proof',{{$selectedCustomer->id}})">Reject</span>
                                     @endif
                                 </div>
                                 </div>

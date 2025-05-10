@@ -213,15 +213,15 @@
                           </div>
                         </div>
                       </td>
-                      <td class="text-center">{{ENV('APP_CURRENCY')}} {{$item['deposit_amount']}}</td>
+                      <td class="text-center">{{ENV('APP_CURRENCY')}}{{$item['deposit_amount']}}</td>
                       <td class="text-center">
-                        {{ENV('APP_CURRENCY')}} {{$item['rental_amount']}}
+                        {{ENV('APP_CURRENCY')}}{{$item['rental_amount']}}
                       </td>
                       <td class="text-center">
-                        {{ENV('APP_CURRENCY')}} {{$item['total_amount']}}
+                        {{ENV('APP_CURRENCY')}}{{$item['total_amount']}}
                       </td>
                       <td class="text-center">
-                        {{ENV('APP_CURRENCY')}} 0
+                        {{ENV('APP_CURRENCY')}}0
                       </td>
                       <td class="text-center">
                         <a href="javascript:void(0)" wire:click="toggleRow({{ $key }})">
@@ -233,15 +233,15 @@
                       @foreach ($item['vehicles'] as $vehicle)
                           <tr style="font-weight: 100;font-size:12px;">
                             <td colspan="2" class="text-end text-primary">{{$vehicle['vehicle_number']}}</td>
-                            <td class="text-center text-primary">{{ENV('APP_CURRENCY')}} {{$vehicle['deposit_amount']}}</td>
+                            <td class="text-center text-primary">{{ENV('APP_CURRENCY')}}{{$vehicle['deposit_amount']}}</td>
                             <td class="text-center text-primary">
-                              {{ENV('APP_CURRENCY')}} {{$vehicle['rental_amount']}}
+                              {{ENV('APP_CURRENCY')}}{{$vehicle['rental_amount']}}
                             </td>
                             <td class="text-center text-primary">
-                              {{ENV('APP_CURRENCY')}} {{$vehicle['total_amount']}}
+                              {{ENV('APP_CURRENCY')}}{{$vehicle['total_amount']}}
                             </td>
                             <td class="text-center text-primary">
-                              {{ENV('APP_CURRENCY')}} 0
+                              {{ENV('APP_CURRENCY')}}0
                             </td>
                           </tr>
                       @endforeach

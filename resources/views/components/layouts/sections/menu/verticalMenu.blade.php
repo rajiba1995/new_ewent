@@ -172,18 +172,13 @@
             <div>Summary</div>
           </a>
         </li>
-        <li class="menu-item {{ (request()->is('admin/payment/user-history')) ? 'open' : '' }}">
-          <a href="{{route('admin.payment.user_history')}}" class="menu-link">
-            <div>User History</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/vehicle/create')) ? 'open' : '' }}">
-          <a href="{{route('admin.vehicle.create')}}" class="menu-link">
+        <li class="menu-item {{ (request()->is('admin/payment/vehicle/summary')) ? 'open' : '' }}">
+          <a href="{{route('admin.payment.vehicle.summary')}}" class="menu-link">
             <div>Vehicle Summary</div>
           </a>
         </li>
-        <li class="menu-item {{ (request()->is('admin/payment/summary')) ? 'open' : '' }}">
-          <a href="{{route('admin.payment.summary')}}" class="menu-link">
+        <li class="menu-item {{ (request()->is('admin/payment/user/payment-history')) ? 'open' : '' }}">
+          <a href="{{route('admin.payment.user_payment_history')}}" class="menu-link">
             <div>User Payment History</div>
           </a>
         </li>

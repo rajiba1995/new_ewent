@@ -10,6 +10,13 @@ class Payment extends Model
    use HasFactory;
     protected $table = 'payments';
     protected $fillable = [
-            'order_id', 'order_type', 'payment_method', 'payment_status', 'transaction_id', 'amount', 'currency', 'payment_date'
+      'order_id', 'user_id', 'order_type', 'payment_method', 'payment_status', 'transaction_id', 'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'amount', 'currency', 'payment_date', 'created_at', 'updated_at'
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+    public function order(){
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
 }

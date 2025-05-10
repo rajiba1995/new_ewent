@@ -4,10 +4,20 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\AsignedVehicle;
+use App\Models\User;
 use App\Models\ExchangeVehicle;
 
 class PaymentUserSummary extends Component
 {
+    public $userId;
+    public $user;
+    public function mount($user_id){
+        $this->userId = $user_id;
+        $this->user = User::find($user_id);
+        if(!$this->user){
+            abort(404);
+        }
+    }
     public function render()
     {
         // Fetching the assigned vehicle

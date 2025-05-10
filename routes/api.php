@@ -39,8 +39,8 @@ Route::prefix('customer')->group(function () {
         Route::get('company-policies', [AuthController::class, 'CompanyPolicy']);
         Route::get('company-policy/details/{id}', [AuthController::class, 'CompanyPolicyDetails']);
         Route::post('book-now', [AuthController::class, 'bookNow']);
-        Route::get('booking-new-payment/{order_id}', [AuthController::class, 'bookingNewPayment']);
-        Route::get('booking-renew-payment/{order_id}', [AuthController::class, 'bookingRenewPayment']);
+        Route::post('booking-new-payment', [AuthController::class, 'bookingNewPayment']);
+        Route::post('booking-renew-payment', [AuthController::class, 'bookingRenewPayment']);
         Route::get('booking-cancel/{order_id}', [AuthController::class, 'bookingCancel']);
         Route::get('my-active-subscription', [AuthController::class, 'myActiveSubscription']);
 

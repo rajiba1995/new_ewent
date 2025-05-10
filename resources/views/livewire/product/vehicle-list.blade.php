@@ -194,7 +194,7 @@
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_item_item_{{$all_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $all_item->vehicle_track_id)}}">Dashboard</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.summary',[$all_item->product_id,$all_item->id])}}">Payment Summary</a></li>
-                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$all_item->product_id,$all_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                         <span>
                                                             <a href="{{route('admin.vehicle.update', $all_item->product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
@@ -266,7 +266,7 @@
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_unassigned_item_{{$unassigned_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $unassigned_item->vehicle_track_id)}}">Dashboard</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
-                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$unassigned_item->product_id,$unassigned_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -335,7 +335,7 @@
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_assigned_item_{{$assigned_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $assigned_item->vehicle_track_id)}}">Dashboard</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
-                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$assigned_item->product_id,$assigned_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -402,7 +402,7 @@
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_overdue_item_item_{{$overdue_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $overdue_item->vehicle_track_id)}}">Dashboard</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
-                                                            <li><a class="dropdown-item" href="#">Payment History</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$overdue_item->product_id,$overdue_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>

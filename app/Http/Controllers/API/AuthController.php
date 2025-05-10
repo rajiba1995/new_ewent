@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -473,6 +474,7 @@ class AuthController extends Controller
         ]);
 
         // Check if validation fails
+        // dd($validator);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -1120,7 +1122,7 @@ class AuthController extends Controller
                     $order = $existing_order;
                     $message = "Order updated successfully";
                     DB::commit();
-                    $this->bookingNewPayment($order->id);
+                    // $this->bookingNewPayment($order->id);
     
                     return response()->json([
                         'status' => true,
@@ -1172,7 +1174,7 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                $this->bookingNewPayment($order->id);
+                // $this->bookingNewPayment($order->id);
 
                 return response()->json([
                     'status' => true,
@@ -1193,61 +1195,115 @@ class AuthController extends Controller
         }
     }
 
-    public function bookingNewPayment($order_id){
+    public function bookingNewPayment(Request $request){
        
         DB::beginTransaction();
         try{
-            $order = Order::find($order_id);
-            if($order->payment_status=="completed"){
-                return response()->json([
-                    'status' => false,
-                    'message' => "Payment already completed for this subscription.",
-                ], 403);
-            }else{
-                $payment = new Payment;
-                $payment->order_id = $order->id;
-                $payment->order_type = 'new_subscription';
-                $payment->payment_method = 'PhonePay';
-                $payment->payment_status = 'completed';
-                $payment->transaction_id = date('dmyhis');
-                $payment->amount = $order->final_amount;
-                $payment->payment_date = date('Y-m-d h:i:s');
-                $payment->save();
-                if($payment){
-                    // Deposit Amount
-                    $payment_item = new PaymentItem;
-                    $payment_item->payment_id = $payment->id;
-                    $payment_item->product_id = $order->product_id;
-                    $payment_item->payment_for = 'new_subscription';
-                    $payment_item->duration = $order->rent_duration;
-                    $payment_item->type = 'deposit';
-                    $payment_item->amount = $order->deposit_amount;
-                    $payment_item->save();
+            $status = $request->status;
+            $order_id = $request->order_id;
+            $order_amount = $request->order_amount;
+            $razorpay_order_id = $request->razorpay_order_id;
+            $razorpay_payment_id = $request->razorpay_payment_id;
+            $razorpay_signature = $request->razorpay_signature;
+            if($status==true){
 
-                    // Rental Amount
-                    $payment_item = new PaymentItem;
-                    $payment_item->payment_id = $payment->id;
-                    $payment_item->product_id = $order->product_id;
-                    $payment_item->payment_for = 'new_subscription';
-                    $payment_item->duration = $order->rent_duration;
-                    $payment_item->type = 'rental';
-                    $payment_item->amount = $order->rental_amount;
-                    $payment_item->save();
+                $order = Order::find($order_id);
+
+                $amount = number_format($order_amount, 2, '.', '');
+                $orderAmount = number_format($order->final_amount, 2, '.', '');
+
+                if ($orderAmount !== $amount) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Sorry, the payment amount (₹$amount) does not match the subscription amount (₹$orderAmount).",
+                    ], 403);
+                }
+                if($order->payment_status=="completed"){
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment already completed for this subscription.",
+                    ], 403);
                 }
 
-                $order->payment_mode = "Online";
-                $order->payment_status = "completed";
-                $order->rent_status = "ready to assign";
-                $order->save();
+                $fetchResponse = $this->PaymentFetch($razorpay_payment_id,$order_id);
+                if($fetchResponse['status']){
+                    $captureResponse = $this->PaymentCaptured($razorpay_payment_id,$order_amount);
 
-                DB::commit();
+                    if ($captureResponse['status']) {
+                        if($captureResponse['data']['status']=="captured"){
+                            $order_type = $order->subscription?Str::snake($order->subscription->subscription_type):"";
+                            $payment = Payment::find($fetchResponse['payment_id']);
+                            $payment->order_id = $order->id;
+                            $payment->user_id = $order->user_id;
+                            $payment->order_type = 'new_subscription_'.$order_type;
+                            $payment->payment_method = $captureResponse['data']['method'];
+                            $payment->currency = $captureResponse['data']['currency'];
+                            $payment->payment_status = 'completed';
+                            $payment->transaction_id = date('dmyhis');
+                            $payment->razorpay_order_id = $razorpay_order_id;
+                            $payment->razorpay_payment_id = $razorpay_payment_id;
+                            $payment->razorpay_signature = $razorpay_signature;
+                            $payment->amount = $order->final_amount;
+                            $payment->payment_date = date('Y-m-d h:i:s');
+                            $payment->save();
+                            if($payment){
+                                // Deposit Amount
+                                $payment_item = new PaymentItem;
+                                $payment_item->payment_id = $payment->id;
+                                $payment_item->product_id = $order->product_id;
+                                $payment_item->payment_for = 'new_subscription';
+                                $payment_item->duration = $order->rent_duration;
+                                $payment_item->type = 'deposit';
+                                $payment_item->amount = $order->deposit_amount;
+                                $payment_item->save();
+            
+                                // Rental Amount
+                                $payment_item = new PaymentItem;
+                                $payment_item->payment_id = $payment->id;
+                                $payment_item->product_id = $order->product_id;
+                                $payment_item->payment_for = 'new_subscription';
+                                $payment_item->duration = $order->rent_duration;
+                                $payment_item->type = 'rental';
+                                $payment_item->amount = $order->rental_amount;
+                                $payment_item->save();
+                            }
+            
+                            $order->payment_mode = "Online";
+                            $order->payment_status = "completed";
+                            $order->rent_status = "ready to assign";
+                            $order->save();
+            
+                            DB::commit();
 
+                            return response()->json([
+                                'status' => true,
+                                'message' => "Payment has been successfully created.",
+                            ], 200);
+                        }
+                        return response()->json([
+                            'status' => true,
+                            'message' => $captureResponse['message'],
+                            'data' => $captureResponse['data']
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'status' => false,
+                            'message' => $captureResponse['message'],
+                            'error' => $captureResponse['error']
+                        ], 500);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment data not found in the response.",
+                    ], 500);
+                }
+            }else{
                 return response()->json([
-                    'status' => true,
-                    'message' => "Payment has been successfully created.",
-                ], 200);
-            }
-
+                    'status' => false,
+                    'message' => "Payment failed. Please try again.",
+                ], 500);
+            }    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -1257,12 +1313,138 @@ class AuthController extends Controller
             ], 500);
         }
     }
-    public function bookingRenewPayment($order_id){
+
+    private function PaymentCaptured($razorpay_payment_id,$amount){
+        $api_key = env('RAZORPAY_KEY_ID');
+        $api_secret = env('RAZORPAY_KEY_SECRET');
+        
+        // Curl Initialization
+        $curl = curl_init();
+
+        // Razorpay API URL for Payment Capture
+        $url = "https://api.razorpay.com/v1/payments/$razorpay_payment_id/capture";
+        // dd($url);
+        // Curl Configuration
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_USERPWD => $api_key . ":" . $api_secret,
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json"
+            ],
+            CURLOPT_POSTFIELDS => json_encode([
+                "amount" => $amount * 100, // Amount in paise (INR 1000 = 100000)
+                "currency" => "INR"
+            ]),
+        ]);
+
+        // Execute Curl Request
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        // Handle Response
+        // dd($response);
+        if ($httpCode == 200) {
+            $responseData = json_decode($response, true);
+            return [
+                'status' => true,
+                'data' => $responseData,
+                'message' => "Payment captured successfully."
+            ];
+        } else {
+            return [
+                'status' => false,
+                'message' => "Failed to capture payment.",
+                'error' => json_decode($response, true)
+            ];
+        }
+    }
+    private function PaymentFetch($razorpay_payment_id, $order_id)
+    {
+        // dd($razorpay_payment_id, $order_id);s
+        $api_key = env('RAZORPAY_KEY_ID');
+        $api_secret = env('RAZORPAY_KEY_SECRET');
+        
+        // Initialize Curl
+        $curl = curl_init();
+        $url = "https://api.razorpay.com/v1/payments/$razorpay_payment_id";
+
+        // Curl Configuration
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => "GET", // Corrected to GET
+            CURLOPT_USERPWD => $api_key . ":" . $api_secret,
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json"
+            ],
+        ]);
+
+        // Execute Curl Request
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        // Handle Response
+        if ($httpCode == 200) {
+            $responseData = json_decode($response, true);
+            // Ensure the payment data is available
+            if (isset($responseData['id'])) {
+                $order = Order::find($order_id);
+                $order_type = $order->subscription ? Str::snake($order->subscription->subscription_type) : "";
+
+                // Create Payment Record
+                $payment = Payment::firstOrNew(['razorpay_payment_id' => $razorpay_payment_id]);
+               
+                $payment->order_id = $order->id;
+                $payment->user_id = $order->user_id;
+                $payment->order_type = 'new_subscription_' . $order_type;
+                $payment->payment_method = $responseData['method'] ?? 'N/A';
+                $payment->currency = $responseData['currency'] ?? 'INR';
+                $payment->payment_status = $responseData['status'] ?? 'failed';
+                $payment->transaction_id = date('dmyhis');
+                $payment->razorpay_order_id = $responseData['order_id'] ?? '';
+                $payment->razorpay_payment_id = $razorpay_payment_id;
+                $payment->razorpay_signature = $responseData['notes']['razorpay_signature'] ?? '';
+                $payment->amount = ($responseData['amount'] ?? 0) / 100; // Convert to actual amount
+                $payment->payment_date = now();
+                $payment->save();
+                DB::commit();
+                return [
+                    'status' => true,
+                    'payment_id' => $payment->id,
+                ];
+            } else {
+                return [
+                    'status' => false,
+                    'message' => 'Payment data not found in the response.',
+                    'payment_id' => null,
+                ];
+            }
+        } else {
+            return [
+                'status' => false,
+                'message' => "Failed to fetch payment details. HTTP Code: $httpCode",
+                'payment_id' => null,
+            ];
+        }
+    }
+
+    public function bookingRenewPayment(Request $request){
         $user = $this->getAuthenticatedUser();
         if ($user instanceof \Illuminate\Http\JsonResponse) {
             return $user; // Return the response if the user is not authenticated
         }
-            
+        
+        $order_id = $request->order_id;
+        $status = $request->status;
+        $order_amount = $request->order_amount;
+        $razorpay_order_id = $request->razorpay_order_id;
+        $razorpay_payment_id = $request->razorpay_payment_id;
+        $razorpay_signature = $request->razorpay_signature;
+
         $order = Order::with('subscription')->find($order_id);
         if(!$order){
             return response()->json([
@@ -1280,68 +1462,122 @@ class AuthController extends Controller
 
         DB::beginTransaction();
         try{
+            if($status==true){
+                $amount = number_format($order_amount, 2, '.', '');
+                $orderAmount = number_format($order->rental_amount, 2, '.', '');
 
-            $payment = new Payment;
-            $payment->order_id = $order->id;
-            $payment->order_type = 'renewal_subscription';
-            $payment->payment_method = 'PhonePay';
-            $payment->payment_status = 'completed';
-            $payment->transaction_id = date('dmyhis');
-            $payment->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
-            $payment->payment_date = date('Y-m-d h:i:s');
-            $payment->save();
+                if ($orderAmount !== $amount) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Sorry, the payment amount (₹$amount) does not match the renewal subscription amount (₹$orderAmount).",
+                    ], 403);
+                }
 
-            if($payment){
-                // Rental Amount
-                $payment_item = new PaymentItem;
-                $payment_item->payment_id = $payment->id;
-                $payment_item->product_id = $order->product_id;
-                $payment_item->payment_for = 'renewal_subscription';
-                $payment_item->type = 'rental';
-                $payment_item->vehicle_id = $assignRider->vehicle_id;
-                $payment_item->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
-                $payment_item->duration = $order->subscription ? $order->subscription->duration : $order->rent_duration;
-                $payment_item->save();
-
-                // Update Order
-                $startDate = Carbon::parse($assignRider->end_date);
-                $endDate = $startDate->copy()->addDays($payment_item->duration);
+                if($order->payment_status=="completed"){
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment already completed for this subscription.",
+                    ], 403);
+                }
+                $fetchResponse = $this->PaymentFetch($razorpay_payment_id,$order_id);
+                if($fetchResponse['status']){
+                    $captureResponse = $this->PaymentCaptured($razorpay_payment_id,$order_amount);
+                    if ($captureResponse['status']) {
+                        if($captureResponse['data']['status']=="captured"){
+                            $order_type = $order->subscription?Str::snake($order->subscription->subscription_type):"";
+                            $payment = Payment::find($fetchResponse['payment_id']);
+                            $payment->order_id = $order->id;
+                            $payment->user_id = $order->user_id;
+                            $payment->order_type = 'renewal_subscription_'.$order_type;
+                            $payment->payment_method = $captureResponse['data']['method'];
+                            $payment->currency = $captureResponse['data']['currency'];
+                            $payment->payment_status = 'completed';
+                            $payment->transaction_id = date('dmyhis');
+                            $payment->razorpay_order_id = $razorpay_order_id;
+                            $payment->razorpay_payment_id = $razorpay_payment_id;
+                            $payment->razorpay_signature = $razorpay_signature;
+    
+                            $payment->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
+                            $payment->payment_date = date('Y-m-d h:i:s');
+                            $payment->save();
                 
-                $order->payment_mode = "Online";
-                $order->payment_status = "completed";
-                $order->rental_amount = $payment_item->amount;
-                $order->total_price = $order->deposit_amount+$payment_item->amount;
-                $order->final_amount = $order->deposit_amount+$payment_item->amount;
-                $order->rent_duration = $payment_item->duration;
-                $order->rent_start_date = $startDate;
-                $order->rent_end_date = $endDate;
-                $order->save();
-
+                            if($payment){
+                                // Rental Amount
+                                $payment_item = new PaymentItem;
+                                $payment_item->payment_id = $payment->id;
+                                $payment_item->product_id = $order->product_id;
+                                $payment_item->payment_for = 'renewal_subscription';
+                                $payment_item->type = 'rental';
+                                $payment_item->vehicle_id = $assignRider->vehicle_id;
+                                $payment_item->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
+                                $payment_item->duration = $order->subscription ? $order->subscription->duration : $order->rent_duration;
+                                $payment_item->save();
                 
-
-                DB::table('exchange_vehicles')->insert([
-                    'status'       => "renewal",
-                    'user_id'      => $assignRider->user_id,
-                    'order_id'     => $assignRider->order_id,
-                    'vehicle_id'   => $assignRider->vehicle_id,
-                    'start_date'   => $assignRider->start_date,
-                    'end_date'     => $assignRider->end_date,
-                    'created_at'   => now(),
-                    'updated_at'   => now(),
-                ]); 
-
-                $assignRider->start_date = $startDate;
-                $assignRider->end_date = $endDate;
-                $assignRider->status = "assigned";
-                $assignRider->save();
-
-                DB::commit();
+                                // Update Order
+                                $startDate = Carbon::parse($assignRider->end_date);
+                                $endDate = $startDate->copy()->addDays($payment_item->duration);
+                                
+                                $order->payment_mode = "Online";
+                                $order->payment_status = "completed";
+                                $order->rental_amount = $payment_item->amount;
+                                $order->total_price = $order->deposit_amount+$payment_item->amount;
+                                $order->final_amount = $order->deposit_amount+$payment_item->amount;
+                                $order->rent_duration = $payment_item->duration;
+                                $order->rent_start_date = $startDate;
+                                $order->rent_end_date = $endDate;
+                                $order->save();
                 
+                                
+                
+                                DB::table('exchange_vehicles')->insert([
+                                    'status'       => "renewal",
+                                    'user_id'      => $assignRider->user_id,
+                                    'order_id'     => $assignRider->order_id,
+                                    'vehicle_id'   => $assignRider->vehicle_id,
+                                    'start_date'   => $assignRider->start_date,
+                                    'end_date'     => $assignRider->end_date,
+                                    'created_at'   => now(),
+                                    'updated_at'   => now(),
+                                ]); 
+                
+                                $assignRider->start_date = $startDate;
+                                $assignRider->end_date = $endDate;
+                                $assignRider->status = "assigned";
+                                $assignRider->save();
+                
+                                DB::commit();
+                                
+                                return response()->json([
+                                    'status' => true,
+                                    'message' => "Payment completed and subscription renewed successfully.",
+                                ], 200);
+                            }
+                        }
+                        return response()->json([
+                            'status' => true,
+                            'message' => $captureResponse['message'],
+                            'data' => $captureResponse['data']
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'status' => false,
+                            'message' => $captureResponse['message'],
+                            'error' => $captureResponse['error']
+                        ], 500);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment data not found in the response.",
+                    ], 500);
+                }
+            }else{
                 return response()->json([
-                    'status' => true,
-                    'message' => "Payment completed and subscription renewed successfully.",
-                ], 200);
+                    'status' => false,
+                    'message' => "Payment failed. Please try again.",
+                ], 500);
             }
+            
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([

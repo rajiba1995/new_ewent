@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\AdminLogin;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CronController;
-use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement,PaymentSummary,PaymentUserSummary};
+use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement,PaymentSummary,PaymentUserSummary,UserPaymentHistory,PaymentVehicleSummary};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
     GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail,VehiclePaymentSummary
@@ -62,7 +62,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     // Payment Management
     Route::group(['prefix'=>'payment'], function(){
         Route::get('/summary/{model_id?}/{vehicle_id?}', PaymentSummary::class)->name('admin.payment.summary');
+        Route::get('/vehicle/summary/{model_id?}/{vehicle_id?}', PaymentVehicleSummary::class)->name('admin.payment.vehicle.summary');
         Route::get('/user-history/{user_id}', PaymentUserSummary::class)->name('admin.payment.user_history');
+        Route::get('/user/payment-history', UserPaymentHistory::class)->name('admin.payment.user_payment_history');
     });
     // Offer Management
     Route::group(['prefix'=>'offer'], function(){
