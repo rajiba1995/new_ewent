@@ -65,6 +65,9 @@
                                     <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">
                                         Selling Price
                                     </th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">
+                                        Status
+                                    </th>
                                     <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">
                                         Actions
                                     </th>
@@ -110,7 +113,7 @@
                                             </ul>
                                         </td>
                                                                             
-                                        {{-- <td class="align-middle text-sm text-center">
+                                        <td class="align-middle text-sm text-center">
                                             <div class="form-check form-switch">
                                                 <input 
                                                     class="form-check-input ms-auto" 
@@ -119,7 +122,7 @@
                                                     wire:click="toggleStatus({{ $product->id }})"
                                                     @if($product->status) checked @endif>
                                             </div>
-                                        </td> --}}
+                                        </td>
                                         <td class="align-middle text-end px-4">
                                             {{-- <div class="btn-group" role="group" aria-label="Basic example">
                                                 <button type="button" class="btn btn-outline-secondary waves-effect {{$product->is_featured==1?"active":""}}" title="Mark as Featured" wire:click="setAsFeatured({{ $product->id }})">

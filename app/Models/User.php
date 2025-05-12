@@ -45,6 +45,9 @@ class User extends Authenticatable
     ];
   }
 
+  public function rejectedBy(){
+        return $this->belongsTo(Admin::class, 'rejected_by', 'id');
+  }
   public function userAddress(){
         return $this->hasMany(UserAddress::class);
   }
@@ -71,6 +74,13 @@ class User extends Authenticatable
     return $this->hasOne(Order::class)
     ->where('payment_status', 'completed')
     ->where('rent_status', 'active')
+    ->orderBy('id', 'DESC');
+  }
+  public function cancel_requested_order(){
+    return $this->hasOne(Order::class)
+    ->where('payment_status', 'completed')
+    ->where('rent_status', 'active')
+    ->where('cancel_request', 'Yes')
     ->orderBy('id', 'DESC');
   }
   public function accessToken()

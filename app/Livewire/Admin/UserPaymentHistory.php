@@ -10,6 +10,8 @@ use App\Models\PaymentItem;
 class UserPaymentHistory extends Component
 {
     public $filterData = [];
+    public $expandedRows = [];
+    public $transaction_details = [];
     public $selected_rider,$selected_product_type,$selected_payment_status,$start_date,$end_date;
     public function mount(){
 
@@ -24,6 +26,50 @@ class UserPaymentHistory extends Component
     }
     public function resetPageField(){
         $this->reset(['selected_rider','selected_product_type','selected_payment_status','start_date','end_date']);
+    }
+
+   public function toggleRow($key, $razorpay_payment_id)
+    {
+        $this->transaction_details[$key] = $this->paymentFetch($razorpay_payment_id);
+
+        if (in_array($key, $this->expandedRows)) {
+            $this->expandedRows = array_diff($this->expandedRows, [$key]);
+        } else {
+            $this->expandedRows[] = $key;
+        }
+    }
+
+    public function paymentFetch($razorpay_payment_id)
+    {
+        $api_key = env('RAZORPAY_KEY_ID');
+        $api_secret = env('RAZORPAY_KEY_SECRET');
+        
+        $curl = curl_init();
+        $url = "https://api.razorpay.com/v1/payments/$razorpay_payment_id";
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_USERPWD => $api_key . ":" . $api_secret,
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($httpCode == 200) {
+            return json_decode($response, true);
+        } else {
+            return [
+                'status' => false,
+                'message' => "Failed to capture payment.",
+                'error' => json_decode($response, true)
+            ];
+        }
     }
     public function render()
     {

@@ -161,13 +161,13 @@ class RiderEngagement extends Component
                 $order->save();
 
                 $payment = Payment::where('order_id', $order->id)
-                    ->where('order_type', 'new_subscription')
+                    ->where('order_type', $order->subscription_type)
                     ->latest('id')
                     ->first();
 
                 if ($payment) {
                     PaymentItem::where('payment_id', $payment->id)
-                        ->where('payment_for', 'new_subscription')
+                        ->where('payment_for',  $order->subscription_type)
                         ->update(['vehicle_id' => $this->vehicle_model]);
                 }
 
@@ -198,6 +198,8 @@ class RiderEngagement extends Component
 
             $assignRider = AsignedVehicle::where('order_id', $this->targetOrderId)->first();
 
+            $order = Order::find($this->targetOrderId);
+
                 DB::table('exchange_vehicles')->insert([
                     'user_id'      => $assignRider->user_id,
                     'order_id'     => $assignRider->order_id,
@@ -214,13 +216,13 @@ class RiderEngagement extends Component
                 $assignRider->save();
 
                 $payment = Payment::where('order_id', $assignRider->order_id)
-                    ->where('order_type', 'new_subscription')
+                    ->where('order_type', $order->subscription_type)
                     ->latest('id')
                     ->first();
 
                 if ($payment) {
                     PaymentItem::where('payment_id', $payment->id)
-                        ->where('payment_for', 'new_subscription')
+                        ->where('payment_for', $order->subscription_type)
                         ->update(['vehicle_id' => $this->vehicle_model]);
                 }
 
@@ -250,14 +252,22 @@ class RiderEngagement extends Component
     public function VerifyKyc($status, $id){
         $user = User::find($id);
         if($user){
-            if($status=="vefiry"){
+            if($status=="verified"){
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "verified";
+                $user->date_of_rejection = NULL;
+                $user->rejected_by = NULL;
+            }elseif($status=="rejected"){
+                $user->date_of_rejection = date('Y-m-d h:i:s');
+                $user->rejected_by = Auth::guard('admin')->user()->id;
+                $user->is_verified = "rejected";
             }else{
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "unverified";
+                 $user->date_of_rejection = NULL;
+                $user->rejected_by = NULL;
             }
             $user->save();
             $this->showCustomerDetails($id);
@@ -341,6 +351,7 @@ class RiderEngagement extends Component
 
             $order->return_date = date('Y-m-d h:i:s');
             $order->rent_status = 'returned';
+            $order->cancel_request = 'No';
             $order->save();
 
             DB::table('exchange_vehicles')->insert([
@@ -452,6 +463,20 @@ class RiderEngagement extends Component
         ->orderBy('id', 'DESC')
         ->paginate(20);
 
+        $cancel_requested_users = User::when($this->search, function ($query) {
+            $searchTerm = '%' . $this->search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                ->orWhere('mobile', 'like', $searchTerm)
+                ->orWhere('email', 'like', $searchTerm)
+                ->orWhere('customer_id', 'like', $searchTerm);
+            });
+        })->whereHas('cancel_requested_order')
+        ->whereHas('active_vehicle')
+        ->where('is_verified', 'verified')
+        ->orderBy('id', 'DESC')
+        ->paginate(20);
+
         $inactive_users = User::with('doc_logs')
             ->whereDoesntHave('accessToken')
             ->when($this->search, function ($query) {
@@ -490,6 +515,7 @@ class RiderEngagement extends Component
             'active_users' => $active_users,
             'inactive_users' => $inactive_users,
             'suspended_users' => $suspended_users,
+            'cancel_requested_users' => $cancel_requested_users,
         ]);
     }
 }

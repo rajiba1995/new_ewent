@@ -88,14 +88,22 @@ class CustomerIndex extends Component
     public function VerifyKyc($status, $id){
         $user = User::find($id);
         if($user){
-            if($status=="vefiry"){
+            if($status=="verified"){
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "verified";
+                $user->date_of_rejection = NULL;
+                $user->rejected_by = NULL;
+            }elseif($status=="rejected"){
+                $user->date_of_rejection = date('Y-m-d h:i:s');
+                $user->rejected_by = Auth::guard('admin')->user()->id;
+                $user->is_verified = "rejected";
             }else{
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "unverified";
+                 $user->date_of_rejection = NULL;
+                $user->rejected_by = NULL;
             }
             $user->save();
             $this->showCustomerDetails($id);

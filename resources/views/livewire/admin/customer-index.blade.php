@@ -306,12 +306,11 @@
                                 <table class="table align-items-center mb-0">
                                     <thead>
                                         <tr>
-                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Customer ID</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Order</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Total Spent</th>
-                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Date Of Rejection</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Reason For Rejection</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rejected By</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Re-Uploaded Status</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Actions</th>
                                         </tr>
                                     </thead>
@@ -319,11 +318,17 @@
                                        
                                         @foreach($rejected_users as $k => $r_user)
                                         @php
+                                            $UserKycLog = App\Models\UserKycLog::where('user_id', $r_user->id)->where('status', 'Rejected')->orderBy('id', 'DESC')->whereDate('created_at', '>=', date('Y-m-d', strtotime($r_user->date_of_rejection)))->get();
+
+                                            $UploadedStatus = App\Models\UserKycLog::where('user_id', $r_user->id)
+                                                ->where('status', 'Re-uploaded')
+                                                ->where('created_at', '>=', $r_user->date_of_rejection)
+                                                ->latest('id')  // More readable than orderBy('id', 'DESC')
+                                                ->exists();
                                             $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
                                             $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
                                         @endphp
                                             <tr>
-                                                <td class="align-middle text-center">{{ $k + 1 }}</td>
                                                 <td class="sorting_1">
                                                     <div class="d-flex justify-content-start align-items-center customer-name">
                                                         <div class="avatar-wrapper me-3">
@@ -341,28 +346,38 @@
                                                             <a href="{{ route('admin.customer.details', $r_user->id) }}"
                                                                 class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($r_user->name) }}</span>
                                                             </a>
-                                                            <small class="text-truncate">{{ $r_user->email }} | {{$r_user->country_code}} {{ $r_user->mobile }}</small>
+                                                            <small class="text-truncate">{{$r_user->country_code}} {{ $r_user->mobile }}</small>
                                                         <div>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle text-start">{{$r_user->customer_id?$r_user->customer_id:"...."}}</td>
-                                                <td class="align-middle text-start">150</td>
-                                                <td class="align-middle text-start">{{env('APP_CURRENCY')}}5000</td>
-                                                <td class="align-middle text-sm text-center">
-                                                    <div class="form-check form-switch">
-                                                        <input 
-                                                            class="form-check-input ms-auto" 
-                                                            type="checkbox" 
-                                                            id="flexSwitchCheckDefault{{ $r_user->id }}" 
-                                                            wire:click="toggleStatus({{ $r_user->id }})"
-                                                            @if($r_user->status) checked @endif>
+                                                <td class="align-middle text-start">{{$r_user->date_of_rejection?date('d M y h:i A', strtotime($r_user->date_of_rejection)):"N/A"}}</td>
+                                                <td class="align-middle text-start p-3">
+                                                    <div class="bg-white rounded-lg shadow-md p-4 space-y-2 max-w-md">
+                                                        <ul class="list-disc list-inside text-sm text-gray-700">
+                                                            @forelse ($UserKycLog as $reason)
+                                                                <li class="px-2 py-1 rounded-md bg-gray-50 hover:bg-blue-50 transition">{{ $reason->remarks }}</li>
+                                                            @empty
+                                                                <li class="text-gray-500 italic">No remarks available.</li>
+                                                            @endforelse
+                                                        </ul>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle text-end px-4">
-                                                    <a href="{{ route('admin.customer.details', $r_user->id) }}" title="View Details of {{ ucwords($r_user->name) }}">
-                                                        <span class="control"></span>
-                                                    </a>
+
+                                                <td class="align-middle text-start">
+                                                    {{$r_user->rejectedBy?$r_user->rejectedBy->email:"N/A"}}
                                                 </td>
+                                                <td class="align-middle text-start">
+                                                   @if($UploadedStatus)
+                                                        <span class="badge bg-label-success mb-0 cursor-pointer">Recently Uploaded</span>
+                                                    @else
+                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">Pending</span>
+                                                    @endif
+                                                </td>
+                                               <td class="align-middle text-end px-4">
+                                                    <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                        wire:click="showCustomerDetails({{ $r_user->id}})">
+                                                    View
+                                                </button>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -720,15 +735,30 @@
                         </div>
                         <div class="text-center">
                             @if($selectedCustomer->is_verified=="verified")
-                            <button type="button" wire:click="VerifyKyc('unverified',{{$selectedCustomer->id}})" class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
+                            <button type="button" class="btn btn-success text-white mb-0 custom-input-sm ms-2">
                                 KYC VERIFIED
                             </button>
                             @endif
                             @if($selectedCustomer->is_verified=="unverified")
-                                <button type="button" wire:click="VerifyKyc('vefiry',{{$selectedCustomer->id}})" class="btn btn-danger text-white mb-0 custom-input-sm ms-2">
-                                    VERIFY KYC
+                                <button type="button" class="btn btn-warning text-white mb-0 custom-input-sm ms-2">
+                                   KYC UNVERIFIED
                                 </button>
                             @endif
+                            @if($selectedCustomer->is_verified=="rejected")
+                                <button type="button" class="btn btn-danger text-white mb-0 custom-input-sm ms-2">
+                                    KYC REJECTED
+                                </button>
+                            @endif
+                        </div>
+                        <div style="margin-bottom: 20px;" class="text-start text-uppercase">
+                                <label for="startDate" class="form-label small mb-1">Update KYC Status</label>
+                            <select
+                                class="form-select border border-2 p-2 custom-input-sm" wire:model="model" wire:change="VerifyKyc($event.target.value, {{$selectedCustomer->id}})">
+                                <option value="" selected hidden>Select one</option>
+                                <option value="verified" {{$selectedCustomer->is_verified=="verified"?"selected":""}}>KYC Verified</option>
+                                <option value="unverified" {{$selectedCustomer->is_verified=="unverified"?"selected":""}}>KYC Unverified</option>
+                                <option value="rejected" {{$selectedCustomer->is_verified=="rejected"?"selected":""}}>KYC Rejected</option>
+                            </select>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="navs-justified-history" role="tabpanel">

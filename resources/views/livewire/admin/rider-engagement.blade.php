@@ -189,7 +189,7 @@
                               <span class="d-none d-sm-block engagement_header">
                                 <i class="tf-icons ri-user-3-line me-1_5"></i>
                                 </i> Cancel Subscription Request <span
-                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($ready_to_assigns)}}</span>
+                                  class="badge rounded-pill badge-center h-px-20 w-px-20 bg-label-danger ms-1_5 pt-50">{{count($cancel_requested_users)}}</span>
                                 </span>
                                 <i class="ri-user-3-line ri-20px d-sm-none"></i>
                             </button>
@@ -268,7 +268,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
                                                             {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li> --}}
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -332,7 +332,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$all_inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$all_inact_user->id}}">
                                                             {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $all_inact_user->id)}}">History</a></li> --}}
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $all_inact_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -414,7 +414,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $aw_user->id)}}">History</a></li> --}}
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $aw_user->id)}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -436,7 +436,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade {{$active_tab==8?"active show":""}}" id="navs-justified-profile" role="tabpanel">
+                        {{-- <div class="tab-pane fade {{$active_tab==8?"active show":""}}" id="navs-justified-profile" role="tabpanel">
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
@@ -476,7 +476,6 @@
                                                                 class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($pend_order->name) }}</span>
                                                             </a>
                                                             <small class="text-truncate">{{ $pend_order->email }} </small>
-                                                            {{-- | {{$pend_order->country_code}} {{ $pend_order->mobile }} --}}
                                                         <div>
                                                     </div>
                                                     <td class="align-middle text-start">
@@ -495,8 +494,7 @@
                                                         <div class="dropdown cursor-pointer">
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$pend_order->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$pend_order->id}}">
-                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $pend_order->id)}}">History</a></li> --}}
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $pend_order->id)}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -514,7 +512,7 @@
                                     {{ $pending_orders->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="tab-pane fade {{$active_tab==3?"active show":""}}" id="navs-justified-messages" role="tabpanel">
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
@@ -682,7 +680,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_active_{{$ac_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', optional($ac_user->active_vehicle->stock)->vehicle_track_id)}}">Dashboard</a></li>
-                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $ac_user->id)}}">History</a></li> --}}
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $ac_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
                                                  </td>
@@ -779,7 +777,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$inact_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $inact_user->id)}}">History</a></li> --}}
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $inact_user->id)}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -858,7 +856,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
                                                                 {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li> --}}
+                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li>
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -874,6 +872,106 @@
                                 </table>
                                 <div class="d-flex justify-content-end mt-3 paginator">
                                     {{ $suspended_users->links() }} <!-- Pagination links -->
+                                </div>
+                            </div>
+                        </div>
+                         <div class="tab-pane fade {{$active_tab==7?"active show":""}}" id="navs-justified-messages" role="tabpanel">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">SL</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Riders</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Info</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Allocated <br> Date/Time</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Expected End <br> Date/Time</th>
+                                            <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Requested At</th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                       
+                                        @foreach($cancel_requested_users as $k => $cr_user)
+                                        @php
+                                            $colors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary', 'bg-label-danger', 'bg-label-warning'];
+                                            $colorClass = $colors[$k % count($colors)]; // Rotate colors based on index
+                                        @endphp
+                                            <tr>
+                                                <td class="align-middle text-center">{{ $k + 1 }}</td>
+                                                <td class="sorting_1">
+                                                    <div class="d-flex justify-content-start align-items-center customer-name">
+                                                        <div class="avatar-wrapper me-3">
+                                                            <div class="avatar avatar-sm">
+                                                                @if ($cr_user->image)
+                                                                    <img src="{{ asset($cr_user->image) }}" alt="Avatar" class="rounded-circle">
+                                                                @else
+                                                                    <div class="avatar-initial rounded-circle {{$colorClass}}">
+                                                                        {{ strtoupper(substr($cr_user->name, 0, 1)) }}{{ strtoupper(substr(strrchr($cr_user->name, ' '), 1, 1)) }}
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <a href="{{ route('admin.customer.details', $cr_user->id) }}"
+                                                                class="text-heading"><span class="fw-medium text-truncate">{{ ucwords($cr_user->name) }}</span>
+                                                            </a>
+                                                            <small class="text-truncate">{{$cr_user->country_code}} {{ $cr_user->mobile }}</small>
+                                                        <div>
+                                                    </div>
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if(optional($cr_user->active_vehicle)->stock && optional($cr_user->active_order)->product)
+                                                        {{ ucwords(optional($cr_user->active_vehicle->stock)->vehicle_number) }} <br>
+                                                        {{ ucwords(optional($cr_user->active_order->product)->title) }}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($cr_user->active_order->rent_start_date)
+                                                        <small class="text-muted">{{ date('d M y h:i A', strtotime($cr_user->active_order->rent_start_date)) }}</small>
+                                                    @else
+                                                        ........
+                                                    @endif
+                                                    
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($cr_user->active_order->rent_end_date)
+                                                        <small class="text-muted">{{ date('d M y h:i A', strtotime($cr_user->active_order->rent_end_date)) }}</small>
+                                                    @else
+                                                        ........
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <small class="text-danger">{{ date('d M y h:i A', strtotime($cr_user->active_order->cancel_request_at)) }}</small>
+                                                 </td>
+                                                <td class="align-middle text-end px-4">
+                                                    <div class="d-flex">
+                                                        @if(optional($cr_user->active_vehicle)->status=='overdue')
+                                                            <button class="btn btn-danger text-white mb-0 mx-1 action_btn_padding">
+                                                                Overdue
+                                                            </button>
+                                                        @else
+                                                            {{-- @if($ac_user->vehicle_assign_status=="deallocate")
+                                                                <button class="btn btn-primary text-white mb-0 mx-1 action_btn_padding" wire:click="updateUserData({{$ac_user->id}})">
+                                                                    Reallocate
+                                                                </button>
+                                                            @endif --}}
+                                                            @if($cr_user->vehicle_assign_status==null)
+                                                                <button class="btn btn-success text-white mb-0 mx-1 action_btn_padding" wire:click="confirmDeallocate({{$cr_user->active_order->id}})">
+                                                                    Deallocate
+                                                                </button>
+                                                            @endif
+                                                        @endif
+                                                        
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $active_users->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
                         </div>
@@ -1225,15 +1323,30 @@
                         </div>
                         <div class="text-center">
                             @if($selectedCustomer->is_verified=="verified")
-                            <button type="button" wire:click="VerifyKyc('unverified',{{$selectedCustomer->id}})" class="btn btn-primary text-white mb-0 custom-input-sm ms-2">
+                            <button type="button" class="btn btn-success text-white mb-0 custom-input-sm ms-2">
                                 KYC VERIFIED
                             </button>
                             @endif
                             @if($selectedCustomer->is_verified=="unverified")
-                                <button type="button" wire:click="VerifyKyc('vefiry',{{$selectedCustomer->id}})" class="btn btn-danger text-white mb-0 custom-input-sm ms-2">
-                                    VERIFY KYC
+                                <button type="button" class="btn btn-warning text-white mb-0 custom-input-sm ms-2">
+                                   KYC UNVERIFIED
                                 </button>
                             @endif
+                            @if($selectedCustomer->is_verified=="rejected")
+                                <button type="button" class="btn btn-danger text-white mb-0 custom-input-sm ms-2">
+                                    KYC REJECTED
+                                </button>
+                            @endif
+                        </div>
+                        <div style="margin-bottom: 20px;" class="text-start text-uppercase">
+                                <label for="startDate" class="form-label small mb-1">Update KYC Status</label>
+                            <select
+                                class="form-select border border-2 p-2 custom-input-sm" wire:model="model" wire:change="VerifyKyc($event.target.value, {{$selectedCustomer->id}})">
+                                <option value="" selected hidden>Select one</option>
+                                <option value="verified" {{$selectedCustomer->is_verified=="verified"?"selected":""}}>KYC Verified</option>
+                                <option value="unverified" {{$selectedCustomer->is_verified=="unverified"?"selected":""}}>KYC Unverified</option>
+                                <option value="rejected" {{$selectedCustomer->is_verified=="rejected"?"selected":""}}>KYC Rejected</option>
+                            </select>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="navs-justified-history" role="tabpanel">

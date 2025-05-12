@@ -463,14 +463,14 @@ class AuthController extends Controller
             return $user; // Return the response if the user is not authenticated
         }
         $validator = Validator::make($request->all(), [
-            'driving_licence' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'driving_licence_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'govt_id_card_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'cancelled_cheque_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'current_address_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'current_address_proof_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'driving_licence' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'driving_licence_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'govt_id_card' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'govt_id_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'cancelled_cheque_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'current_address_proof' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'current_address_proof_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
         ]);
 
         // Check if validation fails
@@ -493,15 +493,18 @@ class AuthController extends Controller
             $user->driving_licence_back = $driving_licence_back;
             $user->driving_licence_status = 1;
           
-            UserKycLog::updateOrCreate( 
-            [
-                'user_id' => $user->id, 
-                'document_type' => 'Driving Licence' // Another condition
-            ],
-            [
-                'status' => 'Uploaded', // Value to be updated/inserted
-                'updated_at' => date('Y-m-d h:i:s') 
-            ]);
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Driving Licence')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            if($existing_data){
+                $store->status = 'Re-uploaded';
+            }else{
+                $store->status = "Uploaded";
+            }
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Driving Licence';
+            $store->save();
+            
         }
         if ($request->hasFile('govt_id_card') || $request->hasFile('govt_id_card_back')) {
             $govt_id_card = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
@@ -509,15 +512,19 @@ class AuthController extends Controller
             $govt_id_card_back = storeFileWithCustomName($request->file('govt_id_card_back'), 'uploads/govt_id_cards');
             $user->govt_id_card_back = $govt_id_card_back;
             $user->govt_id_card_status = 1;
-            UserKycLog::updateOrCreate( 
-                [
-                    'user_id' => $user->id, 
-                    'document_type' => 'Govt ID Card' // Another condition
-                ],
-                [
-                    'status' => 'Uploaded', // Value to be updated/inserted
-                    'updated_at' => date('Y-m-d h:i:s') 
-                ]);
+
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Govt ID Card')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            if($existing_data){
+                $store->status = 'Re-uploaded';
+            }else{
+                $store->status = "Uploaded";
+            }
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Govt ID Card';
+            $store->save();
+
         }
         if ($request->hasFile('cancelled_cheque') || $request->hasFile('cancelled_cheque_back')) {
             $cancelled_cheque = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
@@ -525,15 +532,18 @@ class AuthController extends Controller
             $cancelled_cheque_back = storeFileWithCustomName($request->file('cancelled_cheque_back'), 'uploads/cancelled_cheques');
             $user->cancelled_cheque_back = $cancelled_cheque_back;
             $user->cancelled_cheque_status = 1;
-            UserKycLog::updateOrCreate( 
-                [
-                    'user_id' => $user->id, 
-                    'document_type' => 'Cancelled Cheque' // Another condition
-                ],
-                [
-                    'status' => 'Uploaded', // Value to be updated/inserted
-                    'updated_at' => date('Y-m-d h:i:s') 
-                ]);
+
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Cancelled Cheque')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            if($existing_data){
+                $store->status = 'Re-uploaded';
+            }else{
+                $store->status = "Uploaded";
+            }
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Cancelled Cheque';
+            $store->save();
         }
         if ($request->hasFile('current_address_proof') || $request->hasFile('current_address_proof_back')) {
             $current_address_proof = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
@@ -541,18 +551,22 @@ class AuthController extends Controller
             $current_address_proof_back = storeFileWithCustomName($request->file('current_address_proof_back'), 'uploads/address_proofs');
             $user->current_address_proof_back = $current_address_proof_back;
             $user->current_address_proof_status = 1;
-            UserKycLog::updateOrCreate( 
-                [
-                    'user_id' => $user->id, 
-                    'document_type' => 'Current Address Proof' // Another condition
-                ],
-                [
-                    'status' => 'Uploaded', // Value to be updated/inserted
-                    'updated_at' => date('Y-m-d h:i:s') 
-                ]);
+
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Current Address Proof')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            if($existing_data){
+                $store->status = 'Re-uploaded';
+            }else{
+                $store->status = "Uploaded";
+            }
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Current Address Proof';
+            $store->save();
+           
         }
         $user->status = 1;
-        $user->is_verified = 'unverified';
+        // $user->is_verified = 'unverified';
         $user->save();
 
         return response()->json([
@@ -1251,7 +1265,7 @@ class AuthController extends Controller
                                 $payment_item = new PaymentItem;
                                 $payment_item->payment_id = $payment->id;
                                 $payment_item->product_id = $order->product_id;
-                                $payment_item->payment_for = 'new_subscription';
+                                $payment_item->payment_for = 'new_subscription_'.$order_type;
                                 $payment_item->duration = $order->rent_duration;
                                 $payment_item->type = 'deposit';
                                 $payment_item->amount = $order->deposit_amount;
@@ -1261,7 +1275,7 @@ class AuthController extends Controller
                                 $payment_item = new PaymentItem;
                                 $payment_item->payment_id = $payment->id;
                                 $payment_item->product_id = $order->product_id;
-                                $payment_item->payment_for = 'new_subscription';
+                                $payment_item->payment_for = 'new_subscription_'.$order_type;
                                 $payment_item->duration = $order->rent_duration;
                                 $payment_item->type = 'rental';
                                 $payment_item->amount = $order->rental_amount;
@@ -1271,6 +1285,7 @@ class AuthController extends Controller
                             $order->payment_mode = "Online";
                             $order->payment_status = "completed";
                             $order->rent_status = "ready to assign";
+                            $order->subscription_type = 'new_subscription_'.$order_type;
                             $order->save();
             
                             DB::commit();
@@ -1506,7 +1521,7 @@ class AuthController extends Controller
                                 $payment_item = new PaymentItem;
                                 $payment_item->payment_id = $payment->id;
                                 $payment_item->product_id = $order->product_id;
-                                $payment_item->payment_for = 'renewal_subscription';
+                                $payment_item->payment_for = 'renewal_subscription_'.$order_type;
                                 $payment_item->type = 'rental';
                                 $payment_item->vehicle_id = $assignRider->vehicle_id;
                                 $payment_item->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
@@ -1525,6 +1540,7 @@ class AuthController extends Controller
                                 $order->rent_duration = $payment_item->duration;
                                 $order->rent_start_date = $startDate;
                                 $order->rent_end_date = $endDate;
+                                $order->subscription_type = 'renewal_subscription_'.$order_type;
                                 $order->save();
                 
                                 
@@ -1593,20 +1609,19 @@ class AuthController extends Controller
         DB::beginTransaction();
         try{
             $order = Order::find($order_id);
-            if($order->rent_status=="pending"){
-                $order->payment_mode = NULL;
-                $order->payment_status = 'pending';
-                $order->rent_status = 'cancelled';
+            if($order->rent_status=="active"){
+                $order->cancel_request = "Yes";
+                $order->cancel_request_at = now();
                 $order->save();
                 DB::commit();
                 return response()->json([
                     'status' => true,
-                    'message' => "Order has been successfully cancelled.",
+                    'message' => "Your cancellation request has been successfully submitted.",
                 ], 200);
             }else{
                 return response()->json([
                     'status' => false,
-                    'message' => "Cannot cancel. Contact admin.",
+                  'message' => "Cancellation request cannot be processed at this moment.",
                 ], 403);
             }
 
@@ -1638,6 +1653,8 @@ class AuthController extends Controller
                 'payment_status'=>$order->payment_status,
                 'rent_duration'=>$order->rent_duration.' Days',
                 'rent_status'=>$order->rent_status,
+                'cancel_request'=>$order->cancel_request,
+                'cancel_request_at'=>$order->cancel_request_at?date('d-m-Y h:i A', strtotime($order->cancel_request_at)):"N/A",
                 'model'=>$order->product?$order->product->title:"N/A",
                 'vehicle'=>$order->vehicle?$order->vehicle->stock->vehicle_number:"N/A",
                 'vehicle_status' =>$order->vehicle?$order->vehicle->status:"N/A",

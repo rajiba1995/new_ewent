@@ -10,7 +10,7 @@ use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
     GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail,VehiclePaymentSummary
 };
-use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex};
+use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex,EmployeeManagementList,EmployeeManagementCreate,EmployeeManagementUpdate};
 
 // Public Route for Login
 
@@ -77,6 +77,14 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
         Route::get('/faq', FaqIndex::class)->name('admin.faq.index');
         Route::get('/why-ewent',WhyEwentIndex::class)->name('admin.why-ewent');
         Route::get('/policy-details',PolicyDetails::class)->name('admin.policy-details');
+    });
+
+    // Employee Management
+
+    Route::group(['prefix'=>'employee'], function(){
+        Route::get('list', EmployeeManagementList::class)->name('admin.employee.list');
+        Route::get('create', EmployeeManagementCreate::class)->name('admin.employee.create');
+        Route::get('update/{id}', EmployeeManagementUpdate::class)->name('admin.employee.update');
     });
 
     // Location Management

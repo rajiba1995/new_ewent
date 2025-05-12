@@ -71,7 +71,7 @@ $adminUser = Auth::guard('admin')->user();
                     </div>
                     <div class="flex-grow-1">
                       <h6 class="mb-0 small">{{ $adminUser->name }}</h6>
-                      <small class="text-muted">{{ $adminUser->role }}</small>
+                      <small class="text-muted">{{ $adminUser->designation }}</small>
                     </div>
                   </div>
                 </a>

@@ -132,20 +132,20 @@
                         <div style="max-width: 250px;
                             margin-bottom: 20px;" class="text-start text-uppercase">
                             <label for="startDate" class="form-label small mb-1">Start Date</label>
-                            <input type="date" id="startDate" class="form-control border-2 p-2 custom-input-sm">
+                            <input type="date" id="startDate" wire:model="start_date" class="form-control border-2 p-2 custom-input-sm" wire:change="updateDate('start_date', $event.target.value)">
                         </div>
                             
                         <div style="max-width: 250px;
                             margin-bottom: 20px;" class="text-start text-uppercase">
                             <label for="endDate" class="form-label small mb-1">End Date</label>
-                            <input type="date" id="endDate" class="form-control border-2 p-2 custom-input-sm">
+                            <input type="date" id="endDate" wire:model="end_date" class="form-control border-2 p-2 custom-input-sm" wire:change="updateDate('end_date', $event.target.value)">
                         </div>
                         <!-- Search Button -->
-                        <button type="button" wire:click="searchButtonClicked"
+                        {{-- <button type="button" wire:click="searchButtonClicked"
                             class="btn btn-dark text-white custom-input-sm">
                             <i class="ri-search-line"></i>
                         </button>
-                    
+                     --}}
                         <!-- Reset Button -->
                         <a href="javascript:void(0)"
                             class="btn btn-danger text-white custom-input-sm" wire:click="resetPageField">
@@ -153,10 +153,10 @@
                         </a>
                     
                         <!-- Export Button -->
-                        <button type="button" wire:click="exportAll"
+                        {{-- <button type="button" wire:click="exportAll"
                             class="btn btn-primary text-white custom-input-sm">
                             <i class="ri-download-2-line me-1"></i> Export All
-                        </button>
+                        </button> --}}
                 
                     </div>
                 </div>

@@ -41,7 +41,7 @@ class PaymentSummary extends Component
         $this->model_id =$value;
     }
     public function resetPageField(){
-        $this->reset(['vehicle_id','model_id','data','model','vehicle']);
+        $this->reset(['vehicle_id','model_id','data','model','vehicle', 'start_date', 'end_date']);
     }
     public function toggleRow($key)
     {
@@ -51,9 +51,17 @@ class PaymentSummary extends Component
             $this->expandedRows[] = $key;
         }
     }
+
+    public function updateDate($field, $value){
+        $this->$field = $value;
+    }
     public function GetDepositAmount(){
+      
         $this->deposit_amount = PaymentItem::when($this->start_date && $this->end_date, function ($query) {
-            return $query->whereBetween('date', [$this->start_date, $this->end_date]);
+           return $query->whereBetween('created_at', [
+                $this->start_date . ' 00:00:00', 
+                $this->end_date . ' 23:59:59'
+            ]);
         })
         ->when($this->vehicle_id, function ($query) {
             return $query->where('vehicle_id', $this->vehicle_id);
@@ -66,7 +74,10 @@ class PaymentSummary extends Component
     }
     public function GetRentalAmount(){
         $this->rental_amount = PaymentItem::when($this->start_date && $this->end_date, function ($query) {
-            return $query->whereBetween('created_at', [$this->start_date, $this->end_date]);
+           return $query->whereBetween('created_at', [
+                $this->start_date . ' 00:00:00', 
+                $this->end_date . ' 23:59:59'
+            ]);
         })
         ->when($this->vehicle_id, function ($query) {
             return $query->where('vehicle_id', $this->vehicle_id);
@@ -81,33 +92,57 @@ class PaymentSummary extends Component
 
         $results = Product::whereHas('payment_item', function ($query) {
             if ($this->start_date && $this->end_date) {
-                $query->whereBetween('created_at', [$this->start_date, $this->end_date]);
+                $query->whereBetween('created_at', [
+                    $this->start_date . ' 00:00:00', 
+                    $this->end_date . ' 23:59:59'
+                ]);
             }
         })->when($this->model_id, function ($query) {
             return $query->where('id', $this->model_id);
         })->get();
 
+      
         foreach($results as $key=>$item){
-
+       
            $vehicles = $item->stock_item
             ->when($this->vehicle_id, function ($query) {
                 return $query->where('id', $this->vehicle_id);
             })->pluck('id')->toArray();
-
+            
             $this->data[$key] =[
                 'model_id'=>$item->id,
                 'title'=>$item->title,
                 'types'=>$item->types,
                 'image'=>$item->image,
-                'deposit_amount'=>$item->payment_item->where('type', 'deposit')->sum('amount'),
-                'rental_amount'=>$item->payment_item->where('type', 'rental')->sum('amount'),
-                'total_amount'=>$item->payment_item->sum('amount'),
+                'deposit_amount'=>$item->payment_item->where('type', 'deposit')
+                ->when($this->start_date && $this->end_date, function ($query) {
+                    return $query->whereBetween('created_at', [
+                        $this->start_date . ' 00:00:00', 
+                        $this->end_date . ' 23:59:59'
+                    ]);
+                })
+                ->sum('amount'),
+                'rental_amount'=>$item->payment_item->where('type', 'rental')->when($this->start_date && $this->end_date, function ($query) {
+                    return $query->whereBetween('created_at', [
+                        $this->start_date . ' 00:00:00', 
+                        $this->end_date . ' 23:59:59'
+                    ]);
+                })->sum('amount'),
+                'total_amount'=>$item->payment_item->when($this->start_date && $this->end_date, function ($query) {
+                    return $query->whereBetween('created_at', [
+                        $this->start_date . ' 00:00:00', 
+                        $this->end_date . ' 23:59:59'
+                    ]);
+                })->sum('amount'),
                 'vehicles'=>[]
             ];
 
             foreach($vehicles as $k=>$vehicle){
                 $PaymentItem = PaymentItem::with('stock')->when($this->start_date && $this->end_date, function ($query) {
-                    return $query->whereBetween('created_at', [$this->start_date, $this->end_date]);
+                    return $query->whereBetween('created_at', [
+                        $this->start_date . ' 00:00:00', 
+                        $this->end_date . ' 23:59:59'
+                    ]);
                 })
                 ->when($vehicle, function ($query) use ($vehicle) {
                     return $query->where('vehicle_id', $vehicle);

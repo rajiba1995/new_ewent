@@ -53,6 +53,19 @@
         </li>
       </ul>
     </li>
+    <li class="menu-item {{ (request()->is('admin/employee*')) ? 'open' : '' }}">
+      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+        <i class="menu-icon tf-icons ri-stock-line"></i>
+        <div>Employee Management</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ (request()->is('admin/employee/list*')) ? 'open' : '' }}">
+          <a href="{{route('admin.employee.list')}}" class="menu-link">
+            <div>List</div>
+          </a>
+        </li>
+      </ul>
+    </li>
     {{-- <li class="menu-item {{ (request()->is('admin/master*')) ? 'open' : '' }}">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-stock-line"></i>
