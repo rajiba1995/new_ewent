@@ -46,6 +46,11 @@ class CustomerIndex extends Component
         $remarks = null;
         $message = $document_type." is successfully verified for KYC.";
         if($status==3){
+            $user->date_of_rejection = date('Y-m-d h:i:s');
+            $user->rejected_by = Auth::guard('admin')->user()->id;
+            $user->is_verified = "rejected";
+            $user->save();
+
             if(empty($this->remarks)){
                 session()->flash('remarks', 'Please enter a remark for the rejection reason.');
                 return false;
@@ -88,7 +93,24 @@ class CustomerIndex extends Component
     public function VerifyKyc($status, $id){
         $user = User::find($id);
         if($user){
+
+            // if($user->driving_licence_status!=2){
+                
+            // }
             if($status=="verified"){
+                if($user->govt_id_card_status!=2){
+                    session()->flash('error_kyc_message', 'Govt. ID Card is not verified. Please verify the Govt. ID Card.');
+                    return false;
+                }
+                if($user->cancelled_cheque_status!=2){
+                    session()->flash('error_kyc_message', 'Cancelled cheque is not verified. Please verify the cancelled cheque.');
+                    return false;
+                }
+                if($user->current_address_proof_status!=2){
+                    session()->flash('error_kyc_message', 'Address proof is not verified. Please verify the current address proof.');
+                    return false;
+                }
+                    
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "verified";
@@ -176,7 +198,7 @@ class CustomerIndex extends Component
             ->where('is_verified', 'unverified')
             ->orderBy('id', 'DESC')
             ->paginate(20);
-        $verified_users = User::with('doc_logs','latest_order')
+        $verified_users = User::with('doc_logs','latest_order','active_vehicle')
             ->when($this->search, function ($query) {
                 $searchTerm = '%' . $this->search . '%';
                 $query->where(function ($q) use ($searchTerm) {

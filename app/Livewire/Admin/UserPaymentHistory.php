@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\PaymentItem;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UserPaymentSummaryExport;
 
 class UserPaymentHistory extends Component
 {
@@ -71,6 +73,12 @@ class UserPaymentHistory extends Component
             ];
         }
     }
+
+     public function exportAll()
+    {
+        return Excel::download(new UserPaymentSummaryExport($this->selected_rider, $this->selected_product_type, $this->selected_payment_status, $this->start_date, $this->end_date), 'user_payment_history.xlsx');
+    }
+
     public function render()
     {
         $data = Payment::when($this->selected_rider, function ($query) {
@@ -83,13 +91,13 @@ class UserPaymentHistory extends Component
             $query->where('payment_status', $this->selected_payment_status);
         })
         ->when($this->start_date && $this->end_date, function ($query) {
-            $query->whereBetween('created_at', [$this->start_date, $this->end_date]);
+            $query->whereBetween('payment_date', [$this->start_date. ' 00:00:00', $this->end_date . ' 23:59:59']);
         })
         ->when($this->start_date && !$this->end_date, function ($query) {
-            $query->whereDate('created_at', '>=', $this->start_date);
+            $query->whereDate('payment_date', '>=', $this->start_date);
         })
         ->when(!$this->start_date && $this->end_date, function ($query) {
-            $query->whereDate('created_at', '<=', $this->end_date);
+            $query->whereDate('payment_date', '<=', $this->end_date);
         })
         ->orderBy('id', 'DESC')
         ->paginate(25);

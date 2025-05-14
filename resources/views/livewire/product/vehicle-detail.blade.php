@@ -144,15 +144,31 @@
             </div>
         </div>
     </div>
-
+    <div class="d-flex align-items-center justify-content-end flex-wrap gap-2">
+        <div style="max-width: 250px;
+            margin-bottom: 20px;" class="text-start text-uppercase">
+            <label for="startDate" class="form-label small mb-1">Start Date</label>
+            <input type="date" id="startDate" wire:model="start_date" class="form-control border-2 p-2 custom-input-sm" wire:change="updateDate('start_date', $event.target.value)">
+        </div>
+            
+        <div style="max-width: 250px;
+            margin-bottom: 20px;" class="text-start text-uppercase">
+            <label for="endDate" class="form-label small mb-1">End Date</label>
+            <input type="date" id="endDate" wire:model="end_date" class="form-control border-2 p-2 custom-input-sm" wire:change="updateDate('end_date', $event.target.value)">
+        </div>
+        <a href="javascript:void(0)"
+            class="btn btn-danger text-white custom-input-sm" wire:click="resetPageField">
+            <i class="ri-restart-line"></i>
+        </a>
+    </div>
     <div class="full-info-area mt-5">
         <ul class="tab-nav">
             {{-- <li><a href="#tab1">Battery Metrics</a></li>
             <li><a href="#tab2">Motor Metrics</a></li> --}}
-            <li><a href="#tab3">Today Trips</a></li>
+            <li><a href="#tab3">{{$active_tab}}</a></li>
             {{-- <li><a href="#tab4">Odometter Logs</a></li> --}}
-            <li><a href="#tab5">Historical Logs</a></li>
-            <li><a href="#tab6">Immobilize History</a></li>
+            {{-- <li><a href="#tab5">Historical Logs</a></li>
+            <li><a href="#tab6">Immobilize History</a></li> --}}
         </ul>
         <div class="tab-content-holder">
             {{-- <div class="tab-content" id="tab1">
@@ -298,7 +314,11 @@
                                 <i class="fa-solid fa-road"></i>
                             </span>
                             <h6>Total Travel</h6>
-                            <span class="value">{{$day_wise_distance_timeline['stats']['distance']['value']}} {{$day_wise_distance_timeline['stats']['distance']['unit']}}</span>
+                            @if($start_date && $end_date)
+                                <span class="value">{{$vehicle_timeline['distance']}} {{$vehicle_timeline['distance_unit']}}</span>
+                            @else
+                                <span class="value">{{$day_wise_distance_timeline['stats']['distance']['value']}} {{$day_wise_distance_timeline['stats']['distance']['unit']}}</span>
+                            @endif
                         </div>
                     @endif
                     @if(isset($day_wise_distance_timeline['stats']['runningTime']))
@@ -307,7 +327,11 @@
                                 <i class="fa-solid fa-clock"></i>
                             </span>
                             <h6>Running Time</h6>
-                            <span class="value">{{$day_wise_distance_timeline['stats']['runningTime']['value']}} {{$day_wise_distance_timeline['stats']['runningTime']['unit']}}</span>
+                             @if($start_date && $end_date)
+                                <span class="value">{{$vehicle_timeline['runningTime']}} {{$vehicle_timeline['running_time_unit']}}</span>
+                            @else
+                                <span class="value">{{$day_wise_distance_timeline['stats']['runningTime']['value']}} {{$day_wise_distance_timeline['stats']['runningTime']['unit']}}</span>
+                            @endif
                         </div>
                     @endif
                     @if(isset($day_wise_distance_timeline['stats']['stoppageTime']))
@@ -316,7 +340,11 @@
                                 <i class="fa-solid fa-clock"></i>
                             </span>
                             <h6>Stoppage Time</h6>
-                            <span class="value">{{$day_wise_distance_timeline['stats']['stoppageTime']['value']}} {{$day_wise_distance_timeline['stats']['stoppageTime']['unit']}}</span>
+                            @if($start_date && $end_date)
+                                <span class="value">{{$vehicle_timeline['stoppageTime']}} {{$vehicle_timeline['stoppage_time_unit']}}</span>
+                            @else
+                                <span class="value">{{$day_wise_distance_timeline['stats']['stoppageTime']['value']}} {{$day_wise_distance_timeline['stats']['stoppageTime']['unit']}}</span>
+                            @endif
                         </div>
                     @endif
                     @if(isset($day_wise_distance_timeline['stats']['offlineTime']))
@@ -325,7 +353,11 @@
                                 <i class="fa-solid fa-clock"></i>
                             </span>
                             <h6>Offline Time</h6>
-                            <span class="value">{{$day_wise_distance_timeline['stats']['offlineTime']['value']}} {{$day_wise_distance_timeline['stats']['offlineTime']['unit']}}</span>
+                            @if($start_date && $end_date)
+                                <span class="value">{{$vehicle_timeline['offlineTime']}} {{$vehicle_timeline['offline_time_unit']}}</span>
+                            @else
+                                <span class="value">{{$day_wise_distance_timeline['stats']['offlineTime']['value']}} {{$day_wise_distance_timeline['stats']['offlineTime']['unit']}}</span>
+                            @endif
                         </div>
                     @endif
                     @if(isset($day_wise_distance_timeline['stats']['averageSpeed']))
@@ -334,7 +366,11 @@
                                 <i class="fa-solid fa-tachometer-alt"></i>
                             </span>
                             <h6>Average Speed</h6>
+                            @if($start_date && $end_date)
+                                <span class="value">{{$vehicle_timeline['averageSpeed']}} {{$vehicle_timeline['average_speed_unit']}}</span>
+                            @else
                             <span class="value">{{$day_wise_distance_timeline['stats']['averageSpeed']['value']}} {{$day_wise_distance_timeline['stats']['averageSpeed']['unit']}}</span>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -429,14 +465,17 @@
                 ascasccsac
             </div> --}}
 
-            <div class="tab-content" id="tab5">
+            {{-- <div class="tab-content" id="tab5">
                 ascasccsac
             </div>
 
             <div class="tab-content" id="tab6">
                 ascasccsac
-            </div>
+            </div> --}}
         </div>
+    </div>
+    <div class="loader-container" wire:loading>
+        <div class="loader"></div>
     </div>
    @endif
 

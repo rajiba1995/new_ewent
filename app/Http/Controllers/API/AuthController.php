@@ -484,13 +484,20 @@ class AuthController extends Controller
         }
 
         $user = User::where('id', $user->id)->first();
-        // dd($request->hasFile('driving_licence'));
+        
        // Handle image upload (if provided)
         if ($request->hasFile('driving_licence') || $request->hasFile('driving_licence_back')) {
-            $driving_licence = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
-            $user->driving_licence = $driving_licence;
-            $driving_licence_back = storeFileWithCustomName($request->file('driving_licence_back'), 'uploads/driving_licences');
-            $user->driving_licence_back = $driving_licence_back;
+
+            if($request->hasFile('driving_licence')){
+                $driving_licence = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
+                $user->driving_licence = $driving_licence;
+            }
+            
+            if($request->hasFile('driving_licence_back')){
+                $driving_licence_back = storeFileWithCustomName($request->file('driving_licence_back'), 'uploads/driving_licences');
+                $user->driving_licence_back = $driving_licence_back;
+            }
+
             $user->driving_licence_status = 1;
           
             $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Driving Licence')->where('status', 'Uploaded')->first();
@@ -507,10 +514,16 @@ class AuthController extends Controller
             
         }
         if ($request->hasFile('govt_id_card') || $request->hasFile('govt_id_card_back')) {
-            $govt_id_card = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
-            $user->govt_id_card = $govt_id_card;
-            $govt_id_card_back = storeFileWithCustomName($request->file('govt_id_card_back'), 'uploads/govt_id_cards');
-            $user->govt_id_card_back = $govt_id_card_back;
+            if($request->hasFile('govt_id_card')){
+                $govt_id_card = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
+                $user->govt_id_card = $govt_id_card;
+            }
+
+            if($request->hasFile('govt_id_card_back')){
+                $govt_id_card_back = storeFileWithCustomName($request->file('govt_id_card_back'), 'uploads/govt_id_cards');
+                $user->govt_id_card_back = $govt_id_card_back;
+            }
+            
             $user->govt_id_card_status = 1;
 
             $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Govt ID Card')->where('status', 'Uploaded')->first();
@@ -527,10 +540,16 @@ class AuthController extends Controller
 
         }
         if ($request->hasFile('cancelled_cheque') || $request->hasFile('cancelled_cheque_back')) {
-            $cancelled_cheque = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
-            $user->cancelled_cheque = $cancelled_cheque;
-            $cancelled_cheque_back = storeFileWithCustomName($request->file('cancelled_cheque_back'), 'uploads/cancelled_cheques');
-            $user->cancelled_cheque_back = $cancelled_cheque_back;
+            if($request->hasFile('cancelled_cheque')){
+                $cancelled_cheque = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
+                $user->cancelled_cheque = $cancelled_cheque;
+            }
+
+            if($request->hasFile('cancelled_cheque_back')){
+                $cancelled_cheque_back = storeFileWithCustomName($request->file('cancelled_cheque_back'), 'uploads/cancelled_cheques');
+                $user->cancelled_cheque_back = $cancelled_cheque_back;
+            }
+            
             $user->cancelled_cheque_status = 1;
 
             $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Cancelled Cheque')->where('status', 'Uploaded')->first();
@@ -546,10 +565,18 @@ class AuthController extends Controller
             $store->save();
         }
         if ($request->hasFile('current_address_proof') || $request->hasFile('current_address_proof_back')) {
-            $current_address_proof = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
-            $user->current_address_proof = $current_address_proof;
-            $current_address_proof_back = storeFileWithCustomName($request->file('current_address_proof_back'), 'uploads/address_proofs');
-            $user->current_address_proof_back = $current_address_proof_back;
+
+            if($request->hasFile('current_address_proof')){
+                $current_address_proof = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
+                $user->current_address_proof = $current_address_proof;
+            }
+
+            if($request->hasFile('current_address_proof_back')){
+                $current_address_proof_back = storeFileWithCustomName($request->file('current_address_proof_back'), 'uploads/address_proofs');
+                $user->current_address_proof_back = $current_address_proof_back;
+            }
+            
+
             $user->current_address_proof_status = 1;
 
             $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Current Address Proof')->where('status', 'Uploaded')->first();

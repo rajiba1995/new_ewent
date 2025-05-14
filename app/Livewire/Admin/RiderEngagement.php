@@ -62,6 +62,11 @@ class RiderEngagement extends Component
         $remarks = null;
         $message = $document_type." is successfully verified for KYC.";
         if($status==3){
+            $user->date_of_rejection = date('Y-m-d h:i:s');
+            $user->rejected_by = Auth::guard('admin')->user()->id;
+            $user->is_verified = "rejected";
+            $user->save();
+
             if(empty($this->remarks)){
                 session()->flash('remarks', 'Please enter a remark for the rejection reason.');
                 return false;
@@ -253,6 +258,19 @@ class RiderEngagement extends Component
         $user = User::find($id);
         if($user){
             if($status=="verified"){
+                if($user->govt_id_card_status!=2){
+                    session()->flash('error_kyc_message', 'Govt. ID Card is not verified. Please verify the Govt. ID Card.');
+                    return false;
+                }
+                if($user->cancelled_cheque_status!=2){
+                    session()->flash('error_kyc_message', 'Cancelled cheque is not verified. Please verify the cancelled cheque.');
+                    return false;
+                }
+                if($user->current_address_proof_status!=2){
+                    session()->flash('error_kyc_message', 'Address proof is not verified. Please verify the current address proof.');
+                    return false;
+                }
+
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "verified";
@@ -338,6 +356,9 @@ class RiderEngagement extends Component
     public function suspendRiderWarning($id){
         $this->dispatch('showWarningConfirm', ['itemId' => $id]);
     }
+    public function activeRiderWarning($id){
+        $this->dispatch('showactiveRiderWarning', ['itemId' => $id]);
+    }
     public function updateUserData($itemId)
     {
         $order = Order::find($itemId);
@@ -388,6 +409,15 @@ class RiderEngagement extends Component
             // $AsignedVehicle->assigned_by = Auth::guard('admin')->user()->id;
             // $AsignedVehicle->save();
             session()->flash('success', 'The rider has been suspended and deallocated for this vehicle.');
+        }
+    }
+    public function activeRider($itemId){
+        if($itemId){
+            $user = User::find($itemId);
+            $user->vehicle_assign_status = NULL;
+            $user->suspended_by = NULL;
+            $user->save();
+            session()->flash('success', 'The rider has been activated for ride.');
         }
     }
     public function render()

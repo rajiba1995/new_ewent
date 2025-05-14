@@ -21,7 +21,7 @@ class PaymentUserSummary extends Component
     public function render()
     {
         // Fetching the assigned vehicle
-        $assignedVehicle = AsignedVehicle::where('status', 'assigned')
+        $assignedVehicle = AsignedVehicle::whereIn('status', ['assigned','overdue'])
         ->where('user_id', $this->userId)
         ->first();
 

@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\Stock;
 use App\Models\Product;
 use App\Models\PaymentItem;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PaymentSummaryExport;
 
 class PaymentSummary extends Component
 {
@@ -160,6 +162,11 @@ class PaymentSummary extends Component
            
         }
 
+    }
+
+    public function exportAll()
+    {
+        return Excel::download(new PaymentSummaryExport($this->data, $this->start_date, $this->end_date), 'payment_summary.xlsx');
     }
     public function render()
     {

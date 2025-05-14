@@ -10,6 +10,8 @@ use App\Models\ExchangeVehicle;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Pagination\Paginator;
 use Livewire\WithPagination; // Import WithPagination trait
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UserRideSummaryExport;
 
 class CustomerDetails extends Component
 {
@@ -172,14 +174,17 @@ class CustomerDetails extends Component
         $this->activeTab = $tab;
     }
 
-
+    public function exportAll()
+    {
+        return Excel::download(new UserRideSummaryExport($this->userId), 'user_ride_history.xlsx');
+    }
     /**
      * Render the Livewire component.
      */
     public function render()
     {
          // Fetching the assigned vehicle
-        $assignedVehicle = AsignedVehicle::where('status', 'assigned')
+        $assignedVehicle = AsignedVehicle::whereIn('status', ['assigned','overdue'])
         ->where('user_id', $this->userId)
         ->first();
 
@@ -193,6 +198,7 @@ class CustomerDetails extends Component
             $exchangeVehicles->getCollection()->prepend($assignedVehicle);
         }
 
+       
         return view('livewire.admin.customer-details',[
             'history'=>$exchangeVehicles ,
         ]);

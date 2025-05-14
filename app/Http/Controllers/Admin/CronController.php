@@ -55,26 +55,25 @@ class CronController extends Controller
                
                 $todayDate = Carbon::now($timezone)->toDateString();
 
-                if (isset($response['success']) && $response['success'] === true && !empty($response['data']['timeline'])) {
-                    $timeline = $response['data']['timeline'];
-                    $existing = VehicleTimeline::whereDate('created_at', $todayDate)->where('field', 'timeline')
-                        ->where('stock_id', $item->id)
-                        ->first();
+                // if (isset($response['success']) && $response['success'] === true && !empty($response['data']['timeline'])) {
+                //     $timeline = $response['data']['timeline'];
+                //     $existing = VehicleTimeline::whereDate('created_at', $todayDate)->where('field', 'timeline')
+                //         ->where('stock_id', $item->id)
+                //         ->first();
 
-                    if ($existing) {
-                        $existing->value = json_encode($timeline);
-                        $existing->save();
-                    } else {
-                        $store = new VehicleTimeline;
-                        $store->stock_id = $item->id;
-                        $store->field = 'timeline';
-                        $store->value = json_encode($timeline);
-                        $store->save();
-                    }
-                }
+                //     if ($existing) {
+                //         $existing->value = json_encode($timeline);
+                //         $existing->save();
+                //     } else {
+                //         $store = new VehicleTimeline;
+                //         $store->stock_id = $item->id;
+                //         $store->field = 'timeline';
+                //         $store->value = json_encode($timeline);
+                //         $store->save();
+                //     }
+                // }
                 
                 if (isset($response['success']) && $response['success'] === true && !empty($response['data']['stats'])) {
-
                     // Distance
                     if(!empty($response['data']['stats']['distance'])){
                         $existing = VehicleTimeline::whereDate('created_at', $todayDate)->where('field', 'distance')
@@ -147,6 +146,24 @@ class CronController extends Controller
                             $store->field = 'offlineTime';
                             $store->value = $response['data']['stats']['offlineTime']['value'];
                             $store->unit = $response['data']['stats']['offlineTime']['unit'];
+                            $store->save();
+                        }
+                    }
+                    // averageSpeed
+                    if(!empty($response['data']['stats']['averageSpeed'])){
+                        $existing = VehicleTimeline::whereDate('created_at', $todayDate)->where('field', 'averageSpeed')
+                        ->where('stock_id', $item->id)
+                        ->first();
+                        if ($existing) {
+                            $existing->value = $response['data']['stats']['averageSpeed']['value'];
+                            $existing->unit = $response['data']['stats']['averageSpeed']['unit'];
+                            $existing->save();
+                        } else {
+                            $store = new VehicleTimeline;
+                            $store->stock_id = $item->id;
+                            $store->field = 'averageSpeed';
+                            $store->value = $response['data']['stats']['averageSpeed']['value'];
+                            $store->unit = $response['data']['stats']['averageSpeed']['unit'];
                             $store->save();
                         }
                     }

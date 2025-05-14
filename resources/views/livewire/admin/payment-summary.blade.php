@@ -153,10 +153,10 @@
                         </a>
                     
                         <!-- Export Button -->
-                        {{-- <button type="button" wire:click="exportAll"
+                        <button type="button" wire:click="exportAll"
                             class="btn btn-primary text-white custom-input-sm">
                             <i class="ri-download-2-line me-1"></i> Export All
-                        </button> --}}
+                        </button>
                 
                     </div>
                 </div>

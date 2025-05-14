@@ -55,11 +55,11 @@
               </a>
             </div>
             <!-- Export Button -->
-            {{-- <div class="col-md-1 d-grid">
-              <button wire:click="exportExcel" class="btn btn-primary mt-3">
+            <div class="col-md-1 d-grid">
+              <button wire:click="exportAll" class="btn btn-primary mt-3">
                 <i class="ri-download-line"></i> Export
               </button>
-            </div> --}}
+            </div>
           </div>
         </div>
       

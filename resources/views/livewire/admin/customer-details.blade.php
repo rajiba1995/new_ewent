@@ -21,6 +21,9 @@
                   <i class="ri-arrow-go-back-line ri-16px me-0 me-sm-2 align-baseline"></i>
                   Back
                 </a>
+                 <button wire:click="exportAll" class="btn btn-primary btn-sm">
+                  <i class="ri-download-line"></i> Export
+                </button>
               </div>
             </div>
         </div>

@@ -262,25 +262,40 @@
                                                         <div>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle text-start">{{$v_user->kyc_uploaded_at?date('d M y h:i A', strtotime($v_user->kyc_uploaded_at)):"N/A"}}</td>
-                                                <td class="align-middle text-start">{{$v_user->latest_order?$v_user->latest_order->product->title:"N/A"}}</td>
+                                                <td class="align-middle text-start">
+                                                    {{$v_user->kyc_uploaded_at?date('d M y h:i A', strtotime($v_user->kyc_uploaded_at)):"N/A"}}</td>
+                                                <td class="align-middle text-start">
+                                                    @if($v_user->active_vehicle)
+                                                        {{$v_user->latest_order?$v_user->latest_order->product->title:"N/A"}}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
                                                 <td class="align-middle text-sm text-center">
-                                                    @if($v_user->latest_order)
-                                                        @if($v_user->latest_order->deposit_amount==0)
-                                                            <span class="badge bg-label-warning mb-0 cursor-pointer">DUE</span>
+                                                    @if($v_user->active_vehicle)
+                                                        @if($v_user->latest_order)
+                                                            @if($v_user->latest_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$v_user->latest_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$v_user->latest_order->payment_status}}</span>
+                                                            @endif
                                                         @else
-                                                            <span class="badge bg-label-success mb-0 cursor-pointer">PAID</span>
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                         @endif
                                                     @else
                                                         <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                     @endif
                                                 </td>
                                                 <td class="align-middle text-sm text-center">
-                                                    @if($v_user->latest_order)
-                                                        @if($v_user->latest_order->rental_amount==0)
-                                                            <span class="badge bg-label-warning mb-0 cursor-pointer">DUE</span>
+                                                    @if($v_user->active_vehicle)
+                                                        @if($v_user->latest_order)
+                                                            @if($v_user->latest_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$v_user->latest_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$v_user->latest_order->payment_status}}</span>
+                                                            @endif
                                                         @else
-                                                            <span class="badge bg-label-success mb-0 cursor-pointer">PAID</span>
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                         @endif
                                                     @else
                                                         <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
@@ -750,6 +765,11 @@
                                 </button>
                             @endif
                         </div>
+                        @if(session()->has('error_kyc_message'))
+                            <div class="alert alert-danger">
+                                {{ session('error_kyc_message') }}
+                            </div>
+                        @endif
                         <div style="margin-bottom: 20px;" class="text-start text-uppercase">
                                 <label for="startDate" class="form-label small mb-1">Update KYC Status</label>
                             <select
@@ -764,7 +784,7 @@
                     <div class="tab-pane fade" id="navs-justified-history" role="tabpanel">
                         <ul class="timeline pb-0 mb-0">
                             @if(count($selectedCustomer->doc_logs)>0)
-                                @foreach ($selectedCustomer->doc_logs as $logs)
+                                @foreach ($selectedCustomer->doc_logs->sortByDesc('id') as $logs)
                                 <li class="timeline-item timeline-item-transparent border-primary">
                                     <span class="timeline-point timeline-point-primary"></span>
                                     <div class="timeline-event">

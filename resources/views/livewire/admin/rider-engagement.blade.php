@@ -245,19 +245,29 @@
                                                     </div>
                                                 </td>
                                                 <td class="align-middle text-start">
-                                                    @if($al_user->latest_order)
-                                                        @if($al_user->latest_order->payment_status=="completed")
-                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                    @if($al_user->active_vehicle)
+                                                        @if($al_user->latest_order)
+                                                            @if($al_user->latest_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                            @endif
                                                         @else
-                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                         @endif
                                                     @else
                                                         <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                     @endif
                                                 </td>
-                                                <td class="align-middle text-start">{{$al_user->latest_order?$al_user->latest_order->product->title:"N/A"}}</td>
                                                 <td class="align-middle text-start">
-                                                    @if(optional($al_user->latest_order)->subscription)
+                                                    @if($al_user->active_vehicle)
+                                                        {{$al_user->latest_order?$al_user->latest_order->product->title:"N/A"}}
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    @if($al_user->active_vehicle && optional($al_user->latest_order)->subscription)
                                                         {{ ucwords($al_user->latest_order->subscription->subscription_type) }}
                                                     @else
                                                         N/A
@@ -267,7 +277,7 @@
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
-                                                            {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                            <li><a class="dropdown-item" href="{{ route('admin.customer.details', $al_user->id) }}">Rider Details</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
@@ -315,11 +325,15 @@
                                                     </div>
                                                 </td>
                                                 <td class="align-middle text-start">
-                                                    @if($all_inact_user->await_order)
-                                                        @if($all_inact_user->await_order->payment_status=="completed")
-                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$all_inact_user->await_order->payment_status}}</span>
+                                                    @if($all_inact_user->active_vehicle)
+                                                        @if($all_inact_user->await_order)
+                                                            @if($all_inact_user->await_order->payment_status=="completed")
+                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$all_inact_user->await_order->payment_status}}</span>
+                                                            @else
+                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$all_inact_user->await_order->payment_status}}</span>
+                                                            @endif
                                                         @else
-                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$all_inact_user->await_order->payment_status}}</span>
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                         @endif
                                                     @else
                                                         <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
@@ -331,7 +345,7 @@
                                                     <div class="dropdown cursor-pointer">
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$all_inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$all_inact_user->id}}">
-                                                            {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                             <li><a class="dropdown-item" href="{{ route('admin.customer.details', $all_inact_user->id) }}">Rider Details</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $all_inact_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
@@ -413,7 +427,7 @@
                                                         <div class="dropdown cursor-pointer">
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
-                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                                <li><a class="dropdown-item" href="{{ route('admin.customer.details', $aw_user->id) }}">Rider Details</a></li>
                                                                 <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $aw_user->id)}}">History</a></li>
                                                             </ul>
                                                         </div>
@@ -680,6 +694,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_active_{{$ac_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', optional($ac_user->active_vehicle->stock)->vehicle_track_id)}}">Dashboard</a></li>
+                                                            <li><a class="dropdown-item" href="{{ route('admin.customer.details', $ac_user->id) }}">Rider Details</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $ac_user->id)}}">History</a></li>
                                                         </ul>
                                                     </div>
@@ -776,7 +791,7 @@
                                                         <div class="dropdown cursor-pointer">
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$inact_user->id}}">
-                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
+                                                                 <li><a class="dropdown-item" href="{{ route('admin.customer.details', $inact_user->id) }}">Rider Details</a></li>
                                                                 <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $inact_user->id)}}">History</a></li>
                                                             </ul>
                                                         </div>
@@ -839,33 +854,38 @@
                                                             {{-- | {{$susp_user->country_code}} {{ $susp_user->mobile }} --}}
                                                         <div>
                                                     </div>
-                                                    <td class="align-middle text-start">
-                                                        @if($susp_user->await_order)
-                                                            @if($susp_user->await_order->payment_status=="completed")
-                                                                <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$susp_user->await_order->payment_status}}</span>
-                                                            @else
-                                                                <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$susp_user->await_order->payment_status}}</span>
-                                                            @endif
+                                                <td class="align-middle text-start">
+                                                    @if($susp_user->await_order)
+                                                        @if($susp_user->await_order->payment_status=="completed")
+                                                            <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$susp_user->await_order->payment_status}}</span>
                                                         @else
-                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                            <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$susp_user->await_order->payment_status}}</span>
                                                         @endif
-                                                    </td>
-                                                    <td class="align-middle text-start">{{$susp_user->await_order?$susp_user->await_order->product->title:"N/A"}}</td>
-                                                    <td class="align-middle text-sm text-center">
-                                                        <div class="dropdown cursor-pointer">
-                                                            <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
-                                                            <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
-                                                                {{-- <li><a class="dropdown-item" href="#">Dashboard</a></li> --}}
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                    <td class="align-middle text-end px-4">
-                                                        <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
-                                                            wire:click="showCustomerDetails({{ $susp_user->id}})">
-                                                        View
+                                                    @else
+                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                    @endif
+                                                </td>
+                                                <td class="align-middle text-start">
+                                                    {{$susp_user->await_order?$susp_user->await_order->product->title:"N/A"}}
+                                                </td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
+                                                            <li><a class="dropdown-item" href="{{ route('admin.customer.details', $susp_user->id) }}">Rider Details</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                                <td class="align-middle text-end px-4">
+                                                    <button class="btn btn-success text-white mb-0 mx-1" wire:click="activeRiderWarning({{$susp_user->id}})">
+                                                        Active
                                                     </button>
-                                                    </td>
+                                                    <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
+                                                        wire:click="showCustomerDetails({{ $susp_user->id}})">
+                                                    View
+                                                </button>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -1338,6 +1358,11 @@
                                 </button>
                             @endif
                         </div>
+                        @if(session()->has('error_kyc_message'))
+                            <div class="alert alert-danger">
+                                {{ session('error_kyc_message') }}
+                            </div>
+                        @endif
                         <div style="margin-bottom: 20px;" class="text-start text-uppercase">
                                 <label for="startDate" class="form-label small mb-1">Update KYC Status</label>
                             <select
@@ -1352,7 +1377,7 @@
                     <div class="tab-pane fade" id="navs-justified-history" role="tabpanel">
                         <ul class="timeline pb-0 mb-0">
                             @if(count($selectedCustomer->doc_logs)>0)
-                                @foreach ($selectedCustomer->doc_logs as $logs)
+                                @foreach ($selectedCustomer->doc_logs->sortByDesc('id') as $logs)
                                 <li class="timeline-item timeline-item-transparent border-primary">
                                     <span class="timeline-point timeline-point-primary"></span>
                                     <div class="timeline-event">
@@ -1556,6 +1581,23 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     @this.call('suspendRider', itemId); // Livewire method
+                }
+            });
+        });
+        window.addEventListener('showactiveRiderWarning', function (event) {
+            let itemId = event.detail[0].itemId;
+            // Warning confirmation dialog for suspending a rider
+            Swal.fire({
+                title: "Active Rider?",
+                text: "Are you sure you want to active this rider?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Active"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('activeRider', itemId); // Livewire method
                 }
             });
         });

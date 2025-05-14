@@ -4,6 +4,7 @@ namespace App\Livewire\Product;
 
 use Livewire\Component;
 use App\Models\Stock;
+use App\Models\VehicleTimeline;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -13,8 +14,10 @@ class VehicleDetail extends Component
     public $vehicle_id;
     public $vehicle;
     public $map;
-    public $vehicle_main_details;
+    public $active_tab = "Today Trips";
+    public $vehicle_main_details,$start_date,$end_date;
     public $VehicleLastKnow;
+    public $vehicle_timeline = [];
     public $ignation_status = 'OFF';
     public $movement = [
         'status'=>'N/A', 
@@ -60,6 +63,28 @@ class VehicleDetail extends Component
             $this->vehicle_main_details = $vehiclesData;
         }
         // dd($this->vehicle_main_details);
+        $timestamp = time();
+        $carbonTime = Carbon::createFromTimestamp($timestamp, 'UTC'); 
+
+        // Convert the UTC time to Asia/Kolkata timezone
+        $carbonTimeInKolkata = $carbonTime->setTimezone(env('APP_LOCAL_TIMEZONE'));
+
+        // Get the start of today (00:00:00) in the local timezone
+        $startTime = Carbon::today()->setTimezone(env('APP_LOCAL_TIMEZONE'))->timestamp;
+
+        // Get the current time in the local timezone
+        $endTime = Carbon::now()->setTimezone(env('APP_LOCAL_TIMEZONE'))->timestamp;
+
+        // Get the start of the current week (in the local timezone)
+        $startOfWeek = Carbon::now()->startOfWeek()->setTimezone(env('APP_LOCAL_TIMEZONE'))->timestamp;
+
+        // Calling methods with adjusted time
+        $this->day_wise_distance_travelled($startTime, $endTime);
+        $this->weekly_distance_travelled($startOfWeek, $endTime);
+        $this->day_wise_vehicle_timeline($startTime, $endTime);
+        $this->MobilizationRequest();
+         $this->LiveLocationByMap();
+        $this->VehicleLastKnow();
     }
     public function LiveLocationByMap(){
         $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/live_share_link';
@@ -238,31 +263,62 @@ class VehicleDetail extends Component
             $this->day_wise_distance_travelled['unit']=$response['data']['distance']['unit'];
         }
     }
+    public function updateDate($field,$value){
+        $this->$field = $value;
+        if($this->start_date && $this->end_date){
+            $this->active_tab = "Trip For:".date('d-m-Y', strtotime($this->start_date))." To ". date('d-m-Y', strtotime($this->end_date));
+            $vehicle_timeline = VehicleTimeline::where('stock_id', $this->vehicle->id)->whereBetween('created_at', [
+                $this->start_date . ' 00:00:00', 
+                $this->end_date . ' 23:59:59'
+            ])->get();
+            
+            $distance = 0;
+            $runningTime = 0;
+            $stoppageTime = 0;
+            $offlineTime = 0;
+            $averageSpeed = 0;
+
+            foreach($vehicle_timeline as $key=>$item){
+                if ($item->field == "distance") {
+                    $distance += (float) $item->value; // Accumulate distance
+                }
+                if ($item->field == "runningTime") {
+                    $runningTime += (float) $item->value; // Accumulate distance
+                }
+                if ($item->field == "stoppageTime") {
+                    $stoppageTime += (float) $item->value; // Accumulate distance
+                }
+                if ($item->field == "offlineTime") {
+                    $offlineTime += (float) $item->value; // Accumulate distance
+                }
+                if ($item->field == "averageSpeed") {
+                    $averageSpeed += (float) $item->value; // Accumulate distance
+                }
+            }
+            $this->vehicle_timeline = [
+                'distance' => $distance,
+                'distance_unit' => "km",
+                'runningTime' => $runningTime,
+                'running_time_unit' => "minutes",
+                'stoppageTime' => $stoppageTime,
+                'stoppage_time_unit' => "minutes",
+                'offlineTime' => $offlineTime,
+                'offline_time_unit' => "minutes",
+                'averageSpeed' => $averageSpeed,
+                'average_speed_unit' => "km/h",
+            ];
+        }
+    }
+
+    public function resetPageField(){
+        $this->active_tab = "Today Trips";
+        $this->reset(['start_date', 'end_date','vehicle_timeline']);
+    }
     public function render()
     {
-        $this->LiveLocationByMap();
-        $this->VehicleLastKnow();
+       
        // Create the timestamp in UTC
-        $timestamp = time();
-        $carbonTime = Carbon::createFromTimestamp($timestamp, 'UTC'); 
-
-        // Convert the UTC time to Asia/Kolkata timezone
-        $carbonTimeInKolkata = $carbonTime->setTimezone(env('APP_LOCAL_TIMEZONE'));
-
-        // Get the start of today (00:00:00) in the local timezone
-        $startTime = Carbon::today()->setTimezone(env('APP_LOCAL_TIMEZONE'))->timestamp;
-
-        // Get the current time in the local timezone
-        $endTime = Carbon::now()->setTimezone(env('APP_LOCAL_TIMEZONE'))->timestamp;
-
-        // Get the start of the current week (in the local timezone)
-        $startOfWeek = Carbon::now()->startOfWeek()->setTimezone(env('APP_LOCAL_TIMEZONE'))->timestamp;
-
-        // Calling methods with adjusted time
-        $this->day_wise_distance_travelled($startTime, $endTime);
-        $this->weekly_distance_travelled($startOfWeek, $endTime);
-        $this->day_wise_vehicle_timeline($startTime, $endTime);
-        $this->MobilizationRequest();
+       
         return view('livewire.product.vehicle-detail');
     }
 }
