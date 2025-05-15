@@ -9,6 +9,7 @@ $isMenu = ($isMenu ?? true);
 $isFlex = ($isFlex ?? false);
 $isFooter = ($isFooter ?? true);
 
+
 /* HTML Classes */
 $navbarDetached = 'navbar-detached';
 

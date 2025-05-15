@@ -117,7 +117,6 @@
                                             </div>
                                         </td>
                                         <td class="align-middle text-end px-4">
-                                            <span class="badge bg-label-danger mb-0 cursor-pointer">Permission</span>
                                             <a href="{{route('admin.employee.update',$employee->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
                                                 <i class="ri-edit-box-line ri-20px text-info"></i>
                                             </a>

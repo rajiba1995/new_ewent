@@ -25,47 +25,56 @@
         <div>Dashboards</div>
       </a>
     </li>
-    <li class="menu-item {{ (request()->is('admin/master*')) ? 'open' : '' }}">
-      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
-        <i class="menu-icon tf-icons ri-stock-line"></i>
-        <div>Master Management</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/master/banner*')) ? 'open' : '' }}">
-          <a href="{{route('admin.banner.index')}}" class="menu-link">
-            <div>Banner</div>
+      @if (hasPermissionByParent('master_management'))
+          <li class="menu-item {{ (request()->is('admin/master*')) ? 'open' : '' }}">
+            <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+              <i class="menu-icon tf-icons ri-stock-line"></i>
+              <div>Master Management</div>
+            </a>
+            <ul class="menu-sub">
+              <li class="menu-item {{ (request()->is('admin/master/banner*')) ? 'open' : '' }}">
+                <a href="{{route('admin.banner.index')}}" class="menu-link">
+                  <div>Banner</div>
+                </a>
+              </li>
+              <li class="menu-item {{ (request()->is('admin/master/why-ewent*')) ? 'open' : '' }}">
+                <a href="{{route('admin.why-ewent')}}" class="menu-link">
+                  <div>Why Ewent</div>
+                </a>
+              </li>
+              <li class="menu-item {{ (request()->is('admin/master/faq*')) ? 'open' : '' }}">
+                <a href="{{route('admin.faq.index')}}" class="menu-link">
+                  <div>FAQ</div>
+                </a>
+              </li>
+              <li class="menu-item {{ (request()->is('admin/master/policy-details*')) ? 'open' : '' }}">
+                <a href="{{route('admin.policy-details')}}" class="menu-link">
+                  <div>Policy Details</div>
+                </a>
+              </li>
+            </ul>
+          </li>
+      @endif
+      @if (hasPermissionByParent('employee_management'))
+        <li class="menu-item {{ (request()->is('admin/employee*')) ? 'open' : '' }}">
+          <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+            <i class="menu-icon tf-icons ri-stock-line"></i>
+            <div>Employee Management</div>
           </a>
+          <ul class="menu-sub">
+            <li class="menu-item {{ (request()->is('admin/employee/list*')) ? 'open' : '' }}">
+              <a href="{{route('admin.employee.list')}}" class="menu-link">
+                <div>List</div>
+              </a>
+            </li>
+            <li class="menu-item {{ (request()->is('admin/employee/designations*')) ? 'open' : '' }}">
+              <a href="{{route('admin.designation.index')}}" class="menu-link">
+                <div>Designations</div>
+              </a>
+            </li>
+          </ul>
         </li>
-        <li class="menu-item {{ (request()->is('admin/master/why-ewent*')) ? 'open' : '' }}">
-          <a href="{{route('admin.why-ewent')}}" class="menu-link">
-            <div>Why Ewent</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/master/faq*')) ? 'open' : '' }}">
-          <a href="{{route('admin.faq.index')}}" class="menu-link">
-            <div>FAQ</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/master/policy-details*')) ? 'open' : '' }}">
-          <a href="{{route('admin.policy-details')}}" class="menu-link">
-            <div>Policy Details</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-    <li class="menu-item {{ (request()->is('admin/employee*')) ? 'open' : '' }}">
-      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
-        <i class="menu-icon tf-icons ri-stock-line"></i>
-        <div>Employee Management</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/employee/list*')) ? 'open' : '' }}">
-          <a href="{{route('admin.employee.list')}}" class="menu-link">
-            <div>List</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      @endif
     {{-- <li class="menu-item {{ (request()->is('admin/master*')) ? 'open' : '' }}">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-stock-line"></i>
@@ -84,29 +93,31 @@
         </li>
       </ul>
     </li> --}}
-    <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
-      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
-        <i class="menu-icon tf-icons ri-stock-line"></i>
-        <div>Rider Management</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
-          <a href="{{route('admin.customer.verification.list')}}" class="menu-link">
-            <div>Verification</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
-          <a href="{{route('admin.customer.engagement.list')}}" class="menu-link">
-            <div>Engagement</div>
-          </a>
-        </li>
-        {{-- <li class="menu-item ">
-          <a href="https://demos.themeselection.com/materio-bootstrap-html-laravel-admin-template/demo-1/app/ecommerce/customer/details/notifications" class="menu-link">
-            <div>Customer Details</div>
-          </a>
-        </li> --}}
-      </ul>
-    </li>
+    @if (hasPermissionByParent('rider_management'))
+      <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
+        <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+          <i class="menu-icon tf-icons ri-stock-line"></i>
+          <div>Rider Management</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
+            <a href="{{route('admin.customer.verification.list')}}" class="menu-link">
+              <div>Verification</div>
+            </a>
+          </li>
+          <li class="menu-item {{ (request()->is('admin/rider*')) ? 'open' : '' }}">
+            <a href="{{route('admin.customer.engagement.list')}}" class="menu-link">
+              <div>Engagement</div>
+            </a>
+          </li>
+          {{-- <li class="menu-item ">
+            <a href="https://demos.themeselection.com/materio-bootstrap-html-laravel-admin-template/demo-1/app/ecommerce/customer/details/notifications" class="menu-link">
+              <div>Customer Details</div>
+            </a>
+          </li> --}}
+        </ul>
+      </li>
+    @endif
     <li class="menu-item {{ (request()->is('admin/stock*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>
@@ -120,41 +131,44 @@
         </li>
       </ul>
     </li>
-    <li class="menu-item {{ (request()->is('admin/models*')) ? 'open' : '' }}" style="">
-      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
-        <i class="menu-icon tf-icons ri-store-line"></i>
-        <div>Model Management</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/models/categories*')) ? 'open' : '' }}">
-          <a href="{{route('admin.product.categories')}}" class="menu-link">
-            <div>Categories</div>
-          </a>
-        </li>
-  
-        <li class="menu-item {{ (request()->is('admin/models/sub-categories*')) ? 'open' : '' }}">
-          <a href="{{route('admin.product.sub_categories')}}" class="menu-link">
-            <div>Subcategories</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/models/type*')) ? 'open' : '' }}">
-          <a href="{{route('admin.product.type')}}" class="menu-link">
-            <div>Keywords</div>
-          </a>
-        </li>
+    @if (hasPermissionByParent('model_management'))
+      <li class="menu-item {{ (request()->is('admin/models*')) ? 'open' : '' }}" style="">
+        <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+          <i class="menu-icon tf-icons ri-store-line"></i>
+          <div>Model Management</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ (request()->is('admin/models/categories*')) ? 'open' : '' }}">
+            <a href="{{route('admin.product.categories')}}" class="menu-link">
+              <div>Categories</div>
+            </a>
+          </li>
+    
+          <li class="menu-item {{ (request()->is('admin/models/sub-categories*')) ? 'open' : '' }}">
+            <a href="{{route('admin.product.sub_categories')}}" class="menu-link">
+              <div>Subcategories</div>
+            </a>
+          </li>
+          <li class="menu-item {{ (request()->is('admin/models/type*')) ? 'open' : '' }}">
+            <a href="{{route('admin.product.type')}}" class="menu-link">
+              <div>Keywords</div>
+            </a>
+          </li>
 
-        <li class="menu-item {{ (request()->is('admin/models/list*')) ? 'open' : '' }}">
-          <a href="{{route('admin.product.index')}}" class="menu-link">
-            <div>Models</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/models/subscriptions')) ? 'open' : '' }}">
-          <a href="{{route('admin.model.subscriptions')}}" class="menu-link">
-            <div>Subscriptions</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+          <li class="menu-item {{ (request()->is('admin/models/list*')) ? 'open' : '' }}">
+            <a href="{{route('admin.product.index')}}" class="menu-link">
+              <div>Models</div>
+            </a>
+          </li>
+          <li class="menu-item {{ (request()->is('admin/models/subscriptions')) ? 'open' : '' }}">
+            <a href="{{route('admin.model.subscriptions')}}" class="menu-link">
+              <div>Subscriptions</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+    @endif
+     @if (hasPermissionByParent('vehicle_management'))
     <li class="menu-item {{ (request()->is('admin/vehicle*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>
@@ -174,6 +188,8 @@
         </li>
       </ul>
     </li>
+    @endif
+    @if (hasPermissionByParent('payment_management'))
     <li class="menu-item {{ (request()->is('admin/payment*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>
@@ -197,6 +213,7 @@
         </li>
       </ul>
     </li>
+    @endif
     <li class="menu-item {{ (request()->is('admin/offer*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>

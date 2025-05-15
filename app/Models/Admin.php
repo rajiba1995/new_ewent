@@ -33,4 +33,13 @@ class Admin extends Authenticatable
         return $this->belongsTo(Designation::class,'designation', 'id');
     }
 
+    public function hasPermissionByRoute($route)
+    {
+        if (!$this->designationData) {
+            return false; // Ensure user has a designation
+        }
+
+        return $this->designationData->permissions()->where('route', $route)->exists();
+    }
+
 }

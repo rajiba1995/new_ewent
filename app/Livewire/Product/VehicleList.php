@@ -64,7 +64,7 @@ class VehicleList extends Component
         })
         ->orderBy('id', 'DESC')
         ->orderBy('product_id', 'DESC')
-        ->paginate(20);
+        ->paginate(2);
 
         // Fetch only assigned vehicles (having an entry in the assigned_vehicles table)
         $assigned_vehicles = Stock::with('assignedVehicle')
