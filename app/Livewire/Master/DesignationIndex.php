@@ -105,7 +105,7 @@ class DesignationIndex extends Component
 
     public function render()
     {
-         $designations = Designation::where('name', 'like', '%' . $this->search . '%')->where('id','!=', 1)->orderBy('name', 'ASC')->paginate(10);
+         $designations = Designation::where('name', 'like', '%' . $this->search . '%')->orderBy('name', 'ASC')->paginate(10);
         return view('livewire.master.designation-index',[
             'designations'=>$designations,
         ]);

@@ -190,29 +190,29 @@
     </li>
     @endif
     @if (hasPermissionByParent('payment_management'))
-    <li class="menu-item {{ (request()->is('admin/payment*')) ? 'open' : '' }}" style="">
-      <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
-        <i class="menu-icon tf-icons ri-store-line"></i>
-        <div>Payment Management</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/payment/summary')) ? 'open' : '' }}">
-          <a href="{{route('admin.payment.summary')}}" class="menu-link">
-            <div>Summary</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/payment/vehicle/summary')) ? 'open' : '' }}">
-          <a href="{{route('admin.payment.vehicle.summary')}}" class="menu-link">
-            <div>Vehicle Summary</div>
-          </a>
-        </li>
-        <li class="menu-item {{ (request()->is('admin/payment/user/payment-history')) ? 'open' : '' }}">
-          <a href="{{route('admin.payment.user_payment_history')}}" class="menu-link">
-            <div>User Payment History</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="menu-item {{ (request()->is('admin/payment*')) ? 'open' : '' }}" style="">
+        <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
+          <i class="menu-icon tf-icons ri-store-line"></i>
+          <div>Payment Management</div>
+        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ (request()->is('admin/payment/summary')) ? 'open' : '' }}">
+            <a href="{{route('admin.payment.summary')}}" class="menu-link">
+              <div>Summary</div>
+            </a>
+          </li>
+          <li class="menu-item {{ (request()->is('admin/payment/vehicle/summary')) ? 'open' : '' }}">
+            <a href="{{route('admin.payment.vehicle.summary')}}" class="menu-link">
+              <div>Vehicle Summary</div>
+            </a>
+          </li>
+          <li class="menu-item {{ (request()->is('admin/payment/user/payment-history')) ? 'open' : '' }}">
+            <a href="{{route('admin.payment.user_payment_history')}}" class="menu-link">
+              <div>User Payment History</div>
+            </a>
+          </li>
+        </ul>
+      </li>
     @endif
     <li class="menu-item {{ (request()->is('admin/offer*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">

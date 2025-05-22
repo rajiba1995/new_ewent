@@ -98,18 +98,27 @@ class CustomerIndex extends Component
                 
             // }
             if($status=="verified"){
-                if($user->govt_id_card_status!=2){
-                    session()->flash('error_kyc_message', 'Govt. ID Card is not verified. Please verify the Govt. ID Card.');
+                if($user->aadhar_card_status!=2){
+                    session()->flash('error_kyc_message', 'Aadhar card is not verified. Please verify the Aadhar card.');
                     return false;
                 }
-                if($user->cancelled_cheque_status!=2){
-                    session()->flash('error_kyc_message', 'Cancelled cheque is not verified. Please verify the cancelled cheque.');
+                if($user->pan_card_status!=2){
+                    session()->flash('error_kyc_message', 'Pan card is not verified. Please verify the Pan card.');
                     return false;
                 }
                 if($user->current_address_proof_status!=2){
                     session()->flash('error_kyc_message', 'Address proof is not verified. Please verify the current address proof.');
                     return false;
                 }
+                if($user->passbook_status!=2){
+                    session()->flash('error_kyc_message', 'Passbook/Cancelled cheque is not verified. Please verify the passbook/cancelled cheque.');
+                    return false;
+                }
+                if($user->profile_image_status!=2){
+                    session()->flash('error_kyc_message', 'Rider image is not verified. Please verify the rider image.');
+                    return false;
+                }
+                
                     
                 $user->kyc_uploaded_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;

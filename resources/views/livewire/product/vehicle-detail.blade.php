@@ -96,12 +96,43 @@
                             
 
                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        @if(session()->has('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                    </div>
+                    <div>
+                       @if(isset($get_immobilize_request['success']) && $get_immobilize_request['success'] === false)
+                            <div class="alert alert-danger">
+                                <p><strong>Error:</strong> {{ $get_immobilize_request['data']['errors'][0]['message'] ?? 'Unknown error' }}</p>
+                            </div>
+                        @elseif(isset($get_immobilize_request['success']) && $get_immobilize_request['success'] === true)
+                            <div class="alert alert-success">
+                                <p><strong>Immobilize Status:</strong> {{ $get_immobilize_request['data']['status'] }}</p>
+                                <p><strong>Message:</strong> {{ $get_immobilize_request['data']['message'] ?? 'N/A' }}</p>
+                                <p><strong>Requested At:</strong> {{ \Carbon\Carbon::createFromTimestamp($get_immobilize_request['data']['createdAt'])->format('d M Y, h:i A') }}</p>
+                            </div>
+                        @endif
 
-                        <a href="#" class="icon-button"> 
-                            Enable Immobllize 
-                            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 34 34" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><path d="M17 1c-5 0-9 4-9 9v4c-1.7 0-3 1.3-3 3v13c0 1.7 1.3 3 3 3h18c1.7 0 3-1.3 3-3V17c0-1.7-1.3-3-3-3v-4c0-5-4-9-9-9zm10 16v13c0 .6-.4 1-1 1H8c-.6 0-1-.4-1-1V17c0-.6.4-1 1-1h18c.6 0 1 .4 1 1zm-17-3v-4c0-3.9 3.1-7 7-7s7 3.1 7 7v4z" fill="#000000" opacity="1" data-original="#000000" class=""></path><path d="M17 19c-1.7 0-3 1.3-3 3 0 1.3.8 2.4 2 2.8V27c0 .6.4 1 1 1s1-.4 1-1v-2.2c1.2-.4 2-1.5 2-2.8 0-1.7-1.3-3-3-3zm0 4c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z" fill="#000000" opacity="1" data-original="#000000" class=""></path></g></svg>
-                        </a>
-
+                    </div>
+                    <div class="text-end">
+                        <div class="text-end">
+                            @if($immobilizer_status=="MOBILIZE")
+                                <a href="javascript:void(0)" class="btn btn-success" wire:click="MobilizationRequest('IMMOBILIZE')">
+                                <span class="px-2">Enable Immobilize</span> <i class="fa-solid fa-unlock"></i>
+                                </a>
+                            @endif
+                            @if($immobilizer_status=="IMMOBILIZE")
+                                <a href="javascript:void(0)" class="btn btn-danger" wire:click="MobilizationRequest('MOBILIZE')">
+                                   <span class="px-2"> Enable Mobilize</span>  <i class="fa-solid fa-lock"></i>
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

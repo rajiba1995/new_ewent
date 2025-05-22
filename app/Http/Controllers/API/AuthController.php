@@ -51,17 +51,17 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
             'address' => 'nullable|string|max:255',
-            // 'driving_licence' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            // 'govt_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            // 'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            // 'current_address_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'driving_licence_front' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'aadhar_card_front' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'pan_card_front' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            // 'current_address_proof_front' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first()
             ], 422);
         }
@@ -75,20 +75,20 @@ class AuthController extends Controller
             // $currentAddressProofPath = null;
 
             // // Handle file uploads with custom naming if files are provided
-            // if ($request->hasFile('driving_licence')) {
-            //     $drivinglicencePath = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
+            // if ($request->hasFile('driving_licence_front')) {
+            //     $drivinglicencePath = storeFileWithCustomName($request->file('driving_licence_front'), 'uploads/driving_licences');
             // }
             
-            // if ($request->hasFile('govt_id_card')) {
-            //     $govtIdCardPath = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
+            // if ($request->hasFile('aadhar_card_front')) {
+            //     $govtIdCardPath = storeFileWithCustomName($request->file('aadhar_card_front'), 'uploads/aadhar_card');
             // }
             
-            // if ($request->hasFile('cancelled_cheque')) {
-            //     $cancelledChequePath = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
+            // if ($request->hasFile('pan_card_front')) {
+            //     $cancelledChequePath = storeFileWithCustomName($request->file('pan_card_front'), 'uploads/cancelled_cheques');
             // }
             
-            // if ($request->hasFile('current_address_proof')) {
-            //     $currentAddressProofPath = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
+            // if ($request->hasFile('current_address_proof_front')) {
+            //     $currentAddressProofPath = storeFileWithCustomName($request->file('current_address_proof_front'), 'uploads/address_proofs');
             // }
             // Create the user
             $user = User::create([
@@ -98,10 +98,10 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'address' => $request->address,
-                // 'driving_licence' => $drivinglicencePath,
-                // 'govt_id_card' => $govtIdCardPath,
-                // 'cancelled_cheque' => $cancelledChequePath,
-                // 'current_address_proof' => $currentAddressProofPath,
+                // 'driving_licence_front' => $drivinglicencePath,
+                // 'aadhar_card_front' => $govtIdCardPath,
+                // 'pan_card_front' => $cancelledChequePath,
+                // 'current_address_proof_front' => $currentAddressProofPath,
             ]);
 
             // / Commit the transaction
@@ -142,7 +142,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first(),
             ], 422);
         }
@@ -194,7 +194,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first(),
             ], 422);
         }
@@ -230,7 +230,7 @@ class AuthController extends Controller
          if ($validator->fails()) {
              return response()->json([
                 'status' => false,
-                 'message' => 'Validation failed',
+                 'message' => $validator->errors()->first(),
                  'errors' => $validator->errors()->first(),
              ], 422);
          }
@@ -267,7 +267,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first(),
             ], 422);
         }
@@ -333,7 +333,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first()
             ], 422);
         }
@@ -434,7 +434,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first(),
             ], 422);
         }
@@ -463,14 +463,16 @@ class AuthController extends Controller
             return $user; // Return the response if the user is not authenticated
         }
         $validator = Validator::make($request->all(), [
-            'driving_licence' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'driving_licence_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
             'driving_licence_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'govt_id_card' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'govt_id_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'cancelled_cheque' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'cancelled_cheque_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'current_address_proof' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'aadhar_card_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'aadhar_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'pan_card_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'pan_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'current_address_proof_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
             'current_address_proof_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'passbook_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
         ]);
 
         // Check if validation fails
@@ -478,7 +480,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()->first(),
             ], 422);
         }
@@ -486,11 +488,11 @@ class AuthController extends Controller
         $user = User::where('id', $user->id)->first();
         
        // Handle image upload (if provided)
-        if ($request->hasFile('driving_licence') || $request->hasFile('driving_licence_back')) {
+        if ($request->hasFile('driving_licence_front') || $request->hasFile('driving_licence_back')) {
 
-            if($request->hasFile('driving_licence')){
-                $driving_licence = storeFileWithCustomName($request->file('driving_licence'), 'uploads/driving_licences');
-                $user->driving_licence = $driving_licence;
+            if($request->hasFile('driving_licence_front')){
+                $driving_licence_front = storeFileWithCustomName($request->file('driving_licence_front'), 'uploads/driving_licences');
+                $user->driving_licence_front = $driving_licence_front;
             }
             
             if($request->hasFile('driving_licence_back')){
@@ -513,20 +515,20 @@ class AuthController extends Controller
             $store->save();
             
         }
-        if ($request->hasFile('govt_id_card') || $request->hasFile('govt_id_card_back')) {
-            if($request->hasFile('govt_id_card')){
-                $govt_id_card = storeFileWithCustomName($request->file('govt_id_card'), 'uploads/govt_id_cards');
-                $user->govt_id_card = $govt_id_card;
+        if ($request->hasFile('aadhar_card_front') || $request->hasFile('aadhar_card_back')) {
+            if($request->hasFile('aadhar_card_front')){
+                $aadhar_card_front = storeFileWithCustomName($request->file('aadhar_card_front'), 'uploads/aadhar_card');
+                $user->aadhar_card_front = $aadhar_card_front;
             }
 
-            if($request->hasFile('govt_id_card_back')){
-                $govt_id_card_back = storeFileWithCustomName($request->file('govt_id_card_back'), 'uploads/govt_id_cards');
-                $user->govt_id_card_back = $govt_id_card_back;
+            if($request->hasFile('aadhar_card_back')){
+                $aadhar_card_back = storeFileWithCustomName($request->file('aadhar_card_back'), 'uploads/aadhar_card');
+                $user->aadhar_card_back = $aadhar_card_back;
             }
             
-            $user->govt_id_card_status = 1;
+            $user->aadhar_card_status = 1;
 
-            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Govt ID Card')->where('status', 'Uploaded')->first();
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Aadhar Card')->where('status', 'Uploaded')->first();
             $store = new UserKycLog;
             if($existing_data){
                 $store->status = 'Re-uploaded';
@@ -535,24 +537,24 @@ class AuthController extends Controller
             }
             $store->user_id = $user->id;
             $store->created_at = date('Y-m-d h:i:s');
-            $store->document_type = 'Govt ID Card';
+            $store->document_type = 'Aadhar Card';
             $store->save();
 
         }
-        if ($request->hasFile('cancelled_cheque') || $request->hasFile('cancelled_cheque_back')) {
-            if($request->hasFile('cancelled_cheque')){
-                $cancelled_cheque = storeFileWithCustomName($request->file('cancelled_cheque'), 'uploads/cancelled_cheques');
-                $user->cancelled_cheque = $cancelled_cheque;
+        if ($request->hasFile('pan_card_front') || $request->hasFile('pan_card_back')) {
+            if($request->hasFile('pan_card_front')){
+                $pan_card_front = storeFileWithCustomName($request->file('pan_card_front'), 'uploads/pan_card');
+                $user->pan_card_front = $pan_card_front;
             }
 
-            if($request->hasFile('cancelled_cheque_back')){
-                $cancelled_cheque_back = storeFileWithCustomName($request->file('cancelled_cheque_back'), 'uploads/cancelled_cheques');
-                $user->cancelled_cheque_back = $cancelled_cheque_back;
+            if($request->hasFile('pan_card_back')){
+                $pan_card_back = storeFileWithCustomName($request->file('pan_card_back'), 'uploads/pan_card');
+                $user->pan_card_back = $pan_card_back;
             }
             
-            $user->cancelled_cheque_status = 1;
+            $user->pan_card_status = 1;
 
-            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Cancelled Cheque')->where('status', 'Uploaded')->first();
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Pan Card')->where('status', 'Uploaded')->first();
             $store = new UserKycLog;
             if($existing_data){
                 $store->status = 'Re-uploaded';
@@ -561,14 +563,14 @@ class AuthController extends Controller
             }
             $store->user_id = $user->id;
             $store->created_at = date('Y-m-d h:i:s');
-            $store->document_type = 'Cancelled Cheque';
+            $store->document_type = 'Pan Card';
             $store->save();
         }
-        if ($request->hasFile('current_address_proof') || $request->hasFile('current_address_proof_back')) {
+        if ($request->hasFile('current_address_proof_front') || $request->hasFile('current_address_proof_back')) {
 
-            if($request->hasFile('current_address_proof')){
-                $current_address_proof = storeFileWithCustomName($request->file('current_address_proof'), 'uploads/address_proofs');
-                $user->current_address_proof = $current_address_proof;
+            if($request->hasFile('current_address_proof_front')){
+                $current_address_proof_front = storeFileWithCustomName($request->file('current_address_proof_front'), 'uploads/address_proofs');
+                $user->current_address_proof_front = $current_address_proof_front;
             }
 
             if($request->hasFile('current_address_proof_back')){
@@ -592,6 +594,48 @@ class AuthController extends Controller
             $store->save();
            
         }
+
+        if ($request->hasFile('passbook_front')) {
+            if($request->hasFile('passbook_front')){
+                $passbook_front = storeFileWithCustomName($request->file('passbook_front'), 'uploads/passbook');
+                $user->passbook_front = $passbook_front;
+            }
+
+            $user->passbook_status = 1;
+
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Passbook')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            if($existing_data){
+                $store->status = 'Re-uploaded';
+            }else{
+                $store->status = "Uploaded";
+            }
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Passbook';
+            $store->save();
+        }
+        if ($request->hasFile('profile_image')) {
+            if($request->hasFile('profile_image')){
+                $profile_image = storeFileWithCustomName($request->file('profile_image'), 'uploads/profile_image');
+                $user->profile_image = $profile_image;
+            }
+
+            $user->profile_image_status = 1;
+
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Profile Image')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            if($existing_data){
+                $store->status = 'Re-uploaded';
+            }else{
+                $store->status = "Uploaded";
+            }
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Profile Image';
+            $store->save();
+        }
+
         $user->status = 1;
         // $user->is_verified = 'unverified';
         $user->save();
@@ -878,7 +922,7 @@ class AuthController extends Controller
         }
         $documents= [];
        
-        $data = User::select('id', 'driving_licence as driving_licence_front', 'driving_licence_back','driving_licence_status', 'govt_id_card as govt_id_card_front', 'govt_id_card_back', 'govt_id_card_status', 'cancelled_cheque as cancelled_cheque_front', 'cancelled_cheque_back','cancelled_cheque_status', 'current_address_proof as current_address_front','current_address_proof_back', 'current_address_proof_status')->where('id',$user->id)->first();
+        $data = User::select('id', 'driving_licence_front', 'driving_licence_back','driving_licence_status', 'aadhar_card_front', 'aadhar_card_back', 'aadhar_card_status', 'pan_card_front', 'pan_card_back','pan_card_status', 'current_address_proof_front','current_address_proof_back', 'current_address_proof_status','passbook_front', 'passbook_status','profile_image','profile_image_status')->where('id',$user->id)->first();
          // Check if product exists
         if (!$data) {
             return response()->json(['status' => false, 'message' => 'User not found'], 404);
@@ -890,16 +934,16 @@ class AuthController extends Controller
             'status' =>$data->driving_licence_status,
         ];
 
-        $documents['Govt ID Card'] = [
-            'front' =>$data->govt_id_card_front,
-            'back'=>$data->govt_id_card_back,
-            'status' =>$data->govt_id_card_status,
+        $documents['Aadhar Card'] = [
+            'front' =>$data->aadhar_card_front,
+            'back'=>$data->aadhar_card_back,
+            'status' =>$data->aadhar_card_status,
         ];
 
-        $documents['Cancelled Cheque'] = [
-            'front' =>$data->cancelled_cheque_front,
-            'back'=>$data->cancelled_cheque_back,
-            'status' =>$data->cancelled_cheque_status,
+        $documents['Pan Card'] = [
+            'front' =>$data->pan_card_front,
+            'back'=>$data->pan_card_back,
+            'status' =>$data->pan_card_status,
         ];
 
         $documents['Current Address Proof'] = [
@@ -907,25 +951,49 @@ class AuthController extends Controller
             'back'=>$data->current_address_proof_back,
             'status' =>$data->current_address_proof_status,
         ];
+        $documents['Passbook'] = [
+            'front' =>$data->passbook_front,
+            'status' =>$data->passbook_status,
+        ];
+        $documents['Profile Image'] = [
+            'front' =>$data->profile_image,
+            'status' =>$data->profile_image_status,
+        ];
 
 
         $documents['Driving Licence']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Driving Licence')->orderBy('id', 'ASC')->get()->map(function ($item) {
             $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            $item->status = 'Driving Licence '.$item->status;
             return $item;
         })->toArray();
 
-        $documents['Govt ID Card']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Govt ID Card')->orderBy('id', 'ASC')->get()->map(function ($item) {
+        $documents['Aadhar Card']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Aadhar Card')->orderBy('id', 'ASC')->get()->map(function ($item) {
             $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            $item->status = 'Aadhar Card '.$item->status;
             return $item;
         })->toArray();
 
-        $documents['Cancelled Cheque']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Cancelled Cheque')->orderBy('id', 'ASC')->get()->map(function ($item) {
+        $documents['Pan Card']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Pan Card')->orderBy('id', 'ASC')->get()->map(function ($item) {
             $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            $item->status = 'Pan Card '.$item->status;
             return $item;
         })->toArray();
 
         $documents['Current Address Proof']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Current Address Proof')->orderBy('id', 'ASC')->get()->map(function ($item) {
             $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            $item->status = 'Address Proof '.$item->status;
+            return $item;
+        })->toArray();
+        
+        $documents['Passbook']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Passbook')->orderBy('id', 'ASC')->get()->map(function ($item) {
+            $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            $item->status = 'Passbook '.$item->status;
+            return $item;
+        })->toArray();
+
+        $documents['Profile Image']['history'] = UserKycLog::where('user_id', $user->id)->where('document_type', 'Profile Image')->orderBy('id', 'ASC')->get()->map(function ($item) {
+            $item->date = \Carbon\Carbon::parse($item->created_at)->format('d-m-Y h:i A'); // Format Date
+            $item->status = 'Profile Image '.$item->status;
             return $item;
         })->toArray();
 
@@ -979,7 +1047,7 @@ class AuthController extends Controller
                     'date'=>date('d-m-Y h:i A', strtotime($history->exchanged_at)),
                 ];
             }
-            $last_index = count($histories)+1;
+            $last_index = count($histories)==1?1:count($histories)+1;
             if(isset($item->vehicle)){
                 $last_item = $item->vehicle;
                 $result[$key]['history'][$last_index]=[

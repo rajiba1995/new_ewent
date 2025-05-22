@@ -25,6 +25,14 @@ class EmployeeManagementList extends Component
     {
         $this->reset('search');     // Reset pagination
     }
+     public function toggleStatus($id)
+    {
+        $admin = Admin::findOrFail($id);
+        $admin->status = !$admin->status;
+        $admin->save();
+
+        session()->flash('message', 'Designation status updated successfully!');
+    }
     public function render()
     {
         $employees = Admin::when($this->search, function ($query) {

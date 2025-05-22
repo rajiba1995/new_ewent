@@ -13,6 +13,8 @@ class VehicleDetail extends Component
 {
     public $vehicle_id;
     public $vehicle;
+    public $get_immobilize_request;
+    public $immobilizer_status;
     public $map;
     public $active_tab = "Today Trips";
     public $vehicle_main_details,$start_date,$end_date;
@@ -42,7 +44,7 @@ class VehicleDetail extends Component
         //     abort(404);
         // }
         $this->vehicle_id = $vehicle_id;
-
+        $this->immobilizer_status = $this->vehicle->immobilizer_status;
         $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id;
 
         $ch = curl_init($vehiclesUrl);
@@ -82,7 +84,6 @@ class VehicleDetail extends Component
         $this->day_wise_distance_travelled($startTime, $endTime);
         $this->weekly_distance_travelled($startOfWeek, $endTime);
         $this->day_wise_vehicle_timeline($startTime, $endTime);
-        $this->MobilizationRequest();
          $this->LiveLocationByMap();
         $this->VehicleLastKnow();
     }
@@ -179,12 +180,12 @@ class VehicleDetail extends Component
             $this->VehicleLastKnow = null;
         }
     }
-    public function MobilizationRequest(){
+    public function MobilizationRequest($value){
         $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/immobilizer_requests';
         $payload = [
-            "value" => 'IMMOBILIZE',
+            "value" => $value,
         ];
-
+        // dd($payload);
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true); // Set as POST request
@@ -193,18 +194,36 @@ class VehicleDetail extends Component
             "Accept: application/json",
             "Content-Type: application/json"
         ]);
+        
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload)); // Pass JSON body
 
         $vehiclesResponse = curl_exec($ch);
         curl_close($ch);
 
         $response = json_decode($vehiclesResponse, true);
-        // dd($response);
-        if($response['success']==true){
-            // $this->VehicleLastKnow = $response['data']['values'][0];
-
+            // dd($response);
+            if($response['success']==true){
+                if ($response['success'] === true && !empty($response['data']['errors'])) {
+                    $message = $response['data']['errors'];
+                    session()->flash('error', $message);
+                }
+                // Decode and debug response
+                // dd($response);
+                if(isset($response['data']['id'])){
+                    $stock = Stock::find($this->vehicle->id);
+                    $stock->immobilizer_status = $value;
+                    $stock->immobilizer_request_id = $response['data']['id'];
+                    $stock->save();
+                    // d($stack,$response['data']['id']);
+                    $this->immobilizer_status = $value;
+                }
+                
         }else{
-            // $this->VehicleLastKnow = null;
+            if ($response['success'] === false && !empty($response['data']['errors'])) {
+                // Since errors is an array of arrays, get the first message
+                $message = $response['data']['errors'][0]['message'] ?? 'Unknown error occurred';
+                session()->flash('error', $message);
+            }
         }
     }
 
@@ -314,11 +333,37 @@ class VehicleDetail extends Component
         $this->active_tab = "Today Trips";
         $this->reset(['start_date', 'end_date','vehicle_timeline']);
     }
+    public function GetImmobilizeRequest(){
+         $new_vehicle = Stock::where('id', $this->vehicle->id)->first();
+         if(isset($new_vehicle->immobilizer_request_id)){
+            $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/immobilization_requests/' . $new_vehicle->immobilizer_request_id;
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $vehiclesUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "User-Authentication: " . env('LOCONAV_TOKEN'),
+                "Accept: application/json",
+                "Content-Type: application/json"
+            ]);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); // Make sure it's GET, POST, or PUT based on API
+
+            $immobilization_response = curl_exec($ch);
+            $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Capture HTTP status code
+            curl_close($ch);
+            // Decode and debug response
+            $mobilize_response = json_decode($immobilization_response, true);
+             return $mobilize_response;
+         }else{
+            return $mobilize_response['success'] = 0;
+         }
+        
+       
+    }
     public function render()
     {
-       
        // Create the timestamp in UTC
-       
+        $this->get_immobilize_request = $this->GetImmobilizeRequest();
+        //  dd($this->get_immobilize_request);
         return view('livewire.product.vehicle-detail');
     }
 }

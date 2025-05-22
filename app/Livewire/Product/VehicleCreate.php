@@ -16,7 +16,7 @@ class VehicleCreate extends Component
     public $model,$vehicle_number,$vehicle_track_id,$imei_number,$chassis_number,$friendly_name;
     public function mount(){
 
-        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles?perPage=99';
 
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

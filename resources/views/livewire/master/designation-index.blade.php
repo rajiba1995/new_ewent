@@ -98,7 +98,7 @@
                     @endforeach
                 </tbody>
             </table>
-              <div class="d-flex justify-content-end mt-2">
+              <div class="d-flex justify-content-end mt-2" wire:ignore>
                    {{ $designations->links('pagination::bootstrap-4') }}
               </div>
             </div>

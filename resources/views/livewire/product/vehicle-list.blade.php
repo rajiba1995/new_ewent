@@ -265,7 +265,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_unassigned_item_{{$unassigned_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_unassigned_item_{{$unassigned_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $unassigned_item->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary',[$unassigned_item->product_id,$unassigned_item->id])}}">Payment Summary</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$unassigned_item->product_id,$unassigned_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                     </div>
@@ -274,7 +274,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                <div class="d-flex justify-content-end mt-3 paginator">
+                                <div class="d-flex justify-content-end mt-3 paginator fffff">
                                     {{ $unassigned_vehicles->links() }} <!-- Pagination links -->
                                 </div>
                             </div>
@@ -334,7 +334,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_assigned_item_{{$assigned_item->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_assigned_item_{{$assigned_item->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', $assigned_item->vehicle_track_id)}}">Dashboard</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary')}}">Payment Summary</a></li>
+                                                            <li><a class="dropdown-item" href="{{route('admin.payment.summary',[$assigned_item->product_id,$assigned_item->id])}}">Payment Summary</a></li>
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$assigned_item->product_id,$assigned_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                     </div>

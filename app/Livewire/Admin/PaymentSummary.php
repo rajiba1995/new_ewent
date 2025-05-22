@@ -103,7 +103,7 @@ class PaymentSummary extends Component
             return $query->where('id', $this->model_id);
         })->get();
 
-      
+      $this->reset(['data']);
         foreach($results as $key=>$item){
        
            $vehicles = $item->stock_item
