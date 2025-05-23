@@ -9,7 +9,7 @@ use App\Models\AsignedVehicle;
 use App\Models\ExchangeVehicle;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Pagination\Paginator;
-use Livewire\WithPagination; // Import WithPagination trait
+use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UserRideSummaryExport;
 
@@ -34,11 +34,11 @@ class CustomerDetails extends Component
     ];
 
     public $search = '';
-
-    public function boot()
-    {
-        Paginator::useBootstrap();
-    }
+    protected $paginationTheme = 'bootstrap';
+    // public function boot()
+    // {
+    //     Paginator::useBootstrap();
+    // }
 
     public function mount($id)
     {
@@ -190,7 +190,7 @@ class CustomerDetails extends Component
 
         $exchangeVehicles  = ExchangeVehicle::with('stock')
         // ->whereIn('status', ['renewal', 'returned'])
-        ->where('user_id', $this->userId)->orderBy('id', 'DESC')->paginate(10);
+        ->where('user_id', $this->userId)->orderBy('id', 'DESC')->paginate(18);
 
         // Adding assigned vehicle at the start (if it exists)
         if ($assignedVehicle) {
@@ -198,7 +198,7 @@ class CustomerDetails extends Component
             $exchangeVehicles->getCollection()->prepend($assignedVehicle);
         }
 
-       
+    //    dd($exchangeVehicles);
         return view('livewire.admin.customer-details',[
             'history'=>$exchangeVehicles ,
         ]);

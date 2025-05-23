@@ -13,8 +13,9 @@ class VehicleDetail extends Component
 {
     public $vehicle_id;
     public $vehicle;
-    public $get_immobilize_request;
+    public $get_immobilize_request=[];
     public $immobilizer_status;
+    public $immobilizer_id;
     public $map;
     public $active_tab = "Today Trips";
     public $vehicle_main_details,$start_date,$end_date;
@@ -37,6 +38,8 @@ class VehicleDetail extends Component
         'unit'=>'...',
     ];
     public $day_wise_distance_timeline;
+
+    public $callCount = 0;
     public function mount($vehicle_id){
 
         $this->vehicle = Stock::where('vehicle_track_id', $vehicle_id)->first();
@@ -45,6 +48,7 @@ class VehicleDetail extends Component
         // }
         $this->vehicle_id = $vehicle_id;
         $this->immobilizer_status = $this->vehicle->immobilizer_status;
+        $this->immobilizer_id = $this->vehicle->immobilizer_request_id;
         $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id;
 
         $ch = curl_init($vehiclesUrl);
@@ -64,7 +68,7 @@ class VehicleDetail extends Component
         } else {
             $this->vehicle_main_details = $vehiclesData;
         }
-        // dd($this->vehicle_main_details);
+
         $timestamp = time();
         $carbonTime = Carbon::createFromTimestamp($timestamp, 'UTC'); 
 
@@ -82,7 +86,7 @@ class VehicleDetail extends Component
 
         // Calling methods with adjusted time
         $this->day_wise_distance_travelled($startTime, $endTime);
-        $this->weekly_distance_travelled($startOfWeek, $endTime);
+        // $this->weekly_distance_travelled($startOfWeek, $endTime);
         $this->day_wise_vehicle_timeline($startTime, $endTime);
          $this->LiveLocationByMap();
         $this->VehicleLastKnow();
@@ -157,7 +161,6 @@ class VehicleDetail extends Component
 
                     // Convert the UTC time to Asia/Kolkata timezone
                     $carbonTimeInKolkata = $carbonTime->setTimezone(env('APP_LOCAL_TIMEZONE'));
-
                     $this->movement['time_ago'] = $carbonTimeInKolkata->diffForHumans(); // e.g., "11 minutes ago"
                     $this->movement['last_online'] = $carbonTimeInKolkata->format('F d, Y, g:i A'); 
                 }
@@ -201,21 +204,18 @@ class VehicleDetail extends Component
         curl_close($ch);
 
         $response = json_decode($vehiclesResponse, true);
-            // dd($response);
-            if($response['success']==true){
+
+        if($response['success']==true){
                 if ($response['success'] === true && !empty($response['data']['errors'])) {
                     $message = $response['data']['errors'];
                     session()->flash('error', $message);
+                    return false;
                 }
                 // Decode and debug response
-                // dd($response);
                 if(isset($response['data']['id'])){
                     $stock = Stock::find($this->vehicle->id);
-                    $stock->immobilizer_status = $value;
                     $stock->immobilizer_request_id = $response['data']['id'];
                     $stock->save();
-                    // d($stack,$response['data']['id']);
-                    $this->immobilizer_status = $value;
                 }
                 
         }else{
@@ -223,6 +223,7 @@ class VehicleDetail extends Component
                 // Since errors is an array of arrays, get the first message
                 $message = $response['data']['errors'][0]['message'] ?? 'Unknown error occurred';
                 session()->flash('error', $message);
+                return false;
             }
         }
     }
@@ -260,7 +261,6 @@ class VehicleDetail extends Component
         curl_close($ch);
 
         $distance_travelled = json_decode($vehiclesResponse, true);
-        // dd($distance_travelled);
     }
     public function day_wise_distance_travelled($startTime, $endTime){
         $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/distance_travelled?startTime='.$startTime.'&endTime='.$endTime.'';
@@ -333,8 +333,9 @@ class VehicleDetail extends Component
         $this->active_tab = "Today Trips";
         $this->reset(['start_date', 'end_date','vehicle_timeline']);
     }
-    public function GetImmobilizeRequest(){
-         $new_vehicle = Stock::where('id', $this->vehicle->id)->first();
+    public function refreshItems()
+    {
+        $new_vehicle = Stock::where('id', $this->vehicle->id)->first();
          if(isset($new_vehicle->immobilizer_request_id)){
             $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/immobilization_requests/' . $new_vehicle->immobilizer_request_id;
             $ch = curl_init();
@@ -352,18 +353,32 @@ class VehicleDetail extends Component
             curl_close($ch);
             // Decode and debug response
             $mobilize_response = json_decode($immobilization_response, true);
-             return $mobilize_response;
+            if(isset($mobilize_response['success']) && $mobilize_response['success'] === true){
+                if(isset($mobilize_response['data']) && $mobilize_response['data']['status'] ==="error"){
+                    $new_vehicle->immobilizer_status = 'MOBILIZE';
+                    $new_vehicle->immobilizer_request_id = null;
+                    $new_vehicle->save();
+                }
+            }
+            if(isset($mobilize_response['success']) && $mobilize_response['success'] === true){
+                if(isset($mobilize_response['data']) && $mobilize_response['data']['mobilize'] ==true){
+                        $new_vehicle->immobilizer_status = 'IMMOBILIZE';
+                        $new_vehicle->immobilizer_request_id = null;
+                        $new_vehicle->save();
+                }
+            }
+            
+             $this->get_immobilize_request =  $mobilize_response;
+             $this->immobilizer_id = $new_vehicle->immobilizer_request_id;
+             $this->immobilizer_status = $new_vehicle->immobilizer_status;
          }else{
-            return $mobilize_response['success'] = 0;
+            $this->get_immobilize_request = $mobilize_response['success'] = 0;
          }
         
-       
+          
     }
     public function render()
     {
-       // Create the timestamp in UTC
-        $this->get_immobilize_request = $this->GetImmobilizeRequest();
-        //  dd($this->get_immobilize_request);
         return view('livewire.product.vehicle-detail');
     }
 }

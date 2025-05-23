@@ -7,6 +7,7 @@ use Illuminate\Http\request;
 use App\Models\Stock;
 use App\Models\CronLog;
 use App\Models\VehicleTimeline;
+use App\Models\AsignedVehicle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -195,5 +196,41 @@ class CronController extends Controller
             ], 500);
         }
     }
+
+    public function VehiclePaymentOverDue()
+    {
+        DB::beginTransaction();
+
+        try {
+            $timezone = env('APP_LOCAL_TIMEZONE', 'Asia/Kolkata'); // Default fallback
+            $startTime = Carbon::now($timezone);
+
+            $AsignedVehicles = AsignedVehicle::where('status', 'assigned')
+                                ->where('end_date', '<', $startTime)
+                                ->get();
+
+            foreach ($AsignedVehicles as $item) {
+                $item->status = 'overdue';
+                $item->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => count($AsignedVehicles) . ' vehicle(s) marked as overdue.',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update vehicle statuses.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 }

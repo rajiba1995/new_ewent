@@ -98,7 +98,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
                     <div>
                         @if(session()->has('error'))
                             <div class="alert alert-danger">
@@ -106,6 +105,7 @@
                             </div>
                         @endif
                     </div>
+                <div class="row" wire:poll.5000ms="refreshItems">
                     <div>
                        @if(isset($get_immobilize_request['success']) && $get_immobilize_request['success'] === false)
                             <div class="alert alert-danger">
@@ -113,24 +113,37 @@
                             </div>
                         @elseif(isset($get_immobilize_request['success']) && $get_immobilize_request['success'] === true)
                             <div class="alert alert-success">
+                                <p><strong>Immobilize ID:</strong> {{ $get_immobilize_request['data']['id'] }}</p>
                                 <p><strong>Immobilize Status:</strong> {{ $get_immobilize_request['data']['status'] }}</p>
                                 <p><strong>Message:</strong> {{ $get_immobilize_request['data']['message'] ?? 'N/A' }}</p>
-                                <p><strong>Requested At:</strong> {{ \Carbon\Carbon::createFromTimestamp($get_immobilize_request['data']['createdAt'])->format('d M Y, h:i A') }}</p>
+                                <p><strong>Requested At:</strong> 
+                                    {{
+                                        \Carbon\Carbon::createFromTimestamp($get_immobilize_request['data']['createdAt'])
+                                            ->setTimezone(env('APP_LOCAL_TIMEZONE', 'Asia/Kolkata'))
+                                            ->format('d M Y, h:i A')
+                                    }}
+                                </p>
                             </div>
                         @endif
 
                     </div>
                     <div class="text-end">
                         <div class="text-end">
-                            @if($immobilizer_status=="MOBILIZE")
+                            @if($immobilizer_status=="MOBILIZE" && !$immobilizer_id)
                                 <a href="javascript:void(0)" class="btn btn-success" wire:click="MobilizationRequest('IMMOBILIZE')">
-                                <span class="px-2">Enable Immobilize</span> <i class="fa-solid fa-unlock"></i>
+                                <span class="px-2">Immobilize Now</span> <i class="fa-solid fa-unlock"></i>
                                 </a>
                             @endif
-                            @if($immobilizer_status=="IMMOBILIZE")
-                                <a href="javascript:void(0)" class="btn btn-danger" wire:click="MobilizationRequest('MOBILIZE')">
-                                   <span class="px-2"> Enable Mobilize</span>  <i class="fa-solid fa-lock"></i>
+                            @if(isset($get_immobilize_request['success']) && $get_immobilize_request['success'] === true)
+                                <a href="javascript:void(0)" class="btn btn-dark text-light">
+                                   <span class="px-2">Please wait for confirmation</span><i class="fa-solid fa-lock"></i>
                                 </a>
+                            @else
+                                @if($immobilizer_status=="IMMOBILIZE")
+                                    <a href="javascript:void(0)" class="btn btn-danger" wire:click="MobilizationRequest('MOBILIZE')">
+                                    <span class="px-2">Mobilize Now</span><i class="fa-solid fa-lock"></i>
+                                    </a>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -505,9 +518,10 @@
             </div> --}}
         </div>
     </div>
-    <div class="loader-container" wire:loading>
+   <div class="loader-container" wire:loading wire:target="updateDate,resetPageField,MobilizationRequest">
         <div class="loader"></div>
     </div>
+
    @endif
 
 <script>

@@ -1024,42 +1024,43 @@ class AuthController extends Controller
             return response()->json(['status'=>false, 'message'=>'oder not found!'], 404);
         }
         $result = [];
-        foreach($data as $key=>$item){
+        foreach($data as $key => $item){
             $histories = $item->exchange_vehicle()->orderBy('id', 'ASC')->get();
-          
-            $result[$key]=[
+        
+            $result[$key] = [
                 'order_number' => $item->order_number,
                 'model' => $item->product ? $item->product->title : "N/A",
                 'subscription_type' => $item->subscription ? ucwords($item->subscription->subscription_type) : "N/A",
-                'deposit_amount'=>$item->deposit_amount,
-                'rental_amount'=>$item->rental_amount,
-                'payment_status'=>ucwords($item->payment_status),
-                'rent_duration'=>$item->rent_duration.' Days',
-                'status'=>$item->rent_status,
-                'order_date'=>date('d-m-Y h:i A', strtotime($item->created_at)),
+                'deposit_amount' => $item->deposit_amount,
+                'rental_amount' => $item->rental_amount,
+                'payment_status' => ucwords($item->payment_status),
+                'rent_duration' => $item->rent_duration . ' Days',
+                'status' => $item->rent_status,
+                'order_date' => date('d-m-Y h:i A', strtotime($item->created_at)),
             ];
-            foreach($histories as $index=>$history){
-                $result[$key]['history'][$index]=[
-                    'vehicle'=>$history->stock?$history->stock->vehicle_number:"N/A",
-                    'start_date'=>date('d-m-Y h:i A', strtotime($history->start_date)),
-                    'end_date'=>date('d-m-Y h:i A', strtotime($history->end_date)),
-                    'status'=>ucwords($history->status),
-                    'date'=>date('d-m-Y h:i A', strtotime($history->exchanged_at)),
+
+            foreach($histories as $history){
+                $result[$key]['history'][] = [
+                    'vehicle' => $history->stock ? $history->stock->vehicle_number : "N/A",
+                    'start_date' => date('d-m-Y h:i A', strtotime($history->start_date)),
+                    'end_date' => date('d-m-Y h:i A', strtotime($history->end_date)),
+                    'status' => ucwords($history->status),
+                    'date' => date('d-m-Y h:i A', strtotime($history->exchanged_at)),
                 ];
             }
-            $last_index = count($histories)==1?1:count($histories)+1;
+
             if(isset($item->vehicle)){
                 $last_item = $item->vehicle;
-                $result[$key]['history'][$last_index]=[
-                    'vehicle'=>$last_item->stock?$last_item->stock->vehicle_number:"N/A",
-                    'start_date'=>date('d-m-Y h:i A', strtotime($last_item->start_date)),
-                    'end_date'=>date('d-m-Y h:i A', strtotime($last_item->end_date)),
-                    'status'=>ucwords($last_item->status),
-                    'date'=>date('d-m-Y h:i A', strtotime($last_item->assigned_at)),
+                $result[$key]['history'][] = [
+                    'vehicle' => $last_item->stock ? $last_item->stock->vehicle_number : "N/A",
+                    'start_date' => date('d-m-Y h:i A', strtotime($last_item->start_date)),
+                    'end_date' => date('d-m-Y h:i A', strtotime($last_item->end_date)),
+                    'status' => ucwords($last_item->status),
+                    'date' => date('d-m-Y h:i A', strtotime($last_item->assigned_at)),
                 ];
             }
-            
         }
+
 
         return response()->json(['status'=>true, 'response'=>$result, 'message'=>'Order Listing'],200);
     }
@@ -1747,7 +1748,7 @@ class AuthController extends Controller
                 'payment_mode'=>$order->payment_mode,
                 'payment_status'=>$order->payment_status,
                 'rent_duration'=>$order->rent_duration.' Days',
-                'rent_status'=>$order->rent_status,
+                'rent_status' => ($order->vehicle && $order->vehicle->status === 'overdue') ? 'overdue' : $order->rent_status,
                 'cancel_request'=>$order->cancel_request,
                 'cancel_request_at'=>$order->cancel_request_at?date('d-m-Y h:i A', strtotime($order->cancel_request_at)):"N/A",
                 'model'=>$order->product?$order->product->title:"N/A",

@@ -20,7 +20,7 @@ use Carbon\Carbon;
 class RiderEngagement extends Component
 {
     use WithPagination;
-
+    protected $paginationTheme = 'bootstrap';
     public $search = '';
     public $remarks,$field,$document_type,$id,$vehicle_model;
     public $active_tab = 1;

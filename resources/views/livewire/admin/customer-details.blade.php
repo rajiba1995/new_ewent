@@ -51,7 +51,8 @@
                                 height="85" width="85" alt="User avatar">
                               <div class="customer-info text-center mb-6">
                                 <h6 class="mb-0">{{$user->name}}</h6>
-                                <span>Customer ID #{{$user->customer_id??'TEST00001'}}</span>
+                                 <span class="text-primary">{{$user->email}}</span> <br>
+                                {{-- <span>Customer ID #{{$user->customer_id??'TEST00001'}}</span> --}}
                               </div>
                             </div>
                         </div>
@@ -83,16 +84,8 @@
                             <h5 class="border-bottom text-capitalize pb-4 mt-6 mb-4"></h5>
                             <ul class="list-unstyled mb-6">
                               <li class="mb-2">
-                                <span class="h6 me-1">Email:</span>
-                                <span>{{$user->email}}</span>
-                              </li>
-                              <li class="mb-2">
-                                <span class="h6 me-1">Status:</span>
-                                @if($user->status==1)
-                                <span class="badge bg-label-success rounded-pill">Active</span>
-                                @else
-                                <span class="badge bg-label-danger rounded-pill">Inactive</span>
-                                @endif
+                                <span class="h6 me-1">Reg. Date:</span>
+                                <span>{{ date('d M y h:i A', strtotime($user->created_at)) }}</span>
                               </li>
                               <li class="mb-2">
                                 <span class="h6 me-1">Mobile:</span>
@@ -105,7 +98,12 @@
                               </li>
                             </ul>
                             <div class="d-flex justify-content-center">
-                                <button class="btn btn-primary w-100 waves-effect waves-light" wire:click="#activeEditModal">Rider Details</button>
+                               @if($user->status==1)
+                                <button class="btn btn-success w-100 waves-effect waves-light">Active</button>
+                              @else
+                                <button class="btn btn-danger w-100 waves-effect waves-light">Inactive</button>
+                              @endif
+                                
                             </div>
 
                         
@@ -227,8 +225,8 @@
                                       </tbody>
                                     </table>
                                     <div class="d-flex justify-content-end mt-2">
-                                      {{ $history->links('pagination::bootstrap-4') }}
-                                  </div>
+                                      {{ $history->links() }}
+                                    </div>
                                   </div>
                                 </div>
                               </div>

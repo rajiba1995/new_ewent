@@ -99,4 +99,5 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
 // Cron 
 Route::group(['prefix'=>'cron'], function(){
     Route::get('/vehicles/daily-timeline', [CronController::class,'DailyVehicleLog']);
+    Route::get('/vehicles/check/payment-overdue', [CronController::class,'VehiclePaymentOverDue']);
 });
