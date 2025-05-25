@@ -637,7 +637,7 @@ class AuthController extends Controller
         }
 
         $user->status = 1;
-        // $user->is_verified = 'unverified';
+        $user->kyc_uploaded_at = date('Y-m-d h:i:s');
         $user->save();
 
         return response()->json([

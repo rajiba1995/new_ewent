@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\AsignedVehicle;
 use App\Models\UserKycLog;
+use App\Models\CancelRequestHistory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -279,7 +280,7 @@ class RiderEngagement extends Component
                     return false;
                 }
 
-                $user->kyc_uploaded_at = date('Y-m-d h:i:s');
+                $user->kyc_verified_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "verified";
                 $user->date_of_rejection = NULL;
@@ -289,7 +290,7 @@ class RiderEngagement extends Component
                 $user->rejected_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "rejected";
             }else{
-                $user->kyc_uploaded_at = date('Y-m-d h:i:s');
+                $user->kyc_verified_at = date('Y-m-d h:i:s');
                 $user->kyc_verified_by = Auth::guard('admin')->user()->id;
                 $user->is_verified = "unverified";
                  $user->date_of_rejection = NULL;
@@ -369,20 +370,22 @@ class RiderEngagement extends Component
     }
     public function updateUserData($itemId)
     {
-        $order = Order::find($itemId);
-        if ($order) {
+        DB::beginTransaction();
+
+        try {
+            $order = Order::find($itemId);
+            if (!$order) {
+                session()->flash('error', 'Order not found!');
+                return;
+            }
 
             $AsignedVehicle = AsignedVehicle::where('order_id', $itemId)->first();
-            // $AsignedVehicle->deallocated_at = date('Y-m-d h:i:s');
-            // $AsignedVehicle->deallocated_by = Auth::guard('admin')->user()->id;
-            // $AsignedVehicle->status = "returned";
-            // $AsignedVehicle->save();
+            if (!$AsignedVehicle) {
+                session()->flash('error', 'Assigned vehicle not found!');
+                return;
+            }
 
-            $order->return_date = date('Y-m-d h:i:s');
-            $order->rent_status = 'returned';
-            $order->cancel_request = 'No';
-            $order->save();
-
+            // Log exchange
             DB::table('exchange_vehicles')->insert([
                 'status'       => "returned",
                 'user_id'      => $AsignedVehicle->user_id,
@@ -390,16 +393,45 @@ class RiderEngagement extends Component
                 'vehicle_id'   => $AsignedVehicle->vehicle_id,
                 'start_date'   => $AsignedVehicle->start_date,
                 'end_date'     => $AsignedVehicle->end_date,
-                'exchanged_by' => Auth::guard('admin')->user()->id, 
+                'exchanged_by' => Auth::guard('admin')->user()->id,
                 'created_at'   => now(),
                 'updated_at'   => now(),
             ]);
+
             $AsignedVehicle->delete();
+
+            if ($order->cancel_request == "Yes") {
+                CancelRequestHistory::create([
+                    'type'          => "accepted",
+                    'order_id'      => $AsignedVehicle->order_id,
+                    'user_id'       => $AsignedVehicle->user_id,
+                    'vehicle_id'    => $AsignedVehicle->vehicle_id,
+                    'request_date'  => $order->cancel_request_at,
+                    'accepted_date' => now(),
+                    'accepted_by'   => Auth::guard('admin')->user()->id,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]);
+            }
+
+            // Update order
+            $order->return_date = now();
+            $order->rent_status = 'returned';
+            $order->cancel_request = 'No';
+            $order->cancel_request_at = null;
+            $order->save();
+
+            DB::commit();
+
             $this->reset_search();
-            // $message = $user->vehicle_assign_status=="deallocate"?"deallocated":"reallocated";
-            session()->flash('success', 'The vehicle has been deallocated deallocated for this user!');
-        } 
+            session()->flash('success', 'The vehicle has been deallocated for this user!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Vehicle update failed: ' . $e->getMessage());
+            session()->flash('error', $e->getMessage());
+        }
     }
+
 
     public function suspendRider($itemId){
         if($itemId){

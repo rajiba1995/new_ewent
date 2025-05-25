@@ -17,13 +17,23 @@
             <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
               <div class="nav-wrapper position-relative end text-end">
                 <!-- Back Button -->
-                <a class="btn btn-dark btn-sm" href="javascript:history.back();" role="button">
+                <a class="btn btn-dark btn-sm" href="{{route('admin.customer.engagement.list')}}" role="button">
                   <i class="ri-arrow-go-back-line ri-16px me-0 me-sm-2 align-baseline"></i>
                   Back
                 </a>
-                 <button wire:click="exportAll" class="btn btn-primary btn-sm">
-                  <i class="ri-download-line"></i> Export
-                </button>
+                  @if($activeTab=="cancel_history")
+                    <button wire:click="exportAll" class="btn btn-primary btn-sm">
+                      <i class="ri-download-line"></i> Export
+                    </button>
+                  @elseif($activeTab=="ride_history")
+                    <button wire:click="exportAll" class="btn btn-primary btn-sm">
+                      <i class="ri-download-line"></i> Export
+                    </button>
+                  @else
+                    <button wire:click="exportJourney" class="btn btn-primary btn-sm">
+                      <i class="ri-download-line"></i> Export
+                    </button>
+                  @endif
               </div>
             </div>
         </div>
@@ -152,27 +162,31 @@
             </div>
             <div class="col-9">
                 <div class="row text-nowrap">
+                    <div class="nav-align-top">
+                      <ul class="nav nav-pills flex-column flex-md-row flex-wrap mb-6 row-gap-2">
+                        <li class="nav-item">
+                          <a class="nav-link waves-effect waves-light {{$activeTab=="account"?"active":""}}" href="javascript:void(0)" wire:click="changeTab('account')">
+                            <i class="icon-base ri ri-user-3-line icon-sm me-1_5"></i>Account Details
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link waves-effect waves-light {{$activeTab=="ride_history"?"active":""}}" href="javascript:void(0)" wire:click="changeTab('ride_history')">
+                            <i class="icon-base ri ri-taxi-line icon-sm me-1_5"></i>Ride History
+                          </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link waves-effect waves-light {{$activeTab=="cancel_history"?"active":""}}" href="javascript:void(0);" wire:click="changeTab('cancel_history')">
+                            <i class="icon-base ri ri-close-circle-line icon-sm me-1_5"></i>Cancel Request History
+                          </a>
+                        </li>
+                      </ul>
+
+                    </div>
+                    @if($activeTab=="ride_history")
                       <!--/ DataTable with Buttons -->
                       <div class="card card-action mb-6">
                           <div class="card-header align-items-center flex-wrap gap-2">
                             <h5 class="card-action-title mb-0">Ride History</h5>
-                              {{-- <div class="row">
-                                <div class="col-lg-12 d-flex justify-content-end my-auto">
-                                    <div class="d-flex align-items-center">
-                                        <input type="text" wire:model.debounce.300ms="search" 
-                                              class="form-control border border-2 p-2 custom-input-sm" 
-                                              placeholder="Search here...">
-                                        <button type="button" wire:click="searchButtonClicked" 
-                                                class="btn btn-dark text-white mb-0 custom-input-sm ms-2">
-                                            <span class="material-icons">search</span>
-                                        </button>
-                                        <!-- Refresh Button -->
-                                        <button type="button" wire:click="resetSearch" class="btn btn-danger text-white mb-0 custom-input-sm ms-2">
-                                                <i class="ri-restart-line"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                              </div> --}}
                           </div>
                           <div class="card-body">
                             <div class="accordion accordion-arrow-left">
@@ -182,50 +196,106 @@
                                     <table class="table table-striped">
                                       <thead>
                                           <tr>
+                                            <th class="h6">Order No</th>
                                             <th class="h6">Vehicle</th>
-                                            <th class="h6">Start Date</th>
-                                            <th class="h6">End Date</th>
-                                            <th class="h6">Rent</th>
-                                            <th class="h6">Rent Status</th>
-                                            <th class="h6">Action By</th>
+                                            <th class="h6">Amount</th>
+                                            <th class="h6">Duration</th>
+                                            <th class="h6">Status</th>
+                                            <th class="h6">Actions</th>
                                           </tr>
                                       </thead>
                                       <tbody>
-                                        @foreach ($history as $item)
-                                          <tr>
+                                        @foreach ($orders as $key=>$order_item)
+                                          <tr class="{{in_array($key, $expandedRows)?"active_ride_table_tr":""}}">
                                             <td class="">
-                                                <small class="text-dark"> {{$item->stock?$item->stock->vehicle_number:"N/A"}}</small><br>
-                                                <small><code>{{ $item->stock && $item->stock->product ? $item->stock->product->title : "N/A" }}</code></small>
-
+                                                <small class="">{{ $order_item->order_number }}</small>
+                                                {{-- <small class="text-muted">{{ date('d M y h:i A', strtotime($order_item->start_date)) }}</small> --}}
                                             </td>
                                             <td class="">
-                                                <small class="text-muted">{{ date('d M y h:i A', strtotime($item->start_date)) }}</small>
+                                                <small class="text-dark"> {{$order_item->product?$order_item->product->title:"N/A"}}</small>
                                             </td>
                                             <td class="">
-                                              <small class="text-muted">{{ date('d M y h:i A', strtotime($item->end_date)) }}</small>
+                                               Deposit Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->deposit_amount)??0.00 }}</small> <br>
+                                                 Rent Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->rental_amount)??0.00 }}</small>
                                             </td>
                                             <td class="">
-                                              <small class="text-muted">{{ $item->order?ENV('APP_CURRENCY').''.number_format($item->order->rental_amount):0.00 }}</small>
+                                              Start Date:  <small class="">{{ date('d M y h:i A', strtotime($order_item->rent_start_date)) }}</small> <br>
+                                              End Date:  <small class="">{{ date('d M y h:i A', strtotime($order_item->rent_end_date)) }}</small> 
                                             </td>
                                             <td class="">
-                                              <small class="text-muted">{{ ucwords($item->status)}}</small>
+                                                <span class="badge bg-label-primary me-1 rounded-pill">{{ucwords($order_item->rent_status)}}</span>
                                             </td>
-                                            <td class="">
-                                              @if($item->exchanged_by)
-                                                <small class="text-primary">{{$item->admin?$item->admin->email:'....'}}</small>
-                                              @elseif($item->assigned_by)
-                                                <small class="text-primary">{{$item->admin?$item->admin->email:'....'}}</small>
-                                              @else
-                                                <small class="text-success">{{$item->user?$item->user->email:"N/A"}}</small>
-                                              @endif
-                                              
+                                            <td class="text-center">
+                                               <a href="javascript:void(0)" wire:click="fetchRideData({{$order_item->id}},{{$key}})">
+                                                  <span class="control"></span>
+                                                </a>
                                             </td>
                                           </tr>
+                                          @if(in_array($key, $expandedRows))
+                                            <tr>
+                                                <td colspan="6" class="active_table_td">
+                                                  <table class="table">
+                                                    <thead>
+                                                      <tr>
+                                                        <th class="h6">Vehicle</th>
+                                                        <th class="h6">Date</th>
+                                                        <th class="h6">Rent</th>
+                                                        <th class="h6">Rent Status</th>
+                                                        <th class="h6">Action By</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                      @foreach ($ride_history as $ride_item)
+                                                        <tr>
+                                                          <td class="">
+                                                            <small class="text-dark">
+                                                              {{$ride_item->stock?$ride_item->stock->vehicle_number:"N/A"}}</small><br>
+                                                            <small><code>{{ $ride_item->stock && $ride_item->stock->product ? $ride_item->stock->product->title : "N/A" }}</code></small>
+
+                                                          </td>
+                                                          <td class="">
+                                                            @if($ride_item->status=="exchanged")
+                                                              <small
+                                                              class="text-muted">Exchanged Date : {{ date('d M y h:i A', strtotime($ride_item->exchanged_at)) }}</small>
+                                                            @elseif($ride_item->status=="returned")
+                                                              <small
+                                                              class="text-muted">Returned Date : {{ date('d M y h:i A', strtotime($ride_item->exchanged_at)) }}</small>
+                                                              @else
+                                                                <small
+                                                                class="text-muted">Assigned Date {{ date('d M y h:i A', strtotime($ride_item->assigned_at)) }}</small>
+                                                              @endif
+                                                          </td>
+                                                          <td class="">
+                                                            <small
+                                                              class="text-muted">{{ $ride_item->order?ENV('APP_CURRENCY').''.number_format($ride_item->order->rental_amount):0.00 }}</small>
+                                                          </td>
+                                                          <td class="">
+                                                            <small class="text-muted">{{ ucwords($ride_item->status)}}</small>
+                                                          </td>
+                                                          <td class="">
+                                                            @if($ride_item->exchanged_by)
+                                                            <small
+                                                              class="text-primary">{{$ride_item->admin?$ride_item->admin->email:'....'}}</small>
+                                                            @elseif($ride_item->assigned_by)
+                                                            <small
+                                                              class="text-primary">{{$ride_item->admin?$ride_item->admin->email:'....'}}</small>
+                                                            @else
+                                                            <small
+                                                              class="text-success">{{$ride_item->user?$ride_item->user->email:"N/A"}}</small>
+                                                            @endif
+                                                          </td>
+                                                        </tr>
+                                                      @endforeach
+                                                    </tbody>
+                                                  </table>
+                                                </td>
+                                            </tr>
+                                          @endif
                                         @endforeach
                                       </tbody>
                                     </table>
                                     <div class="d-flex justify-content-end mt-2">
-                                      {{ $history->links() }}
+                                      {{ $orders->links() }}
                                     </div>
                                   </div>
                                 </div>
@@ -233,6 +303,44 @@
                             </div>
                           </div>
                       </div>
+                    @endif
+                   @if($activeTab == "account")
+                    <div class="card mb-6">
+                      <div class="card-header">
+                        <h5 class="card-title m-0">User Journey Timeline</h5>
+                      </div>
+                      <div class="card-body mt-3">
+                        <ul class="timeline pb-0 mb-0">
+                          @foreach($userJourney as $step)
+                            <li class="timeline-item timeline-item-transparent border-primary">
+                              <span class="timeline-point timeline-point-primary"></span>
+                              <div class="timeline-event">
+                                <div class="timeline-header mb-1">
+                                  <h6 class="mb-0">{{ $step['title'] }}</h6>
+                                  @if(!empty($step['date']))
+                                    <small class="text-body-secondary">{{ \Carbon\Carbon::parse($step['date'])->format('d M Y h:i A') }}</small>
+                                  @endif
+                                </div>
+                                <p class="mt-1 mb-3">
+                                  {!! $step['description'] !!}
+                                </p>
+                              </div>
+                            </li>
+                          @endforeach
+                            <li class="timeline-item timeline-item-transparent border-transparent pb-0">
+                              <span class="timeline-point timeline-point-secondary"></span>
+                              <div class="timeline-event pb-0">
+                                <div class="timeline-header mb-1">
+                                  <h6 class="mb-0">Journey Ongoing</h6>
+                                </div>
+                                <p class="mt-1 mb-3">The user is actively using the service.</p>
+                              </div>
+                            </li>
+                        </ul>
+                      </div>
+                    </div>
+                  @endif
+
                 </div>
             </div>
         </div>

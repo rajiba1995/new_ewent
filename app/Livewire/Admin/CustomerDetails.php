@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\User;
+use App\Models\UserKycLog;
 use App\Models\Order;
 use App\Models\AsignedVehicle;
 use App\Models\ExchangeVehicle;
@@ -12,19 +13,22 @@ use Illuminate\Pagination\Paginator;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UserRideSummaryExport;
+use App\Exports\UserJourneyExport;
 
 class CustomerDetails extends Component
 {
     use WithPagination;
     public $user;
-    public $activeTab = 'orders'; // Default active tab
+    public $activeTab = 'account'; // Default active tab
     public $newPassword; // Correct naming convention
     public $confirmPassword;
     public $userId;
     public $showEditModal = false;
+    public $ride_history = [];
     public $documents = [];
     public $data = [];
     public $customer_total_order = 0;
+    public $expandedRows = [];
     public $total_payment_amount = 0;
 
     // Rules for updating the password
@@ -181,26 +185,145 @@ class CustomerDetails extends Component
     /**
      * Render the Livewire component.
      */
-    public function render()
-    {
-         // Fetching the assigned vehicle
+    public function fetchRideData($order_id,$key){
+
+        $this->reset(['ride_history','expandedRows']);
+        if (in_array($key, $this->expandedRows)) {
+            $this->expandedRows = array_diff($this->expandedRows, [$key]);
+        } else {
+            $this->expandedRows[] = $key;
+        }
+
+        $this->reset(['ride_history']);
         $assignedVehicle = AsignedVehicle::whereIn('status', ['assigned','overdue'])
-        ->where('user_id', $this->userId)
+        ->where('user_id', $this->userId)->where('order_id',$order_id)
         ->first();
 
-        $exchangeVehicles  = ExchangeVehicle::with('stock')
+        $this->ride_history  = ExchangeVehicle::with('stock')
         // ->whereIn('status', ['renewal', 'returned'])
-        ->where('user_id', $this->userId)->orderBy('id', 'DESC')->paginate(18);
+        ->where('user_id', $this->userId)->where('order_id',$order_id)->orderBy('id', 'DESC')->get();
 
         // Adding assigned vehicle at the start (if it exists)
         if ($assignedVehicle) {
             $assignedVehicle->exchanged_by = $assignedVehicle->assigned_by;
-            $exchangeVehicles->getCollection()->prepend($assignedVehicle);
+            $this->ride_history->getCollection()->prepend($assignedVehicle);
+        }
+    }
+    public function changeTab($value){
+        $this->activeTab = $value;
+    }
+    public function exportJourney()
+    {
+        $userJourney = $this->getUserJourney(); // Make sure this returns the formatted array
+
+        return Excel::download(new UserJourneyExport($userJourney), 'user-journey.xlsx');
+    }
+
+    public function getUserJourney(){
+        $user = User::find($this->userId);
+
+        $register = $user->created_at ?? null;
+        $kyc_uploaded = UserKycLog::where('user_id', $this->userId)->latest()->value('created_at');
+        $kyc_verified_at = $user->kyc_verified_at ?? null;
+
+        $firstOrder = Order::where('user_id', $this->userId)->orderBy('id', 'ASC')->first();
+        $lastOrder = Order::where('user_id', $this->userId)->orderBy('id', 'DESC')->first();
+
+        $totalOrders = Order::where('user_id', $this->userId)->count();
+        $totalPayment = $this->total_payment_amount;
+
+        $lastAssigned = AsignedVehicle::where('user_id', $this->userId)
+            ->whereIn('status', ['assigned', 'overdue'])
+            ->orderBy('id', 'DESC')
+            ->with('stock')
+            ->first();
+
+        $userJourney = [];
+
+        if ($register) {
+            $userJourney[] = [
+                'title' => 'User Registered',
+                'description' => 'User account created successfully.',
+                'date' => $register,
+            ];
         }
 
-    //    dd($exchangeVehicles);
+        if ($kyc_uploaded) {
+            $userJourney[] = [
+                'title' => 'KYC Uploaded',
+                'description' => 'User submitted KYC documents.',
+                'date' => $kyc_uploaded,
+            ];
+        }
+
+        if ($kyc_verified_at) {
+            $userJourney[] = [
+                'title' => 'KYC Verified',
+                'description' => 'KYC has been verified.',
+                'date' => $kyc_verified_at,
+            ];
+        }
+
+        if ($firstOrder) {
+             $vehicle_number = 'N/A';
+
+            // Check assigned vehicle
+            if ($firstOrder->vehicle && $firstOrder->vehicle->stock) {
+                $vehicle_number = $firstOrder->vehicle->stock->vehicle_number;
+            }
+
+            // If not found in assigned, check in exchange vehicle (assuming one-to-one or latest returned)
+            if (!$firstOrder->vehicle && $firstOrder->exchange_vehicle) {
+                $returnedExchange = $firstOrder->exchange_vehicle->where('status', 'returned')->first();
+                if ($returnedExchange && $returnedExchange->stock) {
+                    $vehicle_number = $returnedExchange->stock->vehicle_number;
+                }
+            }
+            $firstOrder->vehicle?$firstOrder->vehicle->vehicle_id:$firstOrder->exchange_vehicle;
+            $userJourney[] = [
+                'title' => 'First Ride Placed',
+                'description' => 'Vehicle  Number: <span class="badge bg-label-success">#' . $vehicle_number . '</span>',
+                'date' => $firstOrder->created_at,
+            ];
+        }
+
+        
+
+        if ($lastOrder) {
+            $vehicle_number = 'N/A';
+            // Check assigned vehicle
+            if ($lastOrder->vehicle && $lastOrder->vehicle->stock) {
+                $vehicle_number = $lastOrder->vehicle->stock->vehicle_number;
+            }
+
+            // If not found in assigned, check in exchange vehicle (assuming one-to-one or latest returned)
+            if (!$lastOrder->vehicle && $lastOrder->exchange_vehicle) {
+                $returnedExchange = $lastOrder->exchange_vehicle->where('status', 'returned')->first();
+                if ($returnedExchange && $returnedExchange->stock) {
+                    $vehicle_number = $returnedExchange->stock->vehicle_number;
+                }
+            }
+            $userJourney[] = [
+                'title' => 'Last Ride',
+                'description' => 'Vehicle Number: <span class="badge bg-label-success">#' . $vehicle_number . '</span>',
+                'date' => $lastOrder->created_at,
+            ];
+        }
+        if ($totalOrders > 0) {
+            $userJourney[] = [
+                'title' => 'Ride Summary',
+                'description' => "Total Rides: <span class='text-primary fw-bold'>{$totalOrders}</span>, Total Rent Paid: <code>₹" . number_format($totalPayment, 2) . "</code>",
+                'date' => now(), // or leave null
+            ];
+        }
+        return $userJourney;
+    }
+    public function render(){
+        $userJourney = $this->getUserJourney();
+        $orders = Order::where('user_id',$this->userId)->whereIn('rent_status',['active','returned'])->orderBy('id','DESC')->paginate(18);
         return view('livewire.admin.customer-details',[
-            'history'=>$exchangeVehicles ,
+            'orders'=>$orders,
+            'userJourney' => $userJourney,
         ]);
     }
 }

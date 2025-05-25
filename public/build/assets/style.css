@@ -658,5 +658,16 @@
 small{
     font-size: .8125rem;
 }
+.active_table_td{
+    padding: 0;
+    border: 1px solid #000;
+}
+.active_ride_table_tr{
+    background-color: #000;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff !important;
+}
+
 
 
