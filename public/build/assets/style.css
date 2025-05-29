@@ -666,6 +666,8 @@ small{
     background-color: #000;
     font-size: 15px;
     font-weight: bold;
+}
+.active_ride_table_tr td{
     color: #fff !important;
 }
 

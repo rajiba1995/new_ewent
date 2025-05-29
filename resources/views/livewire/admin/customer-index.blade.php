@@ -563,13 +563,14 @@
                                         <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                             <div class="p-2">
                                                 <div class="cursor-pointer">
-                                                    <img src="{{asset('storage/uploads/aadhar_card/9397_1747917560.webp')}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                                    {{-- <img src="{{asset('storage/uploads/aadhar_card/9397_1747917560.webp')}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;"> --}}
+                                                    {{$selectedCustomer->aadhar_number?$selectedCustomer->aadhar_number:"N/A"}}
                                                 </div>
-                                                <div class="text-center fw-medium text-truncate">Front</div>
+                                                {{-- <div class="text-center fw-medium text-truncate">Front</div> --}}
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-6">
+                                    {{-- <div class="col-6">
                                         <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                             <div class="p-2">
                                                 <div class="cursor-pointer">
@@ -578,34 +579,34 @@
                                                 <div class="text-center fw-medium text-truncate">Back</div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 <div class="d-flex my-4">
-                                    <div class="col-4 text-center cursor-pointer">
+                                    {{-- <div class="col-4 text-center cursor-pointer">
                                         <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->aadhar_card_front)}}','{{asset($selectedCustomer->aadhar_card_back)}}','Aadhar Card')"> Preview</span>
-                                    </div>
-                                    <div class="col-4 text-center cursor-pointer">
+                                    </div> --}}
+                                    <div class="col-12 text-center cursor-pointer">
                                         @if($selectedCustomer->aadhar_card_status==2)
                                             <span class="badge rounded-pill bg-label-success">
                                                 <i class="ri-check-line"></i> Approved
                                             </span>
                                         @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','aadhar_card_status','Aadhar Card',{{$selectedCustomer->id}})">
-                                                 Approve
+                                            <span class="badge rounded-pill bg-label-warning">
+                                                 Pending
                                             </span>
                                         @endif
                                     </div>
-                                    <div class="col-4 text-center cursor-pointer">
+                                    {{-- <div class="col-4 text-center cursor-pointer">
                                         @if($selectedCustomer->aadhar_card_status==3)
                                             <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
                                         @else
                                             <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('aadhar_card_status','Aadhar Card',{{$selectedCustomer->id}})">Reject</span>
                                         @endif
-                                    </div>
+                                    </div> --}}
                                 </div>
                             @else
                                 <div class="alert alert-danger">
-                                    Aadhar card not uploaded
+                                    Aadhar card not verified.
                                 </div>
                             @endif
                         </div>

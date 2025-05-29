@@ -19,7 +19,6 @@ class PolicyDetails extends Component
 
     public function mount(){
         $this->resetErrorBag();
-        $this->dispatch('editor_load');
         $this->policies = Policy::orderBy('title', 'ASC')->get();
     }
     public function ActiveCreateTab($value){
@@ -43,7 +42,6 @@ class PolicyDetails extends Component
         $this->policyId = $policy->id;
         $this->title = $policy->title;
         $this->content = $policy->content;
-        
         $this->active_tab = 3;
     }
 
@@ -69,9 +67,8 @@ class PolicyDetails extends Component
 
     public function render()
     {
-        $this->dispatch('editor_load');
+        $this->dispatch('ck_editor_load');
         return view('livewire.admin.policy-details', [
-            'active_tab'=>$this->active_tab,
             'policies'=>$this->policies,
         ]);
     }

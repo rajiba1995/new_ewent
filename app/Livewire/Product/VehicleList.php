@@ -11,6 +11,7 @@ class VehicleList extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'bootstrap';
     public $model;
     public $search = '';
     public $active_tab = 1;

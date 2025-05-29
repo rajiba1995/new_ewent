@@ -18,7 +18,7 @@ class UpdateProduct extends Component
     use WithFileUploads;
 
     public $productId,$category_id, $sub_category_id, $title, $short_desc, $long_desc, $image,$product_sku;
-    public $meta_title, $meta_keyword, $meta_description;
+    public $meta_title, $meta_keyword, $meta_description,$is_driving_licence_required;
     public $categories = [], $subcategories = [];
     public $is_selling = false;
     public $is_rent = true;
@@ -49,6 +49,7 @@ class UpdateProduct extends Component
         $this->title = $product->title;
         $this->product_sku = $product->product_sku;
         $this->short_desc = $product->short_desc;
+        $this->is_driving_licence_required = $product->is_driving_licence_required==1?true:false;
         $this->long_desc = $product->long_desc;
         $this->image = $product->image;
         $this->meta_title = $product->meta_title;
@@ -59,7 +60,6 @@ class UpdateProduct extends Component
         $this->per_rent_price = $product->per_rent_price;
         $this->is_selling = $product->base_price ? true : false;
         $this->categories = Category::all();
-    
         if ($product->category_id) {
             $this->GetSubcat($product->category_id);
         } else {
@@ -147,18 +147,18 @@ class UpdateProduct extends Component
             $this->validate([
                 'category_id' => 'nullable',
                 'sub_category_id' => 'nullable',
-            'title' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('products', 'title')->ignore($this->productId),
-                ],
-                'product_sku' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('products', 'product_sku')->ignore($this->productId),
-                ],
+                'title' => [
+                        'required',
+                        'string',
+                        'max:255',
+                        Rule::unique('products', 'title')->ignore($this->productId)->whereNull('deleted_at'),
+                    ],
+                    'product_sku' => [
+                        'required',
+                        'string',
+                        'max:255',
+                        Rule::unique('products', 'product_sku')->ignore($this->productId)->whereNull('deleted_at'),
+                    ],
                 // 'short_desc' => 'required|string|max:255',
                 // 'long_desc' => 'required|string',
                 'image' => $this->image instanceof \Illuminate\Http\UploadedFile ? 'nullable|mimes:jpg,jpeg,png,gif' : 'nullable',
@@ -194,6 +194,7 @@ class UpdateProduct extends Component
                 'image' => $imagePath,
                 'meta_title' => $this->meta_title,
                 'meta_keyword' => $this->meta_keyword,
+                'is_driving_licence_required' => $this->is_driving_licence_required==true?1:0,
                 'meta_description' => $this->meta_description,
                 'is_rent' => $this->is_rent,
                 'is_selling' => $this->is_selling,

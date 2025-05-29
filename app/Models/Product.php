@@ -25,6 +25,7 @@ class Product extends Model
         'is_bestseller',
         'meta_title',
         'meta_description',
+        'is_driving_licence_required',
         'meta_keyword',
         'is_selling',
         'is_rent',

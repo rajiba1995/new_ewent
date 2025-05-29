@@ -15,6 +15,7 @@ use App\Models\Offer;
 use App\Models\RentalPrice;
 use App\Models\Order;
 use App\Models\AsignedVehicle;
+use App\Models\UserTermsConditions;
 use App\Models\Policy;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-
+use App\Models\UserLocationLog;
 class AuthController extends Controller
 {
     /**
@@ -65,6 +66,54 @@ class AuthController extends Controller
                 'errors' => $validator->errors()->first()
             ], 422);
         }
+
+        if($request->step==1){
+            $check_terms_condition = UserTermsConditions::where(function ($query) use ($request) {
+                $query->where('mobile', $request->mobile)
+                    ->orWhere('email', $request->email);
+            })
+            ->where('status', 'success')
+            ->first();
+
+            if ($check_terms_condition) {
+                return response()->json([
+                    'status' => true,
+                    'terms_condition' => true,
+                    'message' => 'You have already verified the terms and conditions.',
+                ], 200);
+            } else {
+                $EsignResponse = $this->EsignVerification($request->name,$request->email,$request->address);
+                $requestId = $EsignResponse['requests'][0]['request_id'] ?? null;
+                $signingUrl = $EsignResponse['requests'][0]['signing_url'] ?? null;
+
+                if ($requestId && $signingUrl) {
+                    return response()->json([
+                        'status' => false,
+                        'terms_condition' => false,
+                        'signing_url' => $signingUrl,
+                        'message' => 'eSign initiated successfully.',
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'terms_condition' => false,
+                        'signing_url' => null,
+                        'message' => 'Terms and conditions not verified.',
+                    ], 200);
+                }
+            }
+        }
+        if($request->step==2){
+            UserTermsConditions::updateOrCreate(
+                ['mobile' => $request->mobile], // Search by mobile
+                [
+                    'email' => $request->email,
+                    'status' => 1,
+                    'accepted_at' => now(),
+                ]
+            );
+        }
+       
         DB::beginTransaction();
 
         try {
@@ -391,7 +440,7 @@ class AuthController extends Controller
 
     public function fetchFaqs()
     {
-        $faqs = Faq::orderBy('question', 'ASC')->get();
+        $faqs = Faq::orderBy('id', 'ASC')->get();
     
         if ($faqs->isEmpty()) {
             return response()->json([
@@ -465,8 +514,8 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'driving_licence_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
             'driving_licence_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'aadhar_card_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
-            'aadhar_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            // 'aadhar_card_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
+            // 'aadhar_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
             'pan_card_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
             'pan_card_back' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
             'current_address_proof_front' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:5120',
@@ -515,18 +564,19 @@ class AuthController extends Controller
             $store->save();
             
         }
-        if ($request->hasFile('aadhar_card_front') || $request->hasFile('aadhar_card_back')) {
-            if($request->hasFile('aadhar_card_front')){
-                $aadhar_card_front = storeFileWithCustomName($request->file('aadhar_card_front'), 'uploads/aadhar_card');
-                $user->aadhar_card_front = $aadhar_card_front;
-            }
+        if ($request->aadhar_number) {
+            // if($request->hasFile('aadhar_card_front')){
+            //     $aadhar_card_front = storeFileWithCustomName($request->file('aadhar_card_front'), 'uploads/aadhar_card');
+            //     $user->aadhar_card_front = $aadhar_card_front;
+            // }
 
-            if($request->hasFile('aadhar_card_back')){
-                $aadhar_card_back = storeFileWithCustomName($request->file('aadhar_card_back'), 'uploads/aadhar_card');
-                $user->aadhar_card_back = $aadhar_card_back;
-            }
-            
-            $user->aadhar_card_status = 1;
+            // if($request->hasFile('aadhar_card_back')){
+            //     $aadhar_card_back = storeFileWithCustomName($request->file('aadhar_card_back'), 'uploads/aadhar_card');
+            //     $user->aadhar_card_back = $aadhar_card_back;
+            // }
+
+            $user->aadhar_number = $request->aadhar_number;
+            $user->aadhar_card_status = 2;
 
             $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Aadhar Card')->where('status', 'Uploaded')->first();
             $store = new UserKycLog;
@@ -712,7 +762,7 @@ class AuthController extends Controller
         // Process each product to set rental price details
         foreach ($products as $product) {
             $rental = $product->rentalprice->first();
-            $product->subscription_type = $rental ? $rental->subscription_type : 0;
+            $product->subscription_type = $rental ? ucwords($rental->subscription_type) : 0;
             $product->deposit_amount = $rental ? $rental->deposit_amount : 0;
             $product->rental_duration = $rental ? $rental->duration : 0;
             $product->rental_amount = $rental ? $rental->rental_amount : 0;
@@ -870,7 +920,7 @@ class AuthController extends Controller
         $why_ewent = WhyEwent::where('status', 1)->orderBy('id', 'desc')->get();
         
         // Fetching the FAQs
-        $faqs = Faq::orderBy('question', 'ASC')->get();
+        $faqs = Faq::orderBy('id', 'ASC')->get();
         
         // Fetching the products with eager loading
         $products = Product::select('id', 'title', 'position', 'types', 'short_desc', 'image', 'status', 'is_driving_licence_required')->where('status', 1)
@@ -885,7 +935,7 @@ class AuthController extends Controller
             ->get();
             foreach ($products as $product) {
                 $rental = $product->rentalprice->first();
-                $product->subscription_type = $rental ? $rental->subscription_type : 0;
+                $product->subscription_type = $rental ? ucwords($rental->subscription_type) : 0;
                 $product->deposit_amount = $rental ? $rental->deposit_amount : 0;
                 $product->rental_duration = $rental ? $rental->duration : 0;
                 $product->rental_amount = $rental ? $rental->rental_amount : 0;
@@ -922,7 +972,7 @@ class AuthController extends Controller
         }
         $documents= [];
        
-        $data = User::select('id', 'driving_licence_front', 'driving_licence_back','driving_licence_status', 'aadhar_card_front', 'aadhar_card_back', 'aadhar_card_status', 'pan_card_front', 'pan_card_back','pan_card_status', 'current_address_proof_front','current_address_proof_back', 'current_address_proof_status','passbook_front', 'passbook_status','profile_image','profile_image_status')->where('id',$user->id)->first();
+        $data = User::select('id', 'driving_licence_front', 'driving_licence_back','driving_licence_status', 'aadhar_card_front', 'aadhar_card_back','aadhar_number','aadhar_card_status', 'pan_card_front', 'pan_card_back','pan_card_status', 'current_address_proof_front','current_address_proof_back', 'current_address_proof_status','passbook_front', 'passbook_status','profile_image','profile_image_status')->where('id',$user->id)->first();
          // Check if product exists
         if (!$data) {
             return response()->json(['status' => false, 'message' => 'User not found'], 404);
@@ -935,8 +985,9 @@ class AuthController extends Controller
         ];
 
         $documents['Aadhar Card'] = [
-            'front' =>$data->aadhar_card_front,
-            'back'=>$data->aadhar_card_back,
+            // 'front' =>$data->aadhar_card_front,
+            // 'back'=>$data->aadhar_card_back,
+            'aadhar_number'=>$data->aadhar_number,
             'status' =>$data->aadhar_card_status,
         ];
 
@@ -1021,7 +1072,7 @@ class AuthController extends Controller
         }
         $data = Order::with('product','vehicle','exchange_vehicle')->where('user_id', $user->id)->orderBy('id', 'DESC')->get();
         if(count($data)==0){
-            return response()->json(['status'=>false, 'message'=>'oder not found!'], 404);
+            return response()->json(['status'=>false, 'message'=>'order not found!'], 404);
         }
         $result = [];
         foreach($data as $key => $item){
@@ -1773,4 +1824,180 @@ class AuthController extends Controller
 
     }
 
+    public function CurrentLocation(Request $request){
+          $user = $this->getAuthenticatedUser();
+            if ($user instanceof \Illuminate\Http\JsonResponse) {
+                return $user; // Return the response if the user is not authenticated
+            }
+            
+            // Check if the user exists
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found.',
+                ], 404); // 404 Not Found
+            }
+        $validator = Validator::make($request->all(), [
+                    'latitude' => 'required|string|max:255',
+                    'longitude' => 'required|string|max:255',
+                ]);
+
+                // Check if validation fails
+                if ($validator->fails()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $validator->errors()->first(),
+                    ], 422);
+                }
+           try {
+                DB::beginTransaction();
+
+                $new = new UserLocationLog;
+                $new->user_id = $user->id;
+                $new->latitude = $request->latitude;
+                $new->longitude = $request->longitude;
+                $new->created_at = now();
+                $new->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Location retrieved and saved successfully.',
+                ], 200);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                return response()->json([
+                    'status' => false,
+                    'message' => $e->getMessage(),
+                    // 'error' => $e->getMessage(),
+                ], 500);
+            }
+    }
+
+    protected function EsignVerification($signer_name,$signer_email,$signer_city)
+    {
+        $url = "https://test.zoop.one/contract/esign/v5/init"; // Test base URL for Zoop's eSign v5 init
+        $appId = ENV('ZOOP_APP_ID');                 // Your test App ID
+        $apiKey = ENV('ZOOP_APP_KEY');         // Your test API Key
+
+        // Load and base64 encode a local PDF file
+        $pdfPath = public_path('assets/users_terms_conditions.pdf'); // Make sure this path is correct
+        if (!file_exists($pdfPath)) {
+            return response()->json(['error' => 'PDF file not found.'], 404);
+        }
+        $pdfBase64 = base64_encode(file_get_contents($pdfPath));
+
+        // Prepare payload
+        $data = [
+            "document" => [
+                "name" => "Agreement Esigning",
+                "data" => $pdfBase64
+            ],
+            "signers" => [
+                [
+                    "signer_name" => $signer_name,
+                    "signer_email" => $signer_email,
+                    "signer_city" => $signer_city,
+                    "signer_purpose" => "Digital Sign",
+                    "sign_coordinates" => [
+                        [
+                            "page_num" => 0,
+                            "x_coord" => 270,
+                            "y_coord" => 60
+                        ]
+                    ]
+                ],
+            ],
+            "txn_expiry_min" => "10080",
+            "white_label" => "Y",
+            "redirect_url" => asset('api/customer/esign/thankyou'),
+            "response_url" => asset('api/customer/esign/webhook'),
+            "esign_type" => "AADHAAR",
+            "email_template" => [
+                "org_name" => "Zoop.One"
+            ]
+        ];
+        // Convert payload to JSON
+        $jsonData = json_encode($data);
+
+        // Initialize cURL
+        $ch = curl_init($url);
+
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "app-id: $appId",
+            "api-key: $apiKey"
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+
+        // Execute the request
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        // dd($response);
+        // Close cURL
+        curl_close($ch);
+        $responseData = json_decode($response, true);
+
+        UserTermsConditions::create([
+            'email' => $responseData['requests'][0]['signer_email'] ?? null,
+            'group_id' => $responseData['group_id'] ?? null,
+            'request_id' => $responseData['requests'][0]['request_id'] ?? null,
+            'status' => 'pending',
+            'response_payload' => $response,
+        ]);
+
+        // Return the response
+        return $responseData;
+    }
+
+    public function webhookHandler(Request $request)
+    {
+        // Get full payload
+         \Log::info('Zoop Webhook Called', $request->all()); // Laravel log
+        $data = $request->all();
+        
+        // Extract relevant fields from Zoop payload
+        $requestId = $data['request_id'] ?? null;
+        $status = $data['status'] ?? 'pending';
+        $signedAt = isset($data['signed_at']) ? now() : null; // Or parse actual datetime if available
+
+        // Find existing record by request_id (you saved this during eSign init)
+        $record = UserTermsConditions::where('request_id', $requestId)->first();
+
+        if ($record) {
+            $record->update([
+                'status' => $status,
+                'signed_at' => $signedAt,
+                'response_payload' => $data,
+            ]);
+        } else {
+            // Optional: if webhook hits before your system stores it
+            UserTermsConditions::create([
+                'user_id' => null, // If you can’t find user, leave it null or use fallback logic
+                'request_id' => $requestId,
+                'status' => $status,
+                'signed_at' => $signedAt,
+                'response_payload' => $data,
+            ]);
+        }
+
+        return response()->json(['message' => 'Webhook received'], 200);
+    }
+
+    public function EsignThankyou(Request $request)
+    {
+        $action = $request->query('action'); // e.g., esign-success or esign-failed
+
+        if ($action === 'esign-success') {
+            return view('esign.thanks');
+        } else {
+            return view('esign.failed');
+        }
+    }
 }

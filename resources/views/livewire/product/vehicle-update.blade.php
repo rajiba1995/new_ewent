@@ -89,7 +89,7 @@
                             <div class="form-floating form-floating-outline mb-3 mt-2">
                             <input type="text" wire:model="imei_number" class="form-control border border-2 p-2"
                                 placeholder="Enter imei number">
-                            <label>LOT IMEI Number<span class="text-danger">*</span></label>
+                            <label>LOT IMEI Number</label>
                             </div>
                             @error('imei_number')
                             <p class="text-danger inputerror">{{ $message }}</p>

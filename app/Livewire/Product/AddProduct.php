@@ -12,6 +12,7 @@ use App\Models\ProductFeature;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProductImage;
+use Illuminate\Validation\Rule;
 
 
 
@@ -20,7 +21,7 @@ class AddProduct extends Component
     use WithFileUploads;
     public $productId,$category_id, $sub_category_id, $title, $short_desc, $long_desc, $image, $product_sku;
     public $meta_title, $meta_keyword, $meta_description;
-    
+    public $is_driving_licence_required = true;
     public $categories = [], $subcategories = [], $product_type = [];
 
     public $errorMessage = [];
@@ -62,8 +63,18 @@ class AddProduct extends Component
         $this->validate([
             'category_id' => 'nullable',
             'sub_category_id' => 'nullable',
-            'title' => 'required|string|max:255|unique:products,title',
-            'product_sku' => 'required|string|max:255|unique:products,product_sku',
+             'title' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'title')->whereNull('deleted_at'),
+            ],
+            'product_sku' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'product_sku')->whereNull('deleted_at'),
+            ],
             'short_desc' => 'nullable|string',
             'long_desc' => 'nullable|string',
             'image' => 'nullable|image|max:2024|mimes:jpg,jpeg,png,webp', // 2MB max image size
@@ -100,6 +111,7 @@ class AddProduct extends Component
                 'title' => ucwords($this->title),
                 'product_sku' => strtoupper($this->product_sku),
                 'types' => $selectedProductTypesString,
+                'is_driving_licence_required' => $this->is_driving_licence_required,
                 'short_desc' => $this->short_desc,
                 'long_desc' => $this->long_desc,
                 'image' => $imagePath,

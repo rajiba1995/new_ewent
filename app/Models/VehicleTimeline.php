@@ -11,7 +11,7 @@ class VehicleTimeline extends Model
    protected $fillable = [
         'stock_id', 'field', 'value', 'unit', 'created_at', 'updated_at'
    ];
-
+   
    public function stock(){
         return $this->belongsTo(Stock::class, 'stock_id', 'id');
    }

@@ -8,12 +8,14 @@ use App\Models\UserKycLog;
 use App\Models\Order;
 use App\Models\AsignedVehicle;
 use App\Models\ExchangeVehicle;
+use App\Models\CancelRequestHistory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Pagination\Paginator;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UserRideSummaryExport;
 use App\Exports\UserJourneyExport;
+use App\Exports\CancelRequestExport;
 
 class CustomerDetails extends Component
 {
@@ -185,29 +187,41 @@ class CustomerDetails extends Component
     /**
      * Render the Livewire component.
      */
-    public function fetchRideData($order_id,$key){
+   public function fetchRideData($order_id, $key)
+    {
+        $this->reset(['ride_history', 'expandedRows']);
 
-        $this->reset(['ride_history','expandedRows']);
         if (in_array($key, $this->expandedRows)) {
             $this->expandedRows = array_diff($this->expandedRows, [$key]);
         } else {
             $this->expandedRows[] = $key;
         }
 
-        $this->reset(['ride_history']);
-        $assignedVehicle = AsignedVehicle::whereIn('status', ['assigned','overdue'])
-        ->where('user_id', $this->userId)->where('order_id',$order_id)
-        ->first();
+        $exchangeVehicles = ExchangeVehicle::with('stock')
+            ->where('user_id', $this->userId)
+            ->where('order_id', $order_id)
+            ->orderBy('id', 'DESC')
+            ->get()
+            ->map(function ($item) {
+                $item->model_type = 'exchange';
+                return $item;
+            });
 
-        $this->ride_history  = ExchangeVehicle::with('stock')
-        // ->whereIn('status', ['renewal', 'returned'])
-        ->where('user_id', $this->userId)->where('order_id',$order_id)->orderBy('id', 'DESC')->get();
+        $assignedVehicle = AsignedVehicle::whereIn('status', ['assigned', 'overdue'])
+            ->where('user_id', $this->userId)
+            ->where('order_id', $order_id)
+            ->first();
 
-        // Adding assigned vehicle at the start (if it exists)
+        $collection = collect();
+
         if ($assignedVehicle) {
             $assignedVehicle->exchanged_by = $assignedVehicle->assigned_by;
-            $this->ride_history->getCollection()->prepend($assignedVehicle);
+            $assignedVehicle->model_type = 'assigned';
+            $collection->push($assignedVehicle);
         }
+
+        $this->ride_history = $collection->merge($exchangeVehicles);
+
     }
     public function changeTab($value){
         $this->activeTab = $value;
@@ -318,12 +332,24 @@ class CustomerDetails extends Component
         }
         return $userJourney;
     }
+    public function getCancelRequestHistory(){
+        return CancelRequestHistory::where('user_id', $this->userId)->get();
+    }
+    
+    public function exportCancelHistory()
+    {
+        $cancelRequests = $this->getCancelRequestHistory();
+
+        return Excel::download(new CancelRequestExport($cancelRequests), 'cancel_request_history.xlsx');
+    }
     public function render(){
+        $cancel_request_histories = $this->getCancelRequestHistory();
         $userJourney = $this->getUserJourney();
         $orders = Order::where('user_id',$this->userId)->whereIn('rent_status',['active','returned'])->orderBy('id','DESC')->paginate(18);
         return view('livewire.admin.customer-details',[
             'orders'=>$orders,
             'userJourney' => $userJourney,
+            'cancel_request_histories' => $cancel_request_histories,
         ]);
     }
 }

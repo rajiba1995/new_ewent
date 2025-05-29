@@ -34,7 +34,7 @@ class VehicleUpdate extends Component
             'vehicle_track_id' => ['required', 'string', Rule::unique('stocks', 'vehicle_track_id')->ignore($this->id)],
             'friendly_name' => ['nullable', 'string', 'max:255'],
             'vehicle_number' => ['required', 'string', Rule::unique('stocks', 'vehicle_number')->ignore($this->id)],
-            'imei_number' => ['required', 'string', Rule::unique('stocks', 'imei_number')->ignore($this->id)],
+            // 'imei_number' => ['required', 'string', Rule::unique('stocks', 'imei_number')->ignore($this->id)],
             'chassis_number' => ['required', 'string', Rule::unique('stocks', 'chassis_number')->ignore($this->id)],
         ];
     }
@@ -47,7 +47,7 @@ class VehicleUpdate extends Component
             'product_id' => $validatedData['model'],
             'vehicle_number' => $validatedData['vehicle_number'],
             'vehicle_track_id' => $validatedData['vehicle_track_id'],
-            'imei_number' => $validatedData['imei_number'],
+            'imei_number' => $this->imei_number,
             'chassis_number' => $validatedData['chassis_number'],
             'friendly_name' => $validatedData['friendly_name'],
         ]);

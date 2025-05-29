@@ -14,8 +14,7 @@
         </div>
     @endif
     {{-- New policy --}}
-    @if($active_tab==2)
-        <div class="card card-action my-4">
+        <div class="card card-action my-4 {{$active_tab==2?"":"d-none"}}">
             <div class="card-header align-items-center flex-wrap gap-2">
             <h5 class="card-action-title mb-0">New Policy</h5>
             </div>
@@ -36,8 +35,8 @@
                 </form>
             </div>
         </div>
-    @elseif($active_tab==3)
-        <div class="card card-action my-4">
+
+        <div class="card card-action my-4 {{$active_tab==3?"":"d-none"}}">
             <div class="card-header align-items-center flex-wrap gap-2">
             <h5 class="card-action-title mb-0">Update Policy</h5>
             </div>
@@ -49,7 +48,7 @@
                     @error('title') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                     <div class="form-floating form-floating-outline mb-5 fv-plugins-icon-container">
-                    <textarea wire:model="content" id="content" name="content" class="form-control border border-2 p-2" placeholder="Enter content" rows="3"></textarea>
+                    <textarea wire:model="content" id="update_content" name="content" class="form-control border border-2 p-2" placeholder="Enter content" rows="3"></textarea>
                     @error('content') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                     <div class="text-end">
@@ -58,8 +57,9 @@
                 </form>
             </div>
         </div>
-    @else
-        <div class="card card-action my-4">
+
+
+        <div class="card card-action my-4 {{$active_tab==1?"":"d-none"}}">
             <div class="card-header align-items-center flex-wrap gap-2">
             <h5 class="card-action-title mb-0">Our Policies</h5>
             </div>
@@ -111,7 +111,7 @@
                 
             </div>
         </div>
-    @endif
+
     <div class="loader-container" wire:loading>
         <div class="loader"></div>
     </div>
@@ -119,7 +119,7 @@
 @section('page-script')
   <script type="text/javascript" src="{{ asset('build/ckeditor/ckeditor.js') }}"></script>
   <script>
-  window.addEventListener('editor_load', function(event) { 
+  window.addEventListener('ck_editor_load', function(event) { 
     // Handle short_desc_editor
     var shortDescTextArea = document.getElementById('content');
     if (shortDescTextArea) {
@@ -135,6 +135,25 @@
         // Sync CKEditor data to Livewire
         CKEDITOR.instances['content'].on('change', function() {
             @this.set('content', CKEDITOR.instances['content'].getData());
+        });
+      } else {
+        console.error('CKEditor is not defined!');
+      }
+    }
+    var UpdateTextArea = document.getElementById('update_content');
+    if (UpdateTextArea) {
+      // Check if CKEditor instance already exists and destroy it
+      if (CKEDITOR.instances['update_content']) {
+        CKEDITOR.instances['update_content'].destroy(true);
+      }
+      
+      // Initialize CKEditor for short_desc_editor
+      if (typeof CKEDITOR !== 'undefined') {
+        CKEDITOR.replace('update_content');
+
+        // Sync CKEditor data to Livewire
+        CKEDITOR.instances['update_content'].on('change', function() {
+            @this.set('content', CKEDITOR.instances['update_content'].getData());
         });
       } else {
         console.error('CKEditor is not defined!');

@@ -197,7 +197,7 @@
                                                             <li><a class="dropdown-item" href="{{route('admin.payment.vehicle.summary',[$all_item->product_id,$all_item->id])}}">Payment History</a></li>
                                                         </ul>
                                                         <span>
-                                                            <a href="{{route('admin.vehicle.update', $all_item->product->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
+                                                            <a href="{{route('admin.vehicle.update', $all_item->id)}}" class="btn btn-sm btn-icon edit-record btn-text-secondary rounded-pill waves-effect btn-sm" title="Edit">
                                                                 <i class="ri-edit-box-line ri-20px text-info"></i>
                                                             </a>
                                                         </span>

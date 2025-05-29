@@ -241,7 +241,16 @@
         @enderror
     </div>
 </div>
-
+      <div class="card card-plain mb-3">
+        <div class="card-body p-3">
+            <div class="mb-2">
+              <label class="form-check-label" for="is_driving_licence_required">
+                <input type="checkbox" id="is_driving_licence_required" wire:model="is_driving_licence_required" class="form-check-input">
+                  Driving Licence Required
+              </label>
+            </div>
+        </div>
+      </div>
         <!-- Pricing -->
         <div class="card card-plain mb-3">
           <div class="card-body p-3">

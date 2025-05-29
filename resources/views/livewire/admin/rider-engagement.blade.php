@@ -278,7 +278,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_all_{{$al_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_all_{{$al_user->id}}">
                                                             <li><a class="dropdown-item" href="{{ route('admin.customer.details', $al_user->id) }}">Rider Details</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $al_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -346,7 +346,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$all_inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$all_inact_user->id}}">
                                                              <li><a class="dropdown-item" href="{{ route('admin.customer.details', $all_inact_user->id) }}">Rider Details</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $all_inact_user->id)}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $all_inact_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -428,7 +428,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$aw_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$aw_user->id}}">
                                                                 <li><a class="dropdown-item" href="{{ route('admin.customer.details', $aw_user->id) }}">Rider Details</a></li>
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $aw_user->id)}}">History</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $aw_user->id)}}">History</a></li> --}}
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -695,7 +695,7 @@
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_active_{{$ac_user->id}}">
                                                             <li><a class="dropdown-item" href="{{route('admin.vehicle.detail', optional($ac_user->active_vehicle->stock)->vehicle_track_id)}}">Dashboard</a></li>
                                                             <li><a class="dropdown-item" href="{{ route('admin.customer.details', $ac_user->id) }}">Rider Details</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $ac_user->id)}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $ac_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                  </td>
@@ -792,7 +792,7 @@
                                                             <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$inact_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                             <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$inact_user->id}}">
                                                                  <li><a class="dropdown-item" href="{{ route('admin.customer.details', $inact_user->id) }}">Rider Details</a></li>
-                                                                <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $inact_user->id)}}">History</a></li>
+                                                                {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $inact_user->id)}}">History</a></li> --}}
                                                             </ul>
                                                         </div>
                                                     </td>
@@ -873,7 +873,7 @@
                                                         <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$susp_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
                                                         <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$susp_user->id}}">
                                                             <li><a class="dropdown-item" href="{{ route('admin.customer.details', $susp_user->id) }}">Rider Details</a></li>
-                                                            <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li>
+                                                            {{-- <li><a class="dropdown-item" href="{{route('admin.payment.user_history', $susp_user->id)}}">History</a></li> --}}
                                                         </ul>
                                                     </div>
                                                 </td>
@@ -1157,13 +1157,14 @@
                                         <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                             <div class="p-2">
                                                 <div class="cursor-pointer">
-                                                    <img src="{{asset('storage/uploads/aadhar_card/9397_1747917560.webp')}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;">
+                                                    {{-- <img src="{{asset('storage/uploads/aadhar_card/9397_1747917560.webp')}}" alt="" style="max-width: 150px;max-height: 130px; width: 100%;"> --}}
+                                                    {{$selectedCustomer->aadhar_number?$selectedCustomer->aadhar_number:"N/A"}}
                                                 </div>
-                                                <div class="text-center fw-medium text-truncate">Front</div>
+                                                {{-- <div class="text-center fw-medium text-truncate">Front</div> --}}
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-6">
+                                    {{-- <div class="col-6">
                                         <div class="card academy-content shadow-none border mx-2" style="width:150px">
                                             <div class="p-2">
                                                 <div class="cursor-pointer">
@@ -1172,34 +1173,34 @@
                                                 <div class="text-center fw-medium text-truncate">Back</div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 <div class="d-flex my-4">
-                                    <div class="col-4 text-center cursor-pointer">
+                                    {{-- <div class="col-4 text-center cursor-pointer">
                                         <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->aadhar_card_front)}}','{{asset($selectedCustomer->aadhar_card_back)}}','Aadhar Card')"> Preview</span>
-                                    </div>
-                                    <div class="col-4 text-center cursor-pointer">
+                                    </div> --}}
+                                    <div class="col-12 text-center cursor-pointer">
                                         @if($selectedCustomer->aadhar_card_status==2)
                                             <span class="badge rounded-pill bg-label-success">
                                                 <i class="ri-check-line"></i> Approved
                                             </span>
                                         @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="updateLog('2','aadhar_card_status','Aadhar Card',{{$selectedCustomer->id}})">
-                                                 Approve
+                                            <span class="badge rounded-pill bg-label-warning">
+                                                 Pending
                                             </span>
                                         @endif
                                     </div>
-                                    <div class="col-4 text-center cursor-pointer">
+                                    {{-- <div class="col-4 text-center cursor-pointer">
                                         @if($selectedCustomer->aadhar_card_status==3)
                                             <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
                                         @else
                                             <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('aadhar_card_status','Aadhar Card',{{$selectedCustomer->id}})">Reject</span>
                                         @endif
-                                    </div>
+                                    </div> --}}
                                 </div>
                             @else
                                 <div class="alert alert-danger">
-                                    Aadhar card not uploaded
+                                    Aadhar card not verified.
                                 </div>
                             @endif
                         </div>

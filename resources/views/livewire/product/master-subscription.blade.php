@@ -65,7 +65,7 @@
                                                     <a href="javascript:void(0)" class="text-heading"><span
                                                             class="fw-medium text-truncate">{{ ucwords($sub_item->subscription_type) }}</span>
                                                     </a>
-                                                    <small class="text-truncate">{{$sub_item->product->title}}</small>
+                                                    <small class="text-truncate">{{optional($sub_item->product)->title}}</small>
                                                 </div>
                                             </td>
                                             <td class="align-middle text-center">{{ $sub_item->duration }} Days</td>

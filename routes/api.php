@@ -49,5 +49,18 @@ Route::prefix('customer')->group(function () {
        
         Route::post('order/create', [OrderController::class, 'createOrder']);
         Route::get('payment/history', [AuthController::class, 'paymentHistory']);
+        Route::post('current-location', [AuthController::class, 'CurrentLocation']);
+
+        Route::get('/current-location', function () {
+            return response()->json([
+                'success' => false,
+                'message' => 'GET method not allowed for this route. Please use POST.'
+            ], 405);
+        });
     });
+    Route::get('esign/verification', [AuthController::class, 'EsignVerification']);
+    
+    
+    Route::get('esign/thankyou', [AuthController::class, 'EsignThankyou']);
+    Route::post('esign/webhook', [AuthController::class, 'webhookHandler']);
 });

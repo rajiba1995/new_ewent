@@ -34,7 +34,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::group(['prefix' => 'models'], function () {
         Route::get('/list', MasterProduct::class)->name('admin.product.index')->middleware('check.permission');
         Route::get('/categories', MasterCategory::class)->name('admin.product.categories');
-        Route::get('/sub-categories', MasterSubCategory::class)->name('admin.product.sub_categories');
+    Route::get('/sub-categories', MasterSubCategory::class)->name('admin.product.sub_categories');
         
         Route::get('/keywords', MasterProductType::class)->name('admin.product.type');
         Route::get('/new', AddProduct::class)->name('admin.product.add')->middleware('check.permission');

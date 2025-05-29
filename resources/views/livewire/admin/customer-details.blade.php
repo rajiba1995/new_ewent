@@ -22,7 +22,7 @@
                   Back
                 </a>
                   @if($activeTab=="cancel_history")
-                    <button wire:click="exportAll" class="btn btn-primary btn-sm">
+                    <button wire:click="exportCancelHistory" class="btn btn-primary btn-sm">
                       <i class="ri-download-line"></i> Export
                     </button>
                   @elseif($activeTab=="ride_history")
@@ -212,7 +212,7 @@
                                                 {{-- <small class="text-muted">{{ date('d M y h:i A', strtotime($order_item->start_date)) }}</small> --}}
                                             </td>
                                             <td class="">
-                                                <small class="text-dark"> {{$order_item->product?$order_item->product->title:"N/A"}}</small>
+                                                <span> {{$order_item->product?$order_item->product->title:"N/A"}}</span>
                                             </td>
                                             <td class="">
                                                Deposit Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->deposit_amount)??0.00 }}</small> <br>
@@ -247,45 +247,57 @@
                                                     <tbody>
                                                       @foreach ($ride_history as $ride_item)
                                                         <tr>
-                                                          <td class="">
-                                                            <small class="text-dark">
-                                                              {{$ride_item->stock?$ride_item->stock->vehicle_number:"N/A"}}</small><br>
-                                                            <small><code>{{ $ride_item->stock && $ride_item->stock->product ? $ride_item->stock->product->title : "N/A" }}</code></small>
+                                                            <td>
+                                                                <small class="text-dark">
+                                                                    {{ optional($ride_item->stock)->vehicle_number ?? 'N/A' }}
+                                                                </small><br>
+                                                                <small>
+                                                                    <code>{{ optional(optional($ride_item->stock)->product)->title ?? 'N/A' }}</code>
+                                                                </small>
+                                                            </td>
 
-                                                          </td>
-                                                          <td class="">
-                                                            @if($ride_item->status=="exchanged")
-                                                              <small
-                                                              class="text-muted">Exchanged Date : {{ date('d M y h:i A', strtotime($ride_item->exchanged_at)) }}</small>
-                                                            @elseif($ride_item->status=="returned")
-                                                              <small
-                                                              class="text-muted">Returned Date : {{ date('d M y h:i A', strtotime($ride_item->exchanged_at)) }}</small>
-                                                              @else
-                                                                <small
-                                                                class="text-muted">Assigned Date {{ date('d M y h:i A', strtotime($ride_item->assigned_at)) }}</small>
-                                                              @endif
-                                                          </td>
-                                                          <td class="">
-                                                            <small
-                                                              class="text-muted">{{ $ride_item->order?ENV('APP_CURRENCY').''.number_format($ride_item->order->rental_amount):0.00 }}</small>
-                                                          </td>
-                                                          <td class="">
-                                                            <small class="text-muted">{{ ucwords($ride_item->status)}}</small>
-                                                          </td>
-                                                          <td class="">
-                                                            @if($ride_item->exchanged_by)
-                                                            <small
-                                                              class="text-primary">{{$ride_item->admin?$ride_item->admin->email:'....'}}</small>
-                                                            @elseif($ride_item->assigned_by)
-                                                            <small
-                                                              class="text-primary">{{$ride_item->admin?$ride_item->admin->email:'....'}}</small>
-                                                            @else
-                                                            <small
-                                                              class="text-success">{{$ride_item->user?$ride_item->user->email:"N/A"}}</small>
-                                                            @endif
-                                                          </td>
+                                                            <td>
+                                                                @if($ride_item->status == 'exchanged')
+                                                                    <small class="text-muted">
+                                                                        Exchanged Date : {{ date('d M y h:i A', strtotime($ride_item->exchanged_at)) }}
+                                                                    </small>
+                                                                @elseif($ride_item->status == 'returned')
+                                                                    <small class="text-muted">
+                                                                        Returned Date : {{ date('d M y h:i A', strtotime($ride_item->exchanged_at)) }}
+                                                                    </small>
+                                                                @else
+                                                                    <small class="text-muted">
+                                                                        Assigned Date : {{ date('d M y h:i A', strtotime($ride_item->assigned_at)) }}
+                                                                    </small>
+                                                                @endif
+                                                            </td>
+
+                                                            <td>
+                                                                <small class="text-muted">
+                                                                    {{ optional($ride_item->order)->rental_amount 
+                                                                        ? env('APP_CURRENCY') . number_format($ride_item->order->rental_amount)
+                                                                        : env('APP_CURRENCY') . '0.00' }}
+                                                                </small>
+                                                            </td>
+
+                                                            <td>
+                                                                <small class="text-muted">{{ ucwords($ride_item->status) }}</small>
+                                                            </td>
+
+                                                            <td>
+                                                                @if(!empty($ride_item->exchanged_by) || !empty($ride_item->assigned_by))
+                                                                    <small class="text-primary">
+                                                                        {{ optional($ride_item->admin)->email ?? '....' }}
+                                                                    </small>
+                                                                @else
+                                                                    <small class="text-success">
+                                                                        {{ optional($ride_item->user)->email ?? 'N/A' }}
+                                                                    </small>
+                                                                @endif
+                                                            </td>
                                                         </tr>
-                                                      @endforeach
+                                                    @endforeach
+
                                                     </tbody>
                                                   </table>
                                                 </td>
@@ -340,6 +352,49 @@
                       </div>
                     </div>
                   @endif
+                  @if($activeTab == "cancel_history")
+                    <div class="card mb-6">
+                        <div class="card-body mt-3">
+                          <div class="table-responsive">
+                              @forelse($cancel_request_histories as $request)
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Order ID</th>
+                                            <th>Vehicle ID</th>
+                                            <th>Requested On</th>
+                                            <th>Accepted On</th>
+                                            <th>Status</th>
+                                            <th>Accepted By</th>
+                                            <th>Rejected Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>#{{ $request->order->order_number }}</td>
+                                            <td>{{ $request->stock->vehicle_number }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($request->request_date)->format('d M Y h:i A') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($request->accepted_date)->format('d M Y h:i A') }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ $request->type == 'accepted' ? 'success' : 'danger' }}">
+                                                    {{ ucfirst($request->type) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $request->admin->email }}</td>
+                                            <td>{{ $request->rejected_reason ?? '-' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            @empty
+                                <div class="alert alert-info">No cancel request history found.</div>
+                            @endforelse
+                          </div>
+                        </div>
+                    </div>
+                @endif
+
 
                 </div>
             </div>
