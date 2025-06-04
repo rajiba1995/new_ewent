@@ -181,6 +181,8 @@ class UpdateProduct extends Component
                 }
 
             // Find the product and update details
+             $is_selling_value = $this->is_selling ? 1 : 0;
+            $is_rent_value = $this->is_rent ? 1 : 0;
             $product = Product::find($this->productId);
             $selectedProductTypesString = implode(',', $this->selectedProductTypes);
             $product->update([
@@ -196,8 +198,8 @@ class UpdateProduct extends Component
                 'meta_keyword' => $this->meta_keyword,
                 'is_driving_licence_required' => $this->is_driving_licence_required==true?1:0,
                 'meta_description' => $this->meta_description,
-                'is_rent' => $this->is_rent,
-                'is_selling' => $this->is_selling,
+                'is_rent' => $is_rent_value,
+                'is_selling' => $is_selling_value,
                 'base_price' => $this->base_price,
                 'display_price' => $this->display_price,
                 // 'per_rent_price' => $this->per_rent_price,

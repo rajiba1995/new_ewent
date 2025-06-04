@@ -227,19 +227,19 @@
         </li>
       </ul>
     </li>
-    {{-- <li class="menu-item {{ (request()->is('admin/order*')) ? 'open' : '' }}" style="">
+    <li class="menu-item {{ (request()->is('admin/bom-parts*')) ? 'open' : '' }}" style="">
       <a href="#" class="menu-link menu-toggle waves-effect" target="_blank">
         <i class="menu-icon tf-icons ri-store-line"></i>
-        <div>Order Management</div>
+        <div>BOM Parts</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {{ (request()->is('admin/order/list*')) ? 'open' : '' }}">
-          <a href="{{route('admin.order.list')}}" class="menu-link">
-            <div>Order List</div>
+        <li class="menu-item {{ (request()->is('admin/bom-parts*')) ? 'open' : '' }}">
+          <a href="{{route('admin.bom_part.list')}}" class="menu-link">
+            <div>Part List</div>
           </a>
         </li>
       </ul>
-    </li> --}}
+    </li>
    
     <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
       <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>

@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\CronController;
 use App\Livewire\Admin\{CustomerAdd, Dashboard, CustomerIndex, CustomerDetails,OrderIndex,OfferIndex, PolicyDetails, OrderDetail,CityIndex,PincodeIndex,RiderEngagement,PaymentSummary,PaymentUserSummary,UserPaymentHistory,PaymentVehicleSummary};
 use App\Livewire\Product\{
     MasterCategory, MasterSubCategory, MasterProduct, AddProduct, UpdateProduct, 
-    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail,VehiclePaymentSummary
+    GalleryIndex, StockProduct, MasterProductType,ProductWiseVehicle,VehicleList,MasterSubscription,VehicleCreate,VehicleUpdate,VehicleDetail,VehiclePaymentSummary,BomPartList
 };
 use App\Livewire\Master\{BannerIndex, FaqIndex, WhyEwentIndex,EmployeeManagementList,EmployeeManagementCreate,EmployeeManagementUpdate,DesignationIndex,DesignationPermissionList};
 
@@ -34,7 +34,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::group(['prefix' => 'models'], function () {
         Route::get('/list', MasterProduct::class)->name('admin.product.index')->middleware('check.permission');
         Route::get('/categories', MasterCategory::class)->name('admin.product.categories');
-    Route::get('/sub-categories', MasterSubCategory::class)->name('admin.product.sub_categories');
+        Route::get('/sub-categories', MasterSubCategory::class)->name('admin.product.sub_categories');
         
         Route::get('/keywords', MasterProductType::class)->name('admin.product.type');
         Route::get('/new', AddProduct::class)->name('admin.product.add')->middleware('check.permission');
@@ -46,6 +46,10 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::group(['prefix' => 'stock'], function () {
         Route::get('/list', StockProduct::class)->name('admin.product.stocks');
         Route::get('/vehicle/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
+    });
+    Route::group(['prefix' => 'bom-parts'], function () {
+        Route::get('/', BomPartList::class)->name('admin.bom_part.list');
+        // Route::get('/vehicle/{product_id}', ProductWiseVehicle::class)->name('admin.product.stocks.vehicle');
     });
     Route::group(['prefix' => 'vehicle'], function () {
         Route::get('/list', VehicleList::class)->name('admin.vehicle.list')->middleware('check.permission');
@@ -100,4 +104,5 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
 Route::group(['prefix'=>'cron'], function(){
     Route::get('/vehicles/daily-timeline', [CronController::class,'DailyVehicleLog']);
     Route::get('/vehicles/check/payment-overdue', [CronController::class,'VehiclePaymentOverDue']);
+    Route::get('/vehicles/overdue/immobilizer-requests', [CronController::class,'OverDueImmobilizerRequests']);
 });

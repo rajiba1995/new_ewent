@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserTermsConditions extends Model
 {
-    protected $table = 'users_terms_conditions';
-    protected $fillable = [ 'mobile', 'email', 'document_id', 'group_id', 'request_id', 'signed_at', 'response_payload', 'status', 'accepted_at'];
+    protected $table = 'user_terms_conditions';
+    protected $fillable = [ 'mobile', 'request_id', 'group_id', 'email', 'status', 'request_timestamp', 'response_timestamp', 'signer_name', 'signer_city', 'signer_state', 'signer_postal_code', 'signed_at', 'signed_url', 'response_payload'];
 }

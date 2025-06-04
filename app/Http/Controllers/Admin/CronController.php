@@ -214,6 +214,17 @@ class CronController extends Controller
                 $item->save();
             }
 
+            $message = count($AsignedVehicles) . ' vehicle(s) marked as overdue.';
+
+            CronLog::create([
+                'job_name'         => 'VehiclePaymentOverDue',
+                'url'              => request()->fullUrl(),
+                'request_payload'  => json_encode([]), // if any input payload
+                'response'         => $message,
+                'success'          => 1,
+                'error_message'    => null,
+                'executed_at'      => Carbon::now(),
+            ]);
             DB::commit();
 
             return response()->json([
@@ -223,10 +234,116 @@ class CronController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-
+            CronLog::create([
+                'job_name'         => 'VehiclePaymentOverDue',
+                'url'              => request()->fullUrl(),
+                'request_payload'  => json_encode([]),
+                'response'         => null,
+                'success'          => 0,
+                'error_message'    => $e->getMessage(),
+                'executed_at'      => Carbon::now(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update vehicle statuses.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function OverDueImmobilizerRequests()
+    {
+        DB::beginTransaction();
+
+        try {
+            $timezone = env('APP_LOCAL_TIMEZONE', 'Asia/Kolkata');
+            $startTime = Carbon::now($timezone);
+            $message = '';
+            $payloadLog = [];
+            $errors = [];
+
+            $AsignedVehicles = AsignedVehicle::where('status', 'overdue')
+                                ->where('end_date', '<', $startTime)
+                                ->get();
+
+            foreach ($AsignedVehicles as $item) {
+                if ($item->stock) {
+                    $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/' . $item->stock->vehicle_track_id . '/immobilizer_requests';
+                    $payload = [
+                        "value" => "IMMOBILIZE",
+                    ];
+                    $payloadLog[] = [
+                        'vehicle_track_id' => $item->stock->vehicle_track_id,
+                        'payload' => $payload,
+                    ];
+
+                    $ch = curl_init($vehiclesUrl);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                        "User-Authentication: " . env('LOCONAV_TOKEN'),
+                        "Accept: application/json",
+                        "Content-Type: application/json"
+                    ]);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                    $vehiclesResponse = curl_exec($ch);
+                    curl_close($ch);
+
+                    $response = json_decode($vehiclesResponse, true);
+
+                    if (isset($response['success']) && $response['success'] === true) {
+                        if (!empty($response['data']['id'])) {
+                            $stock = Stock::find($item->vehicle_id);
+                            if ($stock) {
+                                $stock->immobilizer_request_id = $response['data']['id'];
+                                $stock->save();
+                            }
+                        }
+
+                        if (!empty($response['data']['errors'])) {
+                            $errors[] = $response['data']['errors'];
+                        }
+
+                    } else {
+                        $errors[] = $response['data']['errors'][0]['message'] ?? 'Unknown error';
+                    }
+                }
+            }
+
+            $message = count($AsignedVehicles) . ' vehicle(s) processed for immobilizer.';
+
+            CronLog::create([
+                'job_name'         => 'OverDueImmobilizerRequests',
+                'url'              => request()->fullUrl(),
+                'request_payload'  => json_encode($payloadLog),
+                'response'         => $message,
+                'success'          => 1,
+                'error_message'    => !empty($errors) ? json_encode($errors) : null,
+                'executed_at'      => Carbon::now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            CronLog::create([
+                'job_name'         => 'OverDueImmobilizerRequests',
+                'url'              => request()->fullUrl(),
+                'request_payload'  => json_encode([]),
+                'response'         => null,
+                'success'          => 0,
+                'error_message'    => $e->getMessage(),
+                'executed_at'      => Carbon::now(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send immobilizer requests.',
                 'error'   => $e->getMessage(),
             ], 500);
         }

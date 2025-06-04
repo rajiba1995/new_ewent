@@ -21,6 +21,8 @@ Route::prefix('customer')->group(function () {
         Route::get('banners', [AuthController::class, 'fetchBanners']);
         Route::get('faqs', [AuthController::class, 'fetchFaqs']);
         Route::get('product-list', [AuthController::class, 'ProductList']);
+        Route::get('selling/product-list', [AuthController::class, 'SellingProductList']);
+        Route::get('selling/product-details/{id}', [AuthController::class, 'SellingProductDetails']);
         Route::get('product-details/{id}', [AuthController::class, 'ProductDetails']);
         Route::get('product/filter', [AuthController::class, 'ProductFilter']);
         
@@ -39,8 +41,8 @@ Route::prefix('customer')->group(function () {
         Route::get('company-policies', [AuthController::class, 'CompanyPolicy']);
         Route::get('company-policy/details/{id}', [AuthController::class, 'CompanyPolicyDetails']);
         Route::post('book-now', [AuthController::class, 'bookNow']);
-        Route::post('booking-new-payment', [AuthController::class, 'bookingNewPayment']);
-        Route::post('booking-renew-payment', [AuthController::class, 'bookingRenewPayment']);
+        // Route::post('booking-new-payment', [AuthController::class, 'bookingNewPayment']);
+        // Route::post('booking-renew-payment', [AuthController::class, 'bookingRenewPayment']);
         Route::get('booking-cancel/{order_id}', [AuthController::class, 'bookingCancel']);
         Route::get('my-active-subscription', [AuthController::class, 'myActiveSubscription']);
 
@@ -58,6 +60,9 @@ Route::prefix('customer')->group(function () {
             ], 405);
         });
     });
+
+    Route::post('booking-new-payment', [AuthController::class, 'bookingNewPayment']);
+    Route::post('booking-renew-payment', [AuthController::class, 'bookingRenewPayment']);
     Route::get('esign/verification', [AuthController::class, 'EsignVerification']);
     
     

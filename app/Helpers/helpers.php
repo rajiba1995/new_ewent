@@ -376,6 +376,23 @@ if(!function_exists('hasPermissionByParent')){
         }
     }
 }
+if(!function_exists('UserCurrentLocation')){
+    function UserCurrentLocation($lat,$lng){
+        $url = "https://nominatim.openstreetmap.org/reverse?format=json&lat={$lat}&lon={$lng}&zoom=18&addressdetails=1";
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'E-went'); // Required by Nominatim
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $response = json_decode($response, true);
+        return $response;
+        
+    }
+}
 
 
 

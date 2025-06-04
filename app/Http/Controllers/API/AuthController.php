@@ -90,6 +90,7 @@ class AuthController extends Controller
                     return response()->json([
                         'status' => false,
                         'terms_condition' => false,
+                        'request_id' => $requestId,
                         'signing_url' => $signingUrl,
                         'message' => 'eSign initiated successfully.',
                     ], 200);
@@ -97,6 +98,7 @@ class AuthController extends Controller
                     return response()->json([
                         'status' => false,
                         'terms_condition' => false,
+                        'request_id' => null,
                         'signing_url' => null,
                         'message' => 'Terms and conditions not verified.',
                     ], 200);
@@ -104,14 +106,16 @@ class AuthController extends Controller
             }
         }
         if($request->step==2){
-            UserTermsConditions::updateOrCreate(
-                ['mobile' => $request->mobile], // Search by mobile
-                [
-                    'email' => $request->email,
-                    'status' => 1,
-                    'accepted_at' => now(),
-                ]
-            );
+            // $UserTermsConditions = UserTermsConditions::where('email',$request->email)->first();
+            // $UserTermsConditions->status = 
+            // UserTermsConditions::updateOrCreate(
+            //     ['mobile' => $request->mobile], // Search by mobile
+            //     [
+            //         'email' => $request->email,
+            //         'status' => 1,
+            //         'accepted_at' => now(),
+            //     ]
+            // );
         }
        
         DB::beginTransaction();
@@ -737,6 +741,7 @@ class AuthController extends Controller
             'short_desc',
             'is_driving_licence_required',
             'image',
+            'is_rent',
             'status'
         )
         ->when($search, function ($query) use ($search) {
@@ -755,6 +760,7 @@ class AuthController extends Controller
             'features:id,product_id,title'       // Load specific columns for 'features'
         ])
         ->where('status', 1) // Filter active products
+        ->where('is_rent', 1) // Filter active products
         ->orderBy('position', 'ASC') // First order by position
         ->orderBy('title', 'ASC') // Then order by title
         ->get();
@@ -771,10 +777,129 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'data' => $products,
-            'message' => 'Getting product list.',
+            'message' => 'Getting rent product list.',
+        ], 200);
+    }
+    public function SellingProductList(Request $request)
+    {
+        // Capture the search term from the request
+        $search = $request->input('search'); // Assuming 'search' is passed as a query parameter
+
+        // Retrieve products based on the search criteria
+        $products = Product::query()->when($search, function ($query) use ($search) {
+            // Group search conditions with OR logic
+            $query->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('types', 'like', '%' . $search . '%');
+            });
+        })
+        ->with([
+            'category:id,title',      // Load specific columns for 'category'
+            'subCategory:id,title',   // Load specific columns for 'subcategory'
+            'features:id,product_id,title'       // Load specific columns for 'features'
+        ])
+        ->where('status', 1) // Filter active products
+        ->where('is_selling', 1) // Filter active products
+        ->orderBy('position', 'ASC') // First order by position
+        ->orderBy('title', 'ASC') // Then order by title
+        ->get();
+
+        // Process each product to set rental price details
+        // Return the product list as a JSON response
+        return response()->json([
+            'status' => true,
+            'data' => $products,
+            'message' => 'Getting selling product list.',
         ], 200);
     }
     
+    public function SellingProductDetails($id)
+    {
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+
+        // Retrieve the product by ID and ensure it's active (status = 1)
+        $data = Product::where('id', $id)
+            ->where('status', 1)
+            ->with([
+                'ProductImages:product_id,image', // Eager load product images
+                'category:id,title',             // Eager load category with specific columns
+                'subCategory:id,title',           // Eager load sub-category with specific columns
+                'features:id,product_id,title'           // Eager load sub-category with specific columns
+            ])
+            ->first();
+
+ 
+        // Check if product exists
+        if (!$data) {
+            return response()->json(['status' => false, 'message' => 'Product not found'], 404);
+        }
+
+        // Combine all images into a single array
+        $allImages = collect($data->ProductImages)
+            ->pluck('image') // Get all images from the relationship
+            ->prepend($data->image) // Add the main image at the beginning
+            ->unique() // Ensure no duplicate images
+            ->toArray(); // Convert to array
+
+        $allfeatures = collect($data->features)
+            ->pluck('title') // Get all images from the relationship
+            ->unique() // Ensure no duplicate images
+            ->toArray(); 
+        $product_features = [];
+        if(count($allfeatures)>0){
+            foreach($allfeatures as $k=>$fitem){
+                $product_features[] =$fitem;
+            }
+        }
+        $related_products = Product::select(
+            'id',
+            'title',
+            'position',
+            'types',
+            'short_desc',
+            'image',
+            'category_id',
+            'sub_category_id',
+            'status'
+        )
+        ->where('id', '!=', $data->id) // Exclude the current product
+        ->where('status', 1) // Ensure the product is active
+        ->where('is_selling', 1) // Ensure the product is active
+        ->where(function ($query) use ($data) {
+            $query->where('category_id', $data->category_id) // Match the same category
+                    ->orWhere('sub_category_id', $data->sub_category_id); // Or match the same sub-category
+        })
+        ->orderBy('position', 'ASC') // Order by position first
+        ->orderBy('title', 'ASC') // Then order by title
+        ->limit(10) // Limit to 10 results
+        ->get();
+            
+        // Prepare product details object
+        $product_data = (object) [];
+        $product_data->id = $data->id;
+        $product_data->title = $data->title;
+        $product_data->types = $data->types;
+        $product_data->short_desc = $data->short_desc;
+        $product_data->category = $data->category ? $data->category->title : null;
+        $product_data->sub_category = $data->subCategory ? $data->subCategory->title : null;
+        $product_data->status = $data->status;
+        $product_data->all_features = $product_features;
+        $product_data->all_images = $allImages; // Set combined images array
+        $product_data->display_price = $data->display_price;
+        $product_data->related_products = $related_products;
+        $product_data->is_driving_licence_required = $data->is_driving_licence_required;
+        $product_data->customer_reviews = ProductReviews($data->id);
+        // Return the product details as a JSON response
+        $features = $allfeatures;
+        return response()->json([
+            'status' => true,
+            'data' => $product_data,
+            'message' => 'Getting selling product details.'
+        ], 200);
+    }
     public function ProductDetails($id)
     {
         $user = $this->getAuthenticatedUser();
@@ -998,7 +1123,7 @@ class AuthController extends Controller
         ];
 
         $documents['Current Address Proof'] = [
-            'front' =>$data->current_address_front,
+            'front' =>$data->current_address_proof_front,
             'back'=>$data->current_address_proof_back,
             'status' =>$data->current_address_proof_status,
         ];
@@ -1389,8 +1514,7 @@ class AuthController extends Controller
                 $fetchResponse = $this->PaymentFetch($razorpay_payment_id,$order_id);
                 if($fetchResponse['status']){
                     $captureResponse = $this->PaymentCaptured($razorpay_payment_id,$order_amount);
-
-                    if ($captureResponse['status']) {
+                    if ($captureResponse['status']=="captured") {
                         if($captureResponse['data']['status']=="captured"){
                             $order_type = $order->subscription?Str::snake($order->subscription->subscription_type):"";
                             $payment = Payment::find($fetchResponse['payment_id']);
@@ -1480,36 +1604,34 @@ class AuthController extends Controller
         $api_key = env('RAZORPAY_KEY_ID');
         $api_secret = env('RAZORPAY_KEY_SECRET');
         
-        // Curl Initialization
-        $curl = curl_init();
-
-        // Razorpay API URL for Payment Capture
-        $url = "https://api.razorpay.com/v1/payments/$razorpay_payment_id/capture";
-        // dd($url);
+       $curl = curl_init();
+        
+        // Razorpay API URL for Payment Fetch
+        $url = "https://api.razorpay.com/v1/payments/$razorpay_payment_id";
+        
         // Curl Configuration
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_CUSTOMREQUEST => "GET", // GET instead of POST
             CURLOPT_USERPWD => $api_key . ":" . $api_secret,
             CURLOPT_HTTPHEADER => [
                 "Content-Type: application/json"
             ],
-            CURLOPT_POSTFIELDS => json_encode([
-                "amount" => $amount * 100, // Amount in paise (INR 1000 = 100000)
-                "currency" => "INR"
-            ]),
         ]);
-
+        
         // Execute Curl Request
         $response = curl_exec($curl);
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
 
         // Handle Response
-        // dd($response);
-        if ($httpCode == 200) {
-            $responseData = json_decode($response, true);
+        // Log::error('Payment Capture Failed', [
+        //     'http_code' => $httpCode,
+        //     'response' => $response
+        // ]);
+         $responseData = json_decode($response, true);
+        if ($responseData['status'] == "captured") {
             return [
                 'status' => true,
                 'data' => $responseData,
@@ -1550,7 +1672,7 @@ class AuthController extends Controller
         curl_close($curl);
 
         // Handle Response
-        if ($httpCode == 200) {
+        if ((int) $httpCode === 200) {
             $responseData = json_decode($response, true);
             // Ensure the payment data is available
             if (isset($responseData['id'])) {
@@ -1644,7 +1766,7 @@ class AuthController extends Controller
                 $fetchResponse = $this->PaymentFetch($razorpay_payment_id,$order_id);
                 if($fetchResponse['status']){
                     $captureResponse = $this->PaymentCaptured($razorpay_payment_id,$order_amount);
-                    if ($captureResponse['status']) {
+                    if ($captureResponse['status']=='captured') {
                         if($captureResponse['data']['status']=="captured"){
                             $order_type = $order->subscription?Str::snake($order->subscription->subscription_type):"";
                             $payment = Payment::find($fetchResponse['payment_id']);
@@ -1743,6 +1865,9 @@ class AuthController extends Controller
             
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Payment Failed', [
+                'response' => $e->getMessage()
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to update payment.',
@@ -1850,10 +1975,17 @@ class AuthController extends Controller
                     ], 422);
                 }
            try {
+                $response = UserCurrentLocation($request->latitude,$request->longitude);
+                $address = null;
+                if (!empty($response['display_name'])) {
+                    $address = $response['display_name'];
+                }
+
                 DB::beginTransaction();
 
                 $new = new UserLocationLog;
                 $new->user_id = $user->id;
+                $new->address = $address;
                 $new->latitude = $request->latitude;
                 $new->longitude = $request->longitude;
                 $new->created_at = now();
@@ -1943,14 +2075,17 @@ class AuthController extends Controller
         // Close cURL
         curl_close($ch);
         $responseData = json_decode($response, true);
-
-        UserTermsConditions::create([
-            'email' => $responseData['requests'][0]['signer_email'] ?? null,
-            'group_id' => $responseData['group_id'] ?? null,
-            'request_id' => $responseData['requests'][0]['request_id'] ?? null,
-            'status' => 'pending',
-            'response_payload' => $response,
-        ]);
+        
+        UserTermsConditions::updateOrCreate(
+            ['email' => $responseData['requests'][0]['signer_email'] ?? null], // Lookup criteria
+            [
+                'group_id' => $responseData['group_id'] ?? null,
+                'request_timestamp' => now(),
+                'request_id' => $responseData['requests'][0]['request_id'] ?? null,
+                'status' => 'pending',
+                'response_payload' => $response,
+            ]
+        );
 
         // Return the response
         return $responseData;
@@ -1958,36 +2093,70 @@ class AuthController extends Controller
 
     public function webhookHandler(Request $request)
     {
-        // Get full payload
-         \Log::info('Zoop Webhook Called', $request->all()); // Laravel log
+        // Log the full incoming payload
+        \Log::info('Zoop Webhook Called', $request->all());
+
         $data = $request->all();
-        
-        // Extract relevant fields from Zoop payload
+
+        // Extract main fields
         $requestId = $data['request_id'] ?? null;
-        $status = $data['status'] ?? 'pending';
-        $signedAt = isset($data['signed_at']) ? now() : null; // Or parse actual datetime if available
+        $requestTimestamp = $data['request_timestamp'] ?? null;
+        $responseTimestamp = $data['response_timestamp'] ?? null;
 
-        // Find existing record by request_id (you saved this during eSign init)
-        $record = UserTermsConditions::where('request_id', $requestId)->first();
-
-        if ($record) {
-            $record->update([
-                'status' => $status,
-                'signed_at' => $signedAt,
-                'response_payload' => $data,
-            ]);
+       if (isset($data['success']) && $data['success'] == true) {
+            $status = 'success';
         } else {
-            // Optional: if webhook hits before your system stores it
-            UserTermsConditions::create([
-                'user_id' => null, // If you can’t find user, leave it null or use fallback logic
-                'request_id' => $requestId,
-                'status' => $status,
-                'signed_at' => $signedAt,
-                'response_payload' => $data,
-            ]);
+            $status = 'pending';
+        }
+        
+
+        // Extract signer & document details if available
+        $signer = $data['result']['signer'] ?? [];
+        $document = $data['result']['document'] ?? [];
+
+        $signedAt = $document['signed_at'] ?? null;
+        $signedUrl = $document['signed_url'] ?? null;
+        $signerEmail = $signer['email'] ?? null;
+        $signerName = $signer['fetched_name'] ?? null;
+        $signerCity = $signer['city'] ?? null;
+        $signerState = $signer['state_or_province'] ?? null;
+        $signerPostalCode = $signer['postal_code'] ?? null;
+
+        // Validate request ID
+        if (!$requestId) {
+            \Log::warning('Webhook received without request_id', $data);
+            return response()->json(['message' => 'Missing request_id'], 400);
         }
 
-        return response()->json(['message' => 'Webhook received'], 200);
+        // Convert full payload to JSON string
+        $payload = is_array($data) ? json_encode($data) : $data;
+
+        // Find and update or create record
+        $record = UserTermsConditions::where('request_id', $requestId)->first();
+
+        $updateData = [
+            'status' => $status,
+            'request_timestamp' => $requestTimestamp,
+            'response_timestamp' => $responseTimestamp,
+            'signed_at' => $signedAt,
+            'signed_url' => $signedUrl,
+            'signer_email' => $signerEmail,
+            'signer_name' => $signerName,
+            'signer_city' => $signerCity,
+            'signer_state' => $signerState,
+            'signer_postal_code' => $signerPostalCode,
+            'response_payload' => $payload,
+        ];
+
+        if ($record) {
+            $record->update($updateData);
+        } else {
+            // Ensure request_id is included if creating new
+            $updateData['request_id'] = $requestId;
+            UserTermsConditions::create($updateData);
+        }
+
+        return response()->json(['message' => 'Webhook processed'], 200);
     }
 
     public function EsignThankyou(Request $request)

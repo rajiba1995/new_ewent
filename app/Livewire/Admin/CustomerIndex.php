@@ -14,6 +14,7 @@ class CustomerIndex extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'bootstrap';
     public $search = '';
     public $remarks,$field,$document_type,$id;
     public $active_tab = 1;

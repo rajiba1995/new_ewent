@@ -25,7 +25,7 @@ class AddProduct extends Component
     public $categories = [], $subcategories = [], $product_type = [];
 
     public $errorMessage = [];
-    public $is_selling = false;
+    public $is_selling = true;
     public $is_rent = true;
     public $base_price;
     public $display_price;

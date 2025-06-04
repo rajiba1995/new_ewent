@@ -179,6 +179,12 @@
                             <i class="icon-base ri ri-close-circle-line icon-sm me-1_5"></i>Cancel Request History
                           </a>
                         </li>
+                        <li class="nav-item">
+                          <a class="nav-link waves-effect waves-light {{$activeTab=="location_history"?"active":""}}" href="javascript:void(0);" wire:click="changeTab('location_history')">
+                           <i class="icon-base ri ri-map-pin-line icon-sm me-1_5"></i>Location History
+
+                          </a>
+                        </li>
                       </ul>
 
                     </div>
@@ -215,8 +221,8 @@
                                                 <span> {{$order_item->product?$order_item->product->title:"N/A"}}</span>
                                             </td>
                                             <td class="">
-                                               Deposit Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->deposit_amount)??0.00 }}</small> <br>
-                                                 Rent Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->rental_amount)??0.00 }}</small>
+                                                  Deposit Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->deposit_amount)??0.00 }}</small> <br>
+                                                  Rent Amount: <small class="">{{ ENV('APP_CURRENCY')}}{{number_format($order_item->rental_amount)??0.00 }}</small>
                                             </td>
                                             <td class="">
                                               Start Date:  <small class="">{{ date('d M y h:i A', strtotime($order_item->rent_start_date)) }}</small> <br>
@@ -336,6 +342,18 @@
                                 <p class="mt-1 mb-3">
                                   {!! $step['description'] !!}
                                 </p>
+                                 {{-- Check if T&C info exists --}}
+                                @if(!empty($step['terms_and_conditions']))
+                                  <div class="mt-1">
+                                    <span class="badge bg-{{$step['terms_and_conditions']->status=='success'?"success":"danger"}} text-white">T&C Status: {{ ucwords($step['terms_and_conditions']->status) }}</span>
+                                    <br>
+                                    @if($step['terms_and_conditions']->status=='success')
+                                      <a href="{{ $step['terms_and_conditions']->signed_url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                        Download Terms & Conditions
+                                      </a>
+                                    @endif
+                                  </div>
+                                @endif
                               </div>
                             </li>
                           @endforeach
@@ -356,7 +374,7 @@
                     <div class="card mb-6">
                         <div class="card-body mt-3">
                           <div class="table-responsive">
-                              @forelse($cancel_request_histories as $request)
+                              
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
@@ -371,6 +389,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                      @forelse($cancel_request_histories as $request)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>#{{ $request->order->order_number }}</td>
@@ -385,15 +404,57 @@
                                             <td>{{ $request->admin->email }}</td>
                                             <td>{{ $request->rejected_reason ?? '-' }}</td>
                                         </tr>
+                                        @empty
+                                           <tr>
+                                            <td colspan="8">
+                                               <div class="alert alert-info">No cancel request history found.</div>
+                                            </td>
+                                           </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
-                            @empty
-                                <div class="alert alert-info">No cancel request history found.</div>
-                            @endforelse
                           </div>
                         </div>
                     </div>
-                @endif
+                  @endif
+                  @if($activeTab == "location_history")
+                    <div class="card mb-6">
+                        <div class="card-body mt-3">
+                          <div class="table-responsive">
+                              
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Address</th>
+                                            <th>Latitude & Longitude </th>
+                                            <th>Date & Time </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      @forelse($location_history as $location_data)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $location_data->address }}</td>
+                                            <td>{{ $location_data->latitude }} & {{ $location_data->longitude }}</td>
+                                            <td>{{ $location_data->created_at }}</td>
+                                        </tr>
+                                         @empty
+                                           <tr>
+                                            <td colspan="3">
+                                               <div class="alert alert-info">No location history found.</div>
+                                            </td>
+                                           </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end mt-3 paginator">
+                                    {{ $location_history->links() }} <!-- Pagination links -->
+                                </div>
+                          </div>
+                        </div>
+                    </div>
+                  @endif
 
 
                 </div>

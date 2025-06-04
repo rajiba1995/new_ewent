@@ -245,6 +245,7 @@
                                                     </div>
                                                 </td>
                                                 <td class="align-middle text-start">
+                                                    
                                                     @if($al_user->ready_to_assign_order)
                                                         @if($al_user->latest_order)
                                                             @if($al_user->latest_order->payment_status=="completed")
@@ -256,8 +257,21 @@
                                                             <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                         @endif
                                                     @else
-                                                        <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                        @if($al_user->active_order)
+                                                            @if($al_user->latest_order)
+                                                                @if($al_user->latest_order->payment_status=="completed")
+                                                                    <span class="badge bg-label-success mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                                @else
+                                                                    <span class="badge bg-label-warning mb-0 cursor-pointer text-uppercase">{{$al_user->latest_order->payment_status}}</span>
+                                                                @endif
+                                                            @else
+                                                                <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
+                                                        @endif
                                                     @endif
+                                                        
                                                 </td>
                                                 <td class="align-middle text-start">
                                                     @if($al_user->ready_to_assign_order)

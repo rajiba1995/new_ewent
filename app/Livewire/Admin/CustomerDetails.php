@@ -7,8 +7,10 @@ use App\Models\User;
 use App\Models\UserKycLog;
 use App\Models\Order;
 use App\Models\AsignedVehicle;
+use App\Models\UserTermsConditions;
 use App\Models\ExchangeVehicle;
 use App\Models\CancelRequestHistory;
+use App\Models\UserLocationLog;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Pagination\Paginator;
 use Livewire\WithPagination;
@@ -236,6 +238,8 @@ class CustomerDetails extends Component
     public function getUserJourney(){
         $user = User::find($this->userId);
 
+        $getTermsAndCondision = UserTermsConditions::where('email',$user->email)->first();
+
         $register = $user->created_at ?? null;
         $kyc_uploaded = UserKycLog::where('user_id', $this->userId)->latest()->value('created_at');
         $kyc_verified_at = $user->kyc_verified_at ?? null;
@@ -258,6 +262,7 @@ class CustomerDetails extends Component
             $userJourney[] = [
                 'title' => 'User Registered',
                 'description' => 'User account created successfully.',
+                'terms_and_conditions' => $getTermsAndCondision,
                 'date' => $register,
             ];
         }
@@ -335,6 +340,9 @@ class CustomerDetails extends Component
     public function getCancelRequestHistory(){
         return CancelRequestHistory::where('user_id', $this->userId)->get();
     }
+    public function getLocationHistory(){
+        return UserLocationLog::where('user_id', $this->userId)->orderBy('id','DESC')->paginate(10);
+    }
     
     public function exportCancelHistory()
     {
@@ -344,12 +352,14 @@ class CustomerDetails extends Component
     }
     public function render(){
         $cancel_request_histories = $this->getCancelRequestHistory();
+        $location_history = $this->getLocationHistory();
         $userJourney = $this->getUserJourney();
         $orders = Order::where('user_id',$this->userId)->whereIn('rent_status',['active','returned'])->orderBy('id','DESC')->paginate(18);
         return view('livewire.admin.customer-details',[
             'orders'=>$orders,
             'userJourney' => $userJourney,
             'cancel_request_histories' => $cancel_request_histories,
+            'location_history' => $location_history,
         ]);
     }
 }
