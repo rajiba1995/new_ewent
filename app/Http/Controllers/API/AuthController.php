@@ -85,24 +85,36 @@ class AuthController extends Controller
                 $EsignResponse = $this->EsignVerification($request->name,$request->email,$request->address);
                 $requestId = $EsignResponse['requests'][0]['request_id'] ?? null;
                 $signingUrl = $EsignResponse['requests'][0]['signing_url'] ?? null;
-
-                if ($requestId && $signingUrl) {
-                    return response()->json([
-                        'status' => false,
-                        'terms_condition' => false,
-                        'request_id' => $requestId,
-                        'signing_url' => $signingUrl,
-                        'message' => 'eSign initiated successfully.',
-                    ], 200);
-                } else {
-                    return response()->json([
+                
+                if(isset($responseData['response_code']) && $responseData['response_code'] == 403){
+                     return response()->json([
                         'status' => false,
                         'terms_condition' => false,
                         'request_id' => null,
                         'signing_url' => null,
-                        'message' => 'Terms and conditions not verified.',
-                    ], 200);
+                        'message' => $EsignResponse['response_message'],
+                    ], 403);
+                }else{
+                    if ($requestId && $signingUrl) {
+                        return response()->json([
+                            'status' => false,
+                            'terms_condition' => false,
+                            'request_id' => $requestId,
+                            'signing_url' => $signingUrl,
+                            'message' => 'eSign initiated successfully.',
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'status' => false,
+                            'terms_condition' => false,
+                            'request_id' => null,
+                            'signing_url' => null,
+                            'message' => 'Terms and conditions not verified.',
+                        ], 403);
+                    }
+                    
                 }
+                
             }
         }
         if($request->step==2){
@@ -2011,7 +2023,7 @@ class AuthController extends Controller
 
     protected function EsignVerification($signer_name,$signer_email,$signer_city)
     {
-        $url = "https://test.zoop.one/contract/esign/v5/init"; // Test base URL for Zoop's eSign v5 init
+        $url = "https://live.zoop.one/contract/esign/v5/init"; // Test base URL for Zoop's eSign v5 init
         $appId = ENV('ZOOP_APP_ID');                 // Your test App ID
         $apiKey = ENV('ZOOP_APP_KEY');         // Your test API Key
 
@@ -2071,22 +2083,21 @@ class AuthController extends Controller
         // Execute the request
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        // dd($response);
         // Close cURL
         curl_close($ch);
         $responseData = json_decode($response, true);
-        
-        UserTermsConditions::updateOrCreate(
-            ['email' => $responseData['requests'][0]['signer_email'] ?? null], // Lookup criteria
-            [
-                'group_id' => $responseData['group_id'] ?? null,
-                'request_timestamp' => now(),
-                'request_id' => $responseData['requests'][0]['request_id'] ?? null,
-                'status' => 'pending',
-                'response_payload' => $response,
-            ]
-        );
-
+        if($httpCode==200){
+            UserTermsConditions::updateOrCreate(
+                ['email' => $responseData['requests'][0]['signer_email'] ?? null], // Lookup criteria
+                [
+                    'group_id' => $responseData['group_id'] ?? null,
+                    'request_timestamp' => now(),
+                    'request_id' => $responseData['requests'][0]['request_id'] ?? null,
+                    'status' => 'pending',
+                    'response_payload' => $response,
+                ]
+            );
+        }
         // Return the response
         return $responseData;
     }
@@ -2168,5 +2179,93 @@ class AuthController extends Controller
         } else {
             return view('esign.failed');
         }
+    }
+    public function DigilockerThankyou(Request $request)
+    {
+        $action = $request->query('action'); // e.g., esign-success or esign-failed
+
+        if ($action === 'esign-success') {
+            return view('esign.thanks');
+        } else {
+            return view('esign.failed');
+        }
+    }
+  public function webhookDigilockerHandler(Request $request)
+    {
+        \Log::info('Zoop Webhook Called', $request->all());
+
+        try {
+            $responseData = $request->all();
+            
+            foreach ($responseData['result'] as $document) {
+                // First store the basic document info (as before)
+                $digilockerDoc = DB::table('digilocker_documents')->insertGetId([
+                    // ... (all your existing fields)
+                ]);
+                
+                // Download the file if this is an Aadhaar document
+                if (($document['doctype'] ?? null) === 'ADHAR' && !empty($document['issued']['uri'])) {
+                    $this->downloadAndStoreDigilockerFile(
+                        $document['issued']['uri'],
+                        $digilockerDoc,
+                        $document['issued']['name'] ?? 'Aadhaar',
+                        $document['issued']['mime'] ?? ['application/pdf']
+                    );
+                }
+            }
+
+            return response()->json(['success' => true, 'message' => 'Data stored and file downloaded']);
+
+        } catch (\Exception $e) {
+            \Log::error('Error processing Digilocker webhook: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    protected function downloadAndStoreDigilockerFile($uri, $documentId, $filename, $mimeTypes)
+    {
+        try {
+            // Initialize Digilocker API client (you'll need to configure this)
+            $digilocker = new DigilockerApiClient(config('services.digilocker'));
+            
+            // Download the file
+            $fileContent = $digilocker->fetchDocument($uri);
+            
+            // Determine file extension based on mime type
+            $extension = $this->getExtensionFromMime($mimeTypes);
+            $storageFilename = "digilocker/{$documentId}/{$filename}.{$extension}";
+            
+            // Store the file
+            Storage::put($storageFilename, $fileContent);
+            
+            // Update database with file location
+            DB::table('digilocker_documents')
+                ->where('id', $documentId)
+                ->update([
+                    'file_path' => $storageFilename,
+                    'file_mime' => $mimeTypes[0] ?? null,
+                    'updated_at' => now()
+                ]);
+                
+            \Log::info("Stored Digilocker file: {$storageFilename}");
+            
+        } catch (\Exception $e) {
+            \Log::error("Failed to download Digilocker file {$uri}: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    protected function getExtensionFromMime($mimeTypes)
+    {
+        foreach ($mimeTypes as $mime) {
+            switch ($mime) {
+                case 'application/pdf': return 'pdf';
+                case 'application/xml': return 'xml';
+                case 'application/json': return 'json';
+                case 'image/jpeg': return 'jpg';
+                case 'image/png': return 'png';
+            }
+        }
+        return 'bin'; // default binary extension
     }
 }

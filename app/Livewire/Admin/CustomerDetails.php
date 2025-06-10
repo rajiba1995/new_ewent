@@ -53,11 +53,62 @@ class CustomerDetails extends Component
         // Fetch the user by ID or fail
         $this->user = User::findOrFail($id);
         $this->userId = $id;
+        $this->getKYC($this->user->email);
         $this->GetDocumentStatus();
         $this->customer_total_order = Order::where('user_id', $id)->count();
         $this->total_payment_amount = Order::where('user_id', $id)->whereHas('payments', function ($query){
             $query->where('payment_status', 'completed');
         })->sum('rental_amount');
+    }
+    public function getKYC($user_email){
+         $data = UserTermsConditions::where('email',$user_email)->first();
+        
+        if (!$data || !$data->request_id) {
+            return response()->json(['error' => 'Request ID not found.'], 404);
+        }
+
+        $requestId = $data->request_id;
+        $url = 'https://live.zoop.one/contract/esign/v5/fetch/request?request_id=' . $requestId;
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'app-id: ' . env('ZOOP_APP_ID'),
+            'api-key: ' . env('ZOOP_APP_KEY'),
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($curlError) {
+            return response()->json(['error' => $curlError], 500);
+        }
+
+        $responseData = json_decode($response, true);
+       if ($data->status === 'pending' && $data->signed_url === null) {
+            if (isset($responseData['transaction_status']) && $responseData['transaction_status'] === 'SUCCESS') {
+                $data->status = 'success';
+                $data->request_timestamp = $responseData['request_timestamp'] ?? null;
+                $data->response_timestamp = $responseData['response_timestamp'] ?? null;
+                $data->signer_name = $responseData['signer_name'] ?? null;
+                $data->signer_city = $responseData['signer_city'] ?? null;
+                $data->signer_state = $responseData['signer_aadhaar_details']['state_or_province'] ?? null;
+                $data->signer_postal_code = $responseData['signer_aadhaar_details']['postal_code'] ?? null;
+                $data->signed_at = $responseData['document']['signedAt'] ?? null;
+                $data->signed_url = $responseData['document']['signed_url'] ?? null;
+
+                // Save the whole payload for auditing/debugging
+                $data->response_payload = json_encode($responseData);
+
+                $data->save();
+            }
+        }
+        
     }
 
     public function searchButtonClicked()

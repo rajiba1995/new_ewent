@@ -92,7 +92,7 @@ class VehicleDetail extends Component
         $this->VehicleLastKnow();
     }
     public function LiveLocationByMap(){
-        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/live_share_link';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id.'/live_share_link';
         
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -108,7 +108,7 @@ class VehicleDetail extends Component
         // dd($this->map);
     }
     public function VehicleLastKnow(){
-        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/telematics/last_known';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/telematics/last_known';
         $payload = [
             "vehicleIds" => [$this->vehicle_id],
             "sensors" => [
@@ -184,7 +184,7 @@ class VehicleDetail extends Component
         }
     }
     public function MobilizationRequest($value){
-        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/immobilizer_requests';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id.'/immobilizer_requests';
         $payload = [
             "value" => $value,
         ];
@@ -206,17 +206,26 @@ class VehicleDetail extends Component
         $response = json_decode($vehiclesResponse, true);
 
         if($response['success']==true){
-                if ($response['success'] === true && !empty($response['data']['errors'])) {
-                    $message = $response['data']['errors'];
-                    session()->flash('error', $message);
-                    return false;
-                }
-                // Decode and debug response
-                if(isset($response['data']['id'])){
-                    $stock = Stock::find($this->vehicle->id);
-                    $stock->immobilizer_request_id = $response['data']['id'];
-                    $stock->save();
-                }
+            if ($response['success'] === true && !empty($response['data']['errors'])) {
+                $message = $response['data']['errors'];
+                session()->flash('error', $message);
+                return false;
+            }
+            // Decode and debug response
+            if(isset($response['data']['id']) && $value=="IMMOBILIZE"){
+                $stock = Stock::find($this->vehicle->id);
+                $stock->immobilizer_request_id = $response['data']['id'];
+                $stock->save();
+            }
+            if(isset($response['data']['id']) && $value=="MOBILIZE"){
+                $stock = Stock::find($this->vehicle->id);
+                $stock->immobilizer_status = "MOBILIZE";
+                $stock->immobilizer_request_id = null;
+                $stock->save();
+                $this->get_immobilize_request =  [];
+                $this->immobilizer_id = null;
+                $this->immobilizer_status = 'MOBILIZE';
+            }
                 
         }else{
             if ($response['success'] === false && !empty($response['data']['errors'])) {
@@ -229,7 +238,7 @@ class VehicleDetail extends Component
     }
 
     public function day_wise_vehicle_timeline($startTime, $endTime){
-        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/timeline?startTime='.$startTime.'&endTime='.$endTime.'';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id.'/timeline?startTime='.$startTime.'&endTime='.$endTime.'';
         
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -248,7 +257,7 @@ class VehicleDetail extends Component
         }
     }
     public function weekly_distance_travelled($startTime, $endTime){
-        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/distance_travelled?startTime='.$startTime.'&endTime='.$endTime.'';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id.'/distance_travelled?startTime='.$startTime.'&endTime='.$endTime.'';
         
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -263,7 +272,7 @@ class VehicleDetail extends Component
         $distance_travelled = json_decode($vehiclesResponse, true);
     }
     public function day_wise_distance_travelled($startTime, $endTime){
-        $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/'.$this->vehicle_id.'/distance_travelled?startTime='.$startTime.'&endTime='.$endTime.'';
+        $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/'.$this->vehicle_id.'/distance_travelled?startTime='.$startTime.'&endTime='.$endTime.'';
         
         $ch = curl_init($vehiclesUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -337,7 +346,7 @@ class VehicleDetail extends Component
     {
         $new_vehicle = Stock::where('id', $this->vehicle->id)->first();
          if(isset($new_vehicle->immobilizer_request_id)){
-            $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/immobilization_requests/' . $new_vehicle->immobilizer_request_id;
+            $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/immobilization_requests/' . $new_vehicle->immobilizer_request_id;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $vehiclesUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -360,8 +369,9 @@ class VehicleDetail extends Component
                     $new_vehicle->save();
                 }
             }
+            
             if(isset($mobilize_response['success']) && $mobilize_response['success'] === true){
-                if(isset($mobilize_response['data']) && $mobilize_response['data']['mobilize'] ==true){
+                if(isset($mobilize_response['data']) && $mobilize_response['data']['status'] =="success"){
                         $new_vehicle->immobilizer_status = 'IMMOBILIZE';
                         $new_vehicle->immobilizer_request_id = null;
                         $new_vehicle->save();

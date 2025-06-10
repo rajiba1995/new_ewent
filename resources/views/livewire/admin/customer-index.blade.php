@@ -152,6 +152,7 @@
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rider ID</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">KYC Uploaded Date/Time</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Dashboard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
                                         </tr>
                                     </thead>
@@ -202,6 +203,14 @@
                                                             @if($un_user->status) checked @endif>
                                                     </div>
                                                 </td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$un_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$un_user->id}}">
+                                                             <li><a class="dropdown-item" href="{{ route('admin.customer.details', $un_user->id) }}">Rider Details</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
                                                 <td class="align-middle text-end px-4">
                                                     <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"
                                                             wire:click="showCustomerDetails({{ $un_user->id}})">
@@ -228,6 +237,7 @@
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Vehicle Model</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Deposit Status</th>
                                             <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Rental Status</th>
+                                            <th class="text-start text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle">Dashboard</th>
                                             <th class="text-end text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-middle px-4">Documents</th>
                                         </tr>
                                     </thead>
@@ -300,6 +310,14 @@
                                                     @else
                                                         <span class="badge bg-label-danger mb-0 cursor-pointer">NOT PAID</span>
                                                     @endif
+                                                </td>
+                                                <td class="align-middle text-sm text-center">
+                                                    <div class="dropdown cursor-pointer">
+                                                        <span class="badge px-2 rounded-pill bg-label-secondary dropdown-toggle" id="exploreDropdown_await_{{$v_user->id}}" data-bs-toggle="dropdown" aria-expanded="false">Explore</span>
+                                                        <ul class="dropdown-menu" aria-labelledby="exploreDropdown_await_{{$v_user->id}}">
+                                                             <li><a class="dropdown-item" href="{{ route('admin.customer.details', $v_user->id) }}">Rider Details</a></li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                                 <td class="align-middle text-end px-4">
                                                     <button class="btn btn-outline-success waves-effect mb-0 custom-input-sm ms-2"

@@ -35,7 +35,7 @@ class CronController extends Controller
                 $startTime = Carbon::now($timezone)->startOfDay()->timestamp;
                 $endTime = Carbon::now($timezone)->timestamp;
 
-                $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/' . $item->vehicle_track_id . '/timeline?startTime=' . $startTime . '&endTime=' . $endTime;
+                $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/' . $item->vehicle_track_id . '/timeline?startTime=' . $startTime . '&endTime=' . $endTime;
 
                 $ch = curl_init($vehiclesUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -267,7 +267,7 @@ class CronController extends Controller
 
             foreach ($AsignedVehicles as $item) {
                 if ($item->stock) {
-                    $vehiclesUrl = 'https://api.a.loconav.com/integration/api/v1/vehicles/' . $item->stock->vehicle_track_id . '/immobilizer_requests';
+                    $vehiclesUrl = 'https://app.loconav.sensorise.net/integration/api/v1/vehicles/' . $item->stock->vehicle_track_id . '/immobilizer_requests';
                     $payload = [
                         "value" => "IMMOBILIZE",
                     ];

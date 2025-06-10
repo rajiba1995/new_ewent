@@ -68,4 +68,8 @@ Route::prefix('customer')->group(function () {
     
     Route::get('esign/thankyou', [AuthController::class, 'EsignThankyou']);
     Route::post('esign/webhook', [AuthController::class, 'webhookHandler']);
+    
+    // Digilocker
+    Route::get('digilocker/thankyou', [AuthController::class, 'DigilockerThankyou']);
+    Route::post('digilocker/webhook', [AuthController::class, 'webhookDigilockerHandler']);
 });
