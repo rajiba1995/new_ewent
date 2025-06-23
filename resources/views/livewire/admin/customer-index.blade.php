@@ -603,7 +603,7 @@
                                     {{-- <div class="col-4 text-center cursor-pointer">
                                         <span class="badge rounded-pill bg-label-secondary" wire:click="OpenPreviewImage('{{asset($selectedCustomer->aadhar_card_front)}}','{{asset($selectedCustomer->aadhar_card_back)}}','Aadhar Card')"> Preview</span>
                                     </div> --}}
-                                    <div class="col-12 text-center cursor-pointer">
+                                    <div class="col-6 text-center cursor-pointer">
                                         @if($selectedCustomer->aadhar_card_status==2)
                                             <span class="badge rounded-pill bg-label-success">
                                                 <i class="ri-check-line"></i> Approved
@@ -614,13 +614,15 @@
                                             </span>
                                         @endif
                                     </div>
-                                    {{-- <div class="col-4 text-center cursor-pointer">
-                                        @if($selectedCustomer->aadhar_card_status==3)
-                                            <span class="badge rounded-pill bg-label-danger"><i class="ri-close-line"></i> Rejected</span>
-                                        @else
-                                            <span class="badge rounded-pill bg-label-secondary" wire:click="OpenRejectForm('aadhar_card_status','Aadhar Card',{{$selectedCustomer->id}})">Reject</span>
+                                   <div class="col-6 text-center cursor-pointer">
+                                        @if($selectedCustomer->aadhar_card_status==2)
+                                            <a href="{{route('digilocker.aadhar.download',$selectedCustomer->id)}}" target="_blank">
+                                                <span class="badge rounded-pill bg-label-success">
+                                                    <i class="ri-check-line"></i> Download PDF
+                                                </span>
+                                            </a>
                                         @endif
-                                    </div> --}}
+                                    </div>
                                 </div>
                             @else
                                 <div class="alert alert-danger">

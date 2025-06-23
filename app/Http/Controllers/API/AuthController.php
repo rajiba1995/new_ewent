@@ -14,9 +14,11 @@ use App\Models\PaymentItem;
 use App\Models\Offer;
 use App\Models\RentalPrice;
 use App\Models\Order;
+use App\Models\DigilockerDocument;
 use App\Models\AsignedVehicle;
 use App\Models\UserTermsConditions;
 use App\Models\Policy;
+use App\Models\OrderMerchantNumber;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +28,9 @@ use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use App\Models\UserLocationLog;
+use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Http;
 class AuthController extends Controller
 {
     /**
@@ -75,16 +80,21 @@ class AuthController extends Controller
             ->where('status', 'success')
             ->first();
 
-            if ($check_terms_condition) {
-                return response()->json([
-                    'status' => true,
-                    'terms_condition' => true,
-                    'message' => 'You have already verified the terms and conditions.',
-                ], 200);
-            } else {
+            // if ($check_terms_condition) {
+            //     return response()->json([
+            //         'status' => true,
+            //         'terms_condition' => true,
+            //         'message' => 'You have already verified the terms and conditions.',
+            //     ], 200);
+            // } else {
                 $EsignResponse = $this->EsignVerification($request->name,$request->email,$request->address);
                 $requestId = $EsignResponse['requests'][0]['request_id'] ?? null;
                 $signingUrl = $EsignResponse['requests'][0]['signing_url'] ?? null;
+                // dd($EsignResponse);
+                // if (strpos($signingUrl, "https://esign.zoop.one") !== false) {
+                //     $signingUrl = str_replace("https://esign.zoop.one", "https://esign.zoop.plus", $signingUrl);
+                // }
+                
                 
                 if(isset($responseData['response_code']) && $responseData['response_code'] == 403){
                      return response()->json([
@@ -115,7 +125,7 @@ class AuthController extends Controller
                     
                 }
                 
-            }
+            // }
         }
         if($request->step==2){
             // $UserTermsConditions = UserTermsConditions::where('email',$request->email)->first();
@@ -1420,13 +1430,35 @@ class AuthController extends Controller
                     $order = $existing_order;
                     $message = "Order updated successfully";
                     DB::commit();
-                    // $this->bookingNewPayment($order->id);
-    
+
+                    $InitiateSaleResponse = $this->iciciInitiateSale($order->id);
+                    // Check responseCode
+                    if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === 'R1000') {
+                         return response()->json([
+                            'status' => true,
+                            'response' => "Transaction has been successfully generated.",
+                            'merchantTxnNo' => $InitiateSaleResponse['merchantTxnNo'] ?? null,
+                            'redirect_url' => isset($InitiateSaleResponse['redirectURI'], $InitiateSaleResponse['tranCtx'])
+                                    ? $InitiateSaleResponse['redirectURI'] . '?tranCtx=' . $InitiateSaleResponse['tranCtx']
+                                    : null,
+                            // 'data' => [
+                                
+                            //     'showOTPCapturePage' => $InitiateSaleResponse['showOTPCapturePage'] ?? null,
+                            //     'generateOTPURI'     => $InitiateSaleResponse['generateOTPURI'] ?? null,
+                            //     'verifyOTPURI'       => $InitiateSaleResponse['verifyOTPURI'] ?? null,
+                            //     'authorizeURI'       => $InitiateSaleResponse['authorizeURI'] ?? null,
+                            //     'secureHash'         => $InitiateSaleResponse['secureHash'] ?? null,
+                            // ]
+                        ], 200);
+
+                    }
+
+                    // If responseCode is not R1000
                     return response()->json([
-                        'status' => true,
-                        'message' => $message,
-                        'order' => $order,
-                    ], 200);
+                        'status' => false,
+                        'response' => 'Failed to initiate transaction.',
+                        'error' => $InitiateSaleResponse
+                    ], 400);
     
                 }elseif ($existing_order->rent_status == "ready to assign") {
                     return response()->json([
@@ -1472,15 +1504,34 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                // $this->bookingNewPayment($order->id);
+                $InitiateSaleResponse = $this->iciciInitiateSale($order->id);
+                // Check responseCode
+                if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === 'R1000') {
+                   return response()->json([
+                        'status' => true,
+                        'response' => "Transaction has been successfully generated.",
+                        'merchantTxnNo' => $InitiateSaleResponse['merchantTxnNo'] ?? null,
+                        'redirect_url' => isset($InitiateSaleResponse['redirectURI'], $InitiateSaleResponse['tranCtx'])
+                                ? $InitiateSaleResponse['redirectURI'] . '?tranCtx=' . $InitiateSaleResponse['tranCtx']
+                                : null,
+                        // 'data' => [
+                            
+                        //     'showOTPCapturePage' => $InitiateSaleResponse['showOTPCapturePage'] ?? null,
+                        //     'generateOTPURI'     => $InitiateSaleResponse['generateOTPURI'] ?? null,
+                        //     'verifyOTPURI'       => $InitiateSaleResponse['verifyOTPURI'] ?? null,
+                        //     'authorizeURI'       => $InitiateSaleResponse['authorizeURI'] ?? null,
+                        //     'secureHash'         => $InitiateSaleResponse['secureHash'] ?? null,
+                        // ]
+                    ], 200);
 
+                }
+
+                // If responseCode is not R1000
                 return response()->json([
-                    'status' => true,
-                    'message' => $message,
-                    'order' => $order,
-                ], 200);
-
-           
+                    'status' => false,
+                    'response' => 'Failed to initiate transaction.',
+                    'error' => $InitiateSaleResponse
+                ], 400);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1604,6 +1655,122 @@ class AuthController extends Controller
             }    
         } catch (\Exception $e) {
             DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update payment.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    protected function bookingNewICICIPayment($merchantTxnNo,$txnID,$paymentMode,$paymentDateTime){
+
+        $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo',$merchantTxnNo)->first();
+        
+        if(!$OrderMerchantNumber){
+            return response()->json([
+                'status' => false,
+                'message' => 'No data found by this merchantTxnNo.',
+            ], 400);
+        }
+        DB::beginTransaction();
+        try{
+            $status = true;
+            $order_amount = $OrderMerchantNumber->amount;
+            // $razorpay_order_id = $request->razorpay_order_id;
+            // $razorpay_payment_id = $request->razorpay_payment_id;
+            // $razorpay_signature = $request->razorpay_signature;
+            if($status==true){
+                $order = Order::find($OrderMerchantNumber->order_id);
+                $amount = number_format($order_amount, 2, '.', '');
+                $orderAmount = number_format($order->final_amount, 2, '.', '');
+
+                if ($orderAmount !== $amount) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Sorry, the payment amount (₹$amount) does not match the subscription amount (₹$orderAmount).",
+                    ], 403);
+                }
+                if($order->payment_status=="completed"){
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment already completed for this subscription.",
+                    ], 403);
+                }
+
+                $order_type = $order->subscription?Str::snake($order->subscription->subscription_type):"";
+                $payment = Payment::where('icici_merchantTxnNo',$merchantTxnNo)->first();
+                if(!$payment){
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment details not found on this merchantTxnNo.",
+                    ], 404);
+                }
+                $payment->order_id = $order->id;
+                $payment->user_id = $order->user_id;
+                $payment->order_type = 'new_subscription_'.$order_type;
+                $payment->payment_method = $paymentMode;
+                $payment->currency = "INR";
+                $payment->payment_status = 'completed';
+                $payment->transaction_id = $paymentDateTime;
+                // $payment->razorpay_order_id = $razorpay_order_id;
+                // $payment->razorpay_payment_id = $razorpay_payment_id;
+                // $payment->razorpay_signature = $razorpay_signature;
+                $payment->amount = $order->final_amount;
+                $payment->icici_txnID = $txnID;
+                $payment->payment_date = date('Y-m-d h:i:s', strtotime($paymentDateTime));
+                $payment->save();
+                if($payment){
+                    // Deposit Amount
+                    PaymentItem::updateOrCreate(
+                        [
+                            'payment_id' => $payment->id,
+                            'product_id' => $order->product_id,
+                            'type'       => 'deposit',
+                        ],
+                        [
+                            'payment_for' => 'new_subscription_' . $order_type,
+                            'duration'    => $order->rent_duration,
+                            'amount'      => $order->deposit_amount,
+                        ]
+                    );
+
+                    // Rental Amount
+                    PaymentItem::updateOrCreate(
+                        [
+                            'payment_id' => $payment->id,
+                            'product_id' => $order->product_id,
+                            'type'       => 'rental',
+                        ],
+                        [
+                            'payment_for' => 'new_subscription_' . $order_type,
+                            'duration'    => $order->rent_duration,
+                            'amount'      => $order->rental_amount,
+                        ]
+                    );
+                }
+
+                $order->payment_mode = "Online";
+                $order->payment_status = "completed";
+                $order->rent_status = "ready to assign";
+                $order->subscription_type = 'new_subscription_'.$order_type;
+                $order->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => "Payment has been successfully created.",
+                ], 200);
+                   
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "Payment failed. Please try again.",
+                ], 500);
+            }    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // dd($e->getMessage());
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to update payment.',
@@ -1962,18 +2129,18 @@ class AuthController extends Controller
     }
 
     public function CurrentLocation(Request $request){
-          $user = $this->getAuthenticatedUser();
-            if ($user instanceof \Illuminate\Http\JsonResponse) {
-                return $user; // Return the response if the user is not authenticated
-            }
-            
-            // Check if the user exists
-            if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'User not found.',
-                ], 404); // 404 Not Found
-            }
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        
+        // Check if the user exists
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found.',
+            ], 404); // 404 Not Found
+        }
         $validator = Validator::make($request->all(), [
                     'latitude' => 'required|string|max:255',
                     'longitude' => 'required|string|max:255',
@@ -2023,7 +2190,11 @@ class AuthController extends Controller
 
     protected function EsignVerification($signer_name,$signer_email,$signer_city)
     {
-        $url = "https://live.zoop.one/contract/esign/v5/init"; // Test base URL for Zoop's eSign v5 init
+        $baseUrl = env('ESIGN_ZOOP_BASE_URL');
+        $url = $baseUrl . 'contract/esign/v5/init';
+        // dd($url);
+        // $url = "https://live.zoop.one/contract/esign/v5/init"; // Test base URL for Zoop's eSign v5 init
+
         $appId = ENV('ZOOP_APP_ID');                 // Your test App ID
         $apiKey = ENV('ZOOP_APP_KEY');         // Your test API Key
 
@@ -2057,8 +2228,8 @@ class AuthController extends Controller
             ],
             "txn_expiry_min" => "10080",
             "white_label" => "Y",
-            "redirect_url" => asset('api/customer/esign/thankyou'),
-            "response_url" => asset('api/customer/esign/webhook'),
+            "redirect_url" => secure_url('api/customer/esign/thankyou'),
+            "response_url" => secure_url('api/customer/esign/webhook'),
             "esign_type" => "AADHAAR",
             "email_template" => [
                 "org_name" => "Zoop.One"
@@ -2173,99 +2344,514 @@ class AuthController extends Controller
     public function EsignThankyou(Request $request)
     {
         $action = $request->query('action'); // e.g., esign-success or esign-failed
-
-        if ($action === 'esign-success') {
-            return view('esign.thanks');
-        } else {
-            return view('esign.failed');
-        }
+        return view('esign.thanks');
+        // return redirect()->route('digilocker.aadhar.redirecting');
+    }
+    public function redirectDigilockerThankyou(){
+         return view('esign.thanks');
     }
     public function DigilockerThankyou(Request $request)
     {
         $action = $request->query('action'); // e.g., esign-success or esign-failed
+         return view('esign.thanks');
+        // return redirect()->route('digilocker.aadhar.redirecting');
+    }
+    public function DigilockerInit(){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        
+        // Check if the user exists
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found.',
+            ], 404); // 404 Not Found
+        }
 
-        if ($action === 'esign-success') {
-            return view('esign.thanks');
+        $baseUrl = env('ZOOP_BASE_URL');
+        $url = $baseUrl . 'identity/digilocker/v1/init';
+
+        $appId = env('ZOOP_APP_ID');   // Your test App ID
+        $apiKey = env('ZOOP_APP_KEY');
+        $redirect = secure_url("api/customer/digilocker/aadhar/thankyou");
+        $response = secure_url("api/customer/digilocker/aadhar/webhook");
+        
+        $data = [
+            "docs" => ["ADHAR"],
+            "purpose" => "KYC Verification",
+            "response_url" => $response,
+            "redirect_url" => $redirect,
+            "fast_track" => "Y",
+            "pinless" => true
+        ];
+         
+         \Log::info("Redirect URL: " . $redirect);
+        \Log::info("Response URL: " . $response);
+        // Convert payload to JSON
+        $jsonData = json_encode($data);
+        // Initialize cURL
+        $ch = curl_init($url);
+
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "app-id: $appId",
+            "api-key: $apiKey"
+        ]);
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $responseData = json_decode($response, true);
+
+        if ($httpCode === 200 && ($responseData['success'] ?? false)) {
+            DB::beginTransaction();
+            try {
+                DigilockerDocument::updateOrCreate(
+                    ['request_id' => $responseData['request_id']],
+                    [
+                        'user_id' => $user->id,
+                        'webhook_security_key' => $responseData['webhook_security_key'] ?? null,
+                        'request_timestamp' => now(),
+                        'sdk_url' => $responseData['sdk_url'] ?? null,
+                    ]
+                );
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $responseData,
+                    'message' => 'Digilocker request initialized successfully.'
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to store Digilocker data.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         } else {
-            return view('esign.failed');
+            return response()->json([
+                'success' => false,
+                'message' => $responseData['response_message'] ?? 'Unknown error',
+                'code' => $responseData['response_code'] ?? 'N/A',
+                'metadata' => $responseData['metadata'] ?? null
+            ], $httpCode);
         }
     }
-  public function webhookDigilockerHandler(Request $request)
-    {
-        \Log::info('Zoop Webhook Called', $request->all());
+    
+    public function DigilockerFetch($request_id){
+        $user = $this->getAuthenticatedUser();
+        if ($user instanceof \Illuminate\Http\JsonResponse) {
+            return $user; // Return the response if the user is not authenticated
+        }
+        
+        // Check if the user exists
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found.',
+            ], 404); // 404 Not Found
+        }
 
+        $baseUrl = env('ZOOP_BASE_URL');
+        $url = $baseUrl . "identity/digilocker/v1/fetch/{$request_id}";
+
+        $appId = env('ZOOP_APP_ID');
+        $apiKey = env('ZOOP_APP_KEY');
+
+        // Initialize cURL
+        $ch = curl_init($url);
+
+        // Set cURL options for GET request
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPGET, true); // explicitly set GET
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "app-id: $appId",
+            "api-key: $apiKey"
+        ]);
+
+        // Execute the request
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $responseData = json_decode($response, true);
+        // Return a proper response
+        // dd($responseData);
+        if ($httpCode === 200) {
+            return response()->json([
+                'success' => true,
+                'data' => $responseData,
+                'message' => 'Document fetched successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => $responseData['response_message'] ?? 'Failed to fetch data',
+                'code' => $responseData['response_code'] ?? $httpCode,
+                'data' => $responseData
+            ], $httpCode);
+        }
+        // $DigilockerDocument = DigilockerDocument::where('request_id',$request_id)->where('user_id',$user->id)->first();
+
+    }
+    public function generateAadhaarPdfFromXml($user_id)
+    {
+        $doc = DigilockerDocument::where('user_id',$user_id)->where('success',1)->where('response_message','Transaction Successful')->where('document_name','Aadhaar Card')->orderBy('id','DESC')->first();
+        if(!$doc){
+            return response()->json(['error' => 'not active request'], 404);
+        }
+       
+        
+        if (!$doc->raw_xml) {
+            return response()->json(['error' => 'No XML data found'], 404);
+        }
+
+        // Parse XML safely
         try {
-            $responseData = $request->all();
+            $xml = simplexml_load_string($doc->raw_xml);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid XML format'], 500);
+        }
+
+        // Extract data from XML
+        $uidData = $xml->CertificateData->KycRes->UidData ?? null;
+
+        if (!$uidData) {
+            return response()->json(['error' => 'UID data not found'], 500);
+        }
+
+        $name = (string)$uidData->Poi['name'];
+        $uid = (string)$uidData['uid']; 
+        // $maskedUid = str_repeat('x', 8) . substr($uid, -4);
+        $dob = (string)$uidData->Poi['dob'];
+        $gender = (string)$uidData->Poi['gender'];
+        $address = [
+            'house' => (string)$uidData->Poa['house'],
+            'street' => (string)$uidData->Poa['street'],
+            'vtc' => (string)$uidData->Poa['vtc'],
+            'dist' => (string)$uidData->Poa['dist'],
+            'state' => (string)$uidData->Poa['state'],
+            'pc' => (string)$uidData->Poa['pc'],
+            'country' => (string)$uidData->Poa['country'],
+        ];
+
+        if($doc->response_message=="Transaction Successful"){
+            $user = User::find($user_id);
+            if(!$user){
+                return response()->json(['error' => 'user not found'], 403);
+            }
+            $user->aadhar_number = $uid;
+            $user->aadhar_card_status = 2; //Verified
+            $user->save();
+            $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Aadhar Card')->where('status', 'Uploaded')->first();
+            $store = new UserKycLog;
+            $store->status = "Uploaded";
+            $store->user_id = $user->id;
+            $store->created_at = date('Y-m-d h:i:s');
+            $store->document_type = 'Aadhar Card';
+            $store->save();
+        }
+        
+
+        $photoBase64 = (string)$uidData->Pht;
+        $photoDataUri = 'data:image/jpeg;base64,' . $photoBase64;
+
+        // Pass data to view
+        $pdf = Pdf::loadView('aadhaar.pdf', [
+            'maskedUid' => $uid,
+            'name' => $name,
+            'dob' => $dob,
+            'gender' => $gender,
+            'address' => $address,
+            'photo' => $photoDataUri,
+        ]);
+
+        return $pdf->download('aadhaar-details.pdf');
+    }
+
+
+    public function webhookDigilockerHandler(Request $request)
+    {
+        // \Log::info('Zoop Webhook Called', $request->all());
+
+        $data = $request->all();
+
+        if (!isset($data['result'])) {
+            \Log::warning('Zoop Webhook: No result field in payload', $data);
+            return response()->json(['status' => false, 'message' => 'No documents found'], 400);
+        }
+
+        DB::beginTransaction();
+        try {
             
-            foreach ($responseData['result'] as $document) {
-                // First store the basic document info (as before)
-                $digilockerDoc = DB::table('digilocker_documents')->insertGetId([
-                    // ... (all your existing fields)
-                ]);
-                
-                // Download the file if this is an Aadhaar document
-                if (($document['doctype'] ?? null) === 'ADHAR' && !empty($document['issued']['uri'])) {
-                    $this->downloadAndStoreDigilockerFile(
-                        $document['issued']['uri'],
-                        $digilockerDoc,
-                        $document['issued']['name'] ?? 'Aadhaar',
-                        $document['issued']['mime'] ?? ['application/pdf']
+            foreach ($data['result'] as $doc) {
+                // \Log::info('Processing Document:', $doc);
+                if($doc['doctype']=="ADHAR"){
+                    $issued = $doc['issued'] ?? null;
+                    $uidDataXml = $doc['data_xml'] ?? null;
+                    
+                    $saveData = [
+                        'webhook_security_key' => $data['webhook_security_key'] ?? null,
+                        'request_timestamp' => $data['request_timestamp'] ?? now(),
+                        'success' => $data['success'],
+                        'response_code' => $data['response_code'] ?? null,
+                        'response_message' => $data['response_message'] ?? null,
+                        'billable' => $data['metadata']['billable'] ?? null,
+
+                        'document_name' => $issued['name'] ?? null,
+                        'document_status' => $doc['status'] ?? null,
+                        'fetched_at' => $doc['fetched_at'] ?? null,
+                        'issuer' => $issued['issuer'] ?? null,
+                        'issuer_id' => $issued['issuerid'] ?? null,
+                        'issue_date' => $issued['date'] ?? null,
+                        'document_uri' => $issued['uri'] ?? null,
+                        'mime_types' => implode(',', $issued['mime'] ?? []),
+                        'raw_xml' => $uidDataXml,
+
+                        'kyc_code' => $this->extractKycCode($uidDataXml),
+                        'kyc_response_status' => $this->extractKycStatus($uidDataXml),
+                        'kyc_timestamp' => $this->extractKycTimestamp($uidDataXml),
+                    ];
+
+                    // \Log::info('Saving DigilockerDocument:', $saveData);
+
+                   $details =  DigilockerDocument::updateOrCreate(
+                        ['request_id' => $data['request_id']],
+                        $saveData
                     );
+
+                    if (!empty($uidDataXml) && ($data['response_message'] ?? '') === "Transaction Successful") {
+                        $xml = simplexml_load_string($uidDataXml);
+                        $uidData = $xml->CertificateData->KycRes->UidData ?? null;
+
+                        if ($uidData) {
+                            $uid = (string)$uidData['uid'];
+
+                            $userId = $details->user_id ?? null;
+                            if ($userId && ($user = User::find($userId))) {
+                                $user->aadhar_number = $uid;
+                                $user->aadhar_card_status = 2; // Verified
+                                $user->save();
+
+                                $existing_data = UserKycLog::where('user_id', $user->id)->where('document_type','Aadhar Card')->where('status', 'Uploaded')->first();
+                                $store = new UserKycLog;
+                                if($existing_data){
+                                    $store->status = 'Re-uploaded';
+                                }else{
+                                    $store->status = "Uploaded";
+                                }
+                                $store->user_id = $user->id;
+                                $store->created_at = date('Y-m-d h:i:s');
+                                $store->document_type = 'Aadhar Card';
+                                $store->save();
+
+                                \Log::info("Aadhaar number {$uid} saved to user ID {$user->id}");
+                            } else {
+                                \Log::warning("User not found or invalid user ID for request_id: " . $data['request_id']);
+                                \Log::debug("user_id from details: " . json_encode($details->user_id));
+                            }
+                        } else {
+                            \Log::warning("UID data not found in XML for request_id: " . $data['request_id']);
+                            \Log::debug("Parsed XML: " . $uidDataXml);
+                        }
+                    } else {
+                        \Log::warning("UID XML missing or transaction not successful.");
+                        \Log::debug("Conditions: uidDataXml=" . (!empty($uidDataXml) ? 'present' : 'missing') . ", response_message=" . ($data['response_message'] ?? 'null'));
+                    }
+
                 }
+                // \Log::info('Document saved/updated successfully');
             }
 
-            return response()->json(['success' => true, 'message' => 'Data stored and file downloaded']);
-
+            DB::commit();
+            // \Log::info('All documents committed successfully.');
+            return response()->json(['status' => true, 'message' => 'Digilocker document(s) stored']);
         } catch (\Exception $e) {
-            \Log::error('Error processing Digilocker webhook: ' . $e->getMessage());
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            DB::rollBack();
+            \Log::error('Zoop Webhook Error: ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => 'Internal server error'], 500);
         }
     }
 
-    protected function downloadAndStoreDigilockerFile($uri, $documentId, $filename, $mimeTypes)
+    private function extractKycCode($xml)
     {
-        try {
-            // Initialize Digilocker API client (you'll need to configure this)
-            $digilocker = new DigilockerApiClient(config('services.digilocker'));
-            
-            // Download the file
-            $fileContent = $digilocker->fetchDocument($uri);
-            
-            // Determine file extension based on mime type
-            $extension = $this->getExtensionFromMime($mimeTypes);
-            $storageFilename = "digilocker/{$documentId}/{$filename}.{$extension}";
-            
-            // Store the file
-            Storage::put($storageFilename, $fileContent);
-            
-            // Update database with file location
-            DB::table('digilocker_documents')
-                ->where('id', $documentId)
-                ->update([
-                    'file_path' => $storageFilename,
-                    'file_mime' => $mimeTypes[0] ?? null,
-                    'updated_at' => now()
+        if (!$xml) return null;
+        $xmlObj = simplexml_load_string($xml);
+        return (string) ($xmlObj->CertificateData->KycRes['code'] ?? '');
+    }
+
+    private function extractKycStatus($xml)
+    {
+        if (!$xml) return null;
+        $xmlObj = simplexml_load_string($xml);
+        return (string) ($xmlObj->CertificateData->KycRes['ret'] ?? '');
+    }
+
+    private function extractKycTimestamp($xml)
+    {
+        if (!$xml) return null;
+        $xmlObj = simplexml_load_string($xml);
+        return (string) ($xmlObj->CertificateData->KycRes['ts'] ?? '');
+    }
+
+    private function iciciInitiateSale($order_id){
+        $order = Order::find($order_id);
+        $formattedAmount = number_format((float)$order->final_amount, 2, '.', ''); // Always "100.00" format
+
+        $data = [
+            "merchantId"=> env('ICICI_MARCHANT_ID'),
+            "merchantTxnNo"=> $order->order_number.'_'.date('YmdHis'),
+            "amount"=> $formattedAmount,
+            "currencyCode"=> "356",
+            "payType"=> "0",       // This is to capture payment details on PG payament page
+            "customerEmailID"=> optional($order->user)->email??"testmail123@gmail.com",
+            "transactionType"=> "SALE",
+            "txnDate"=> date('YmdHis'),
+            "returnURL"=> "https://qa.phicommerce.com/pg/api/merchant",
+            "customerMobileNo"=> "91".optional($order->user)->mobile??"9876543210",
+        ];
+        // Create secureHash
+        $hashKey = implode('', [
+            $data["amount"],
+            $data["currencyCode"],
+            $data["customerEmailID"],
+            $data["customerMobileNo"],
+            $data["merchantId"],
+            $data["merchantTxnNo"],
+            $data["payType"],
+            $data["returnURL"],
+            $data["transactionType"],
+            $data["txnDate"]
+        ]);
+        
+        $data['secureHash'] = hash_hmac('sha256', $hashKey, env('ICICI_MARCHANT_SECRET_KEY'));
+
+        // Send request to Phicommerce using cURL
+        $ch = curl_init(env('ICICI_PAYMENT_INITIATE_BASH_URL'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            return response()->json(['error' => $error], 500);
+        }
+
+        curl_close($ch);
+        $InitiateSaleResponse = json_decode($response, true);
+        // dd($InitiateSaleResponse);
+        if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === 'R1000') {
+            OrderMerchantNumber::updateOrCreate(
+                ['order_id' => $order_id],
+                [
+                    'merchantTxnNo'  => $InitiateSaleResponse['merchantTxnNo'] ?? null,
+                    'redirect_url'   => $InitiateSaleResponse['redirectURI'] ?? null,
+                    'secureHash'     => $InitiateSaleResponse['secureHash'] ?? null,
+                    'tranCtx'        => $InitiateSaleResponse['tranCtx'] ?? null,
+                    'amount'         => $formattedAmount ?? 0.00,
+                ]
+            );
+            $payment = Payment::where('order_id', $order_id)
+                //   ->where('order_type', 'like', 'new_subscription_%')
+                  ->where('payment_status','authorized')
+                  ->first();
+
+            if ($payment) {
+                $payment->update([
+                    'icici_merchantTxnNo' => $InitiateSaleResponse['merchantTxnNo'],
+                    'payment_status' => 'authorized',
+                    'user_id' => $order->user_id,
+                    'payment_date' => date('Y-m-d h:i:s'),
+                    'amount' => $formattedAmount ?? 0.00,
                 ]);
-                
-            \Log::info("Stored Digilocker file: {$storageFilename}");
-            
-        } catch (\Exception $e) {
-            \Log::error("Failed to download Digilocker file {$uri}: " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    protected function getExtensionFromMime($mimeTypes)
-    {
-        foreach ($mimeTypes as $mime) {
-            switch ($mime) {
-                case 'application/pdf': return 'pdf';
-                case 'application/xml': return 'xml';
-                case 'application/json': return 'json';
-                case 'image/jpeg': return 'jpg';
-                case 'image/png': return 'png';
+            } else {
+                Payment::create([
+                    'order_id' => $order_id,
+                    'user_id' => $order->user_id,
+                    'payment_status' => 'authorized',
+                    'icici_merchantTxnNo' => $InitiateSaleResponse['merchantTxnNo'],
+                    'payment_date' => date('Y-m-d h:i:s'),
+                    'amount' => $formattedAmount ?? 0.00,
+                ]);
             }
         }
-        return 'bin'; // default binary extension
+        // Return JSON decoded response to mobile app
+        return json_decode($response, true);
     }
+    public function iciciInitiateSaleConfirmed($merchantTxnNo){
+        $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo',$merchantTxnNo)->first();
+        if(!$OrderMerchantNumber){
+              return response()->json([
+                    'status' => false,
+                    'message' => 'No data found by this merchantTxnNo.',
+                ], 400);
+        }
+        $merchantID = env('ICICI_MARCHANT_ID');
+        $transactionType = 'STATUS';
+
+        // Retrieve these from DB if needed
+        $originalTxnNo = $merchantTxnNo;
+        $amount = $OrderMerchantNumber->amount; // Ideally, fetch actual amount from your DB using this txn no
+
+        // Optional: Only include if the transaction was aggregator-initiated
+        $aggregatorID = env('ICICI_AGGREGATOR_ID');
+        $aggregatorSecretKey = env('ICICI_MARCHANT_SECRET_KEY');
+
+        // Create secureHash (optional but usually required)
+        $hashString = $amount . $merchantID . $merchantTxnNo . $originalTxnNo . $transactionType;
+        $secureHash = hash_hmac('sha256', $hashString, $aggregatorSecretKey);
+
+        $postData = [
+            'merchantID'       => $merchantID,
+            'merchantTxnNo'    => $merchantTxnNo,
+            'originalTxnNo'    => $originalTxnNo,
+            'transactionType'  => $transactionType,
+            'amount'           => $amount,
+            'secureHash'       => $secureHash,
+            // Only include aggregatorID if needed
+            // 'aggregatorID'     => $aggregatorID,
+        ];
+
+        // Make cURL request
+        $ch = curl_init(env('ICICI_PAYMENT_CHECK_STATUS_BASH_URL'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded',
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $InitiateSaleResponse = json_decode($response, true);
+
+        if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === '000') {
+
+            $bookingResponse = $this->bookingNewICICIPayment($merchantTxnNo,$InitiateSaleResponse['txnID'],$InitiateSaleResponse['paymentMode'],$InitiateSaleResponse['paymentDateTime']);
+            return $bookingResponse;
+        }else{
+            // Return the parsed response
+            return response()->json(json_decode($response, true));
+        }
+        
+    }
+
 }

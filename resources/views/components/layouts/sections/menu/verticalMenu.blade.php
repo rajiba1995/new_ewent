@@ -211,6 +211,11 @@
               <div>User Payment History</div>
             </a>
           </li>
+          <li class="menu-item {{ (request()->is('admin/payment/refund-summary')) ? 'open' : '' }}">
+            <a href="{{route('admin.payment.refund.summary')}}" class="menu-link">
+              <div>Payment Refund Summary</div>
+            </a>
+          </li>
         </ul>
       </li>
     @endif

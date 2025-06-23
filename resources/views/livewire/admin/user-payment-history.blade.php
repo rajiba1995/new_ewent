@@ -125,7 +125,10 @@
                     </td>
                     <td class="text-center">{{ date('d M y h:i A', strtotime($item->payment_date)) }}</td>
                     <td class="text-center">
-                        <a href="javascript:void(0)" wire:click="toggleRow({{ $key }}, '{{$item->razorpay_payment_id}}')">
+                        {{-- <a href="javascript:void(0)" wire:click="toggleRow({{ $key }}, '{{$item->razorpay_payment_id}}')">
+                          <span class="control"></span>
+                        </a> --}}
+                        <a href="javascript:void(0)">
                           <span class="control"></span>
                         </a>
                       </td>

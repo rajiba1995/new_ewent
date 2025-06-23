@@ -24,6 +24,9 @@ class Order extends Model
     public function payments(){
         return $this->hasMany(Payment::class, 'order_id', 'id');
     }
+    public function deposit_payment(){
+        return $this->hasMany(Payment::class, 'order_id', 'id');
+    }
 
     public function vehicle()
     {

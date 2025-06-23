@@ -14,7 +14,7 @@ Route::prefix('customer')->group(function () {
         Route::post('resetPassword', [AuthController::class, 'resetPassword']);
 
      // Protected routes for authenticated users
-     Route::middleware(['auth.sanctum.custom'])->group(function () {
+    Route::middleware(['auth.sanctum.custom'])->group(function () {
         // User Profile Route
         Route::get('profile', [AuthController::class, 'userProfile']);
         Route::get('home-page',[AuthController::class,'HomePage']);
@@ -59,17 +59,29 @@ Route::prefix('customer')->group(function () {
                 'message' => 'GET method not allowed for this route. Please use POST.'
             ], 405);
         });
+
+        // Digilocker
+        Route::get('digilocker/aadhar/init', [AuthController::class, 'DigilockerInit']);
+        Route::get('digilocker/aadhar/fetch/{request_id}', [AuthController::class, 'DigilockerFetch']);
+        
     });
+    Route::get('digilocker/aadhar/download/{user_id}', [AuthController::class, 'generateAadhaarPdfFromXml'])->name('digilocker.aadhar.download');
 
     Route::post('booking-new-payment', [AuthController::class, 'bookingNewPayment']);
+    Route::post('booking-new-icici-payment', [AuthController::class, 'bookingNewICICIPayment']);
     Route::post('booking-renew-payment', [AuthController::class, 'bookingRenewPayment']);
     Route::get('esign/verification', [AuthController::class, 'EsignVerification']);
     
     
-    Route::get('esign/thankyou', [AuthController::class, 'EsignThankyou']);
+    Route::match(['GET', 'POST'], 'esign/thankyou', [AuthController::class, 'EsignThankyou']);
     Route::post('esign/webhook', [AuthController::class, 'webhookHandler']);
     
     // Digilocker
-    Route::get('digilocker/thankyou', [AuthController::class, 'DigilockerThankyou']);
-    Route::post('digilocker/webhook', [AuthController::class, 'webhookDigilockerHandler']);
+    
+    Route::match(['GET', 'POST'], 'digilocker/aadhar/thankyou', [AuthController::class, 'DigilockerThankyou']);
+
+    // Route::get('digilocker/aadhar/redirecting', [AuthController::class, 'redirectDigilockerThankyou'])->name('digilocker.aadhar.redirecting');
+    Route::post('digilocker/aadhar/webhook', [AuthController::class, 'webhookDigilockerHandler']);
+    Route::post('/icici/initiate-sale', [AuthController::class, 'iciciInitiateSale']);
+    Route::get('/icici/initiate-sale/confirmed/{merchantTxnNo}', [AuthController::class, 'iciciInitiateSaleConfirmed']);
 });
