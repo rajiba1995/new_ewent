@@ -67,7 +67,10 @@ class BomPartList extends Component
     {
         $this->rules['part_name'] = 'required|string|max:255|unique:bom_parts,part_name';
         $this->validate();
-        $imagePath = storeFileWithCustomName($this->image, 'uploads/parts');
+        $imagePath = null;
+        if ($this->image && $this->image instanceof \Illuminate\Http\UploadedFile) {
+            $imagePath = storeFileWithCustomName($this->image, 'uploads/product');
+        }
         BomPart::create([
             'part_name' => $this->part_name,
             'part_number' => $this->part_number,

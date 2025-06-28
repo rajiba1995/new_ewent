@@ -9,6 +9,7 @@ use App\Models\WhyEwent;
 use App\Models\UserKycLog;
 use App\Models\Faq;
 use App\Models\Product;
+use App\Models\SellingQuery;
 use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\Offer;
@@ -833,6 +834,47 @@ class AuthController extends Controller
             'data' => $products,
             'message' => 'Getting selling product list.',
         ], 200);
+    }
+    public function SellingQueryRequest(Request $request){
+        $user = $this->getAuthenticatedUser();
+
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id',
+            'remarks' => 'required|string|max:1000',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $store = new SellingQuery;
+            $store->user_id = $user->id;
+            $store->product_id = $request->product_id;
+            $store->remarks = $request->remarks;
+            $store->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Query submitted successfully.',
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to submit selling query. Please try again.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
     }
     
     public function SellingProductDetails($id)
@@ -1896,6 +1938,7 @@ class AuthController extends Controller
     }
 
     public function bookingRenewPayment(Request $request){
+        // dd($request->all());
         $user = $this->getAuthenticatedUser();
         if ($user instanceof \Illuminate\Http\JsonResponse) {
             return $user; // Return the response if the user is not authenticated
@@ -1936,7 +1979,8 @@ class AuthController extends Controller
                     ], 403);
                 }
 
-                if($order->payment_status=="completed"){
+                $existing_payment = Payment::where('razorpay_payment_id',$razorpay_payment_id)->first();
+                if($order->payment_status=="completed" && $existing_payment){
                     return response()->json([
                         'status' => false,
                         'message' => "Payment already completed for this subscription.",
@@ -2091,9 +2135,17 @@ class AuthController extends Controller
         if ($user instanceof \Illuminate\Http\JsonResponse) {
             return $user; // Return the response if the user is not authenticated
         }
-        $order = Order::with('vehicle','product')->whereIn('rent_status', ['pending', 'active', 'ready to assign', 'suspended', 'deallocated'])->where('user_id', $user->id)->first();
+        $order = Order::with('vehicle','product','subscription')->whereIn('rent_status', ['pending', 'active', 'ready to assign', 'suspended', 'deallocated'])->where('user_id', $user->id)->first();
         if($order){
-            $data= [
+            $data = [];
+            if($order->payment_status=="pending"){
+                $data = [
+                    'product_id'=>$order->product_id,
+                    'is_driving_licence_required'=>$order->product->is_driving_licence_required,
+                    'subscription_type'=>$order->subscription->subscription_type,
+                ];
+            }
+            $data+= [
                 'id' => $order->id,
                 'order_type' =>$order->order_type,
                 'order_number'=>$order->order_number,
@@ -2101,6 +2153,7 @@ class AuthController extends Controller
                 'rental_amount'=>$order->rental_amount,
                 'final_amount'=>$order->final_amount,
                 'payment_mode'=>$order->payment_mode,
+                
                 'payment_status'=>$order->payment_status,
                 'rent_duration'=>$order->rent_duration.' Days',
                 'rent_status' => ($order->vehicle && $order->vehicle->status === 'overdue') ? 'overdue' : $order->rent_status,
@@ -2718,7 +2771,7 @@ class AuthController extends Controller
             "customerEmailID"=> optional($order->user)->email??"testmail123@gmail.com",
             "transactionType"=> "SALE",
             "txnDate"=> date('YmdHis'),
-            "returnURL"=> "https://qa.phicommerce.com/pg/api/merchant",
+            "returnURL"=> secure_url('api/customer/icici/thankyou'),
             "customerMobileNo"=> "91".optional($order->user)->mobile??"9876543210",
         ];
         // Create secureHash
@@ -2795,6 +2848,7 @@ class AuthController extends Controller
         // Return JSON decoded response to mobile app
         return json_decode($response, true);
     }
+    
     public function iciciInitiateSaleConfirmed($merchantTxnNo){
         $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo',$merchantTxnNo)->first();
         if(!$OrderMerchantNumber){
@@ -2842,16 +2896,48 @@ class AuthController extends Controller
         curl_close($ch);
 
         $InitiateSaleResponse = json_decode($response, true);
-
-        if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === '000') {
-
+        // dd($InitiateSaleResponse);
+        if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === '000' && $InitiateSaleResponse['txnStatus'] === 'SUC') {
             $bookingResponse = $this->bookingNewICICIPayment($merchantTxnNo,$InitiateSaleResponse['txnID'],$InitiateSaleResponse['paymentMode'],$InitiateSaleResponse['paymentDateTime']);
-            return $bookingResponse;
+             return response()->json(json_decode($response, true));
         }else{
             // Return the parsed response
             return response()->json(json_decode($response, true));
         }
         
     }
+
+    public function ICICIThankyou(Request $request)
+    {
+        $response = $request->all(); // Get all data
+        $merchantTxnNo = $response['merchantTxnNo'] ?? null;
+
+        $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo', $merchantTxnNo)->first();
+
+        // Case: Invalid merchantTxnNo
+        if (!$OrderMerchantNumber) {
+            $message = 'No data found by this merchantTxnNo.';
+            return view('icici.thanks', compact('message'));
+        }
+
+        // Case: Payment success
+        // dd($response);
+        if (
+            isset($response['respDescription']) &&
+            $response['respDescription'] === 'Transaction successful' &&
+            $response['responseCode'] === '0000'
+        ) {
+            $bookingResponse = $this->bookingNewICICIPayment(
+                $merchantTxnNo,
+                $response['txnID'],
+                $response['paymentMode'],
+                $response['paymentDateTime']
+            );
+        }
+
+        // Pass response to view
+        return view('icici.thanks', compact('response'));
+    }
+
 
 }

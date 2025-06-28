@@ -25,6 +25,7 @@ Route::prefix('customer')->group(function () {
         Route::get('selling/product-details/{id}', [AuthController::class, 'SellingProductDetails']);
         Route::get('product-details/{id}', [AuthController::class, 'ProductDetails']);
         Route::get('product/filter', [AuthController::class, 'ProductFilter']);
+        Route::post('selling/query-request', [AuthController::class, 'SellingQueryRequest']);
         
         // Change Password Route
         Route::post('changePassword', [AuthController::class, 'changePassword']);
@@ -83,5 +84,6 @@ Route::prefix('customer')->group(function () {
     // Route::get('digilocker/aadhar/redirecting', [AuthController::class, 'redirectDigilockerThankyou'])->name('digilocker.aadhar.redirecting');
     Route::post('digilocker/aadhar/webhook', [AuthController::class, 'webhookDigilockerHandler']);
     Route::post('/icici/initiate-sale', [AuthController::class, 'iciciInitiateSale']);
+    Route::match(['GET', 'POST'], 'icici/thankyou', [AuthController::class, 'ICICIThankyou']);
     Route::get('/icici/initiate-sale/confirmed/{merchantTxnNo}', [AuthController::class, 'iciciInitiateSaleConfirmed']);
 });

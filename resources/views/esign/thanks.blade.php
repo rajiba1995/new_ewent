@@ -25,4 +25,19 @@
     <h1>Please wait, we are processing your request...</h1>
     <p>We are refreshing the page. Please do not close or navigate away.</p>
 </body>
+ <script type="text/javascript">
+  window.onload = function () {
+    if (window.FlutterChannel) {
+      FlutterChannel.postMessage("thankyou_redirect");
+    } else {
+      setTimeout(function () {
+        if (window.FlutterChannel) {
+          FlutterChannel.postMessage("thankyou_redirect");
+        } else {
+          console.log("FlutterChannel not available.");
+        }
+      }, 500);
+    }
+  };
+</script>
 </html>

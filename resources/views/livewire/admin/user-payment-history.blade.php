@@ -1,8 +1,34 @@
 <div>
     <div class="card my-4">
         <div class="card-header pb-0">
-          <h6>Payment Summary</h6>
-          <div class="row my-3 g-2 align-items-end">
+          <div class="row align-items-center justify-content-between">
+            <div class="col-auto">
+              <h6 class="mb-0">Payment Summary</h6>
+            </div>
+            <div class="col-auto">
+                <div class="row justify-content-between">
+                    @if(session()->has('error'))
+                      <div class="col-auto alert alert-danger mt-3">
+                          {{ session('error') }}
+                      </div>
+                  @endif
+                <div class="col-auto">
+                  <label class="form-label text-uppercase small mb-1">Export Type</label>
+                  <select 
+                    wire:model="export_type" 
+                    class="form-select border border-2 p-2 custom-input-sm" 
+                    wire:change="updateFilters('export_type', $event.target.value)">
+                    <option value="" selected hidden>Select type</option>
+                    <option value="deposit">Export For Deposit Amount</option>
+                    <option value="rental">Export For Rental Amount</option>
+                    <option value="all">Export For All</option>
+                  </select>
+                </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="row mb-3 g-2 align-items-end">
             
             <!-- Rider Filter -->
             <div class="col-md-2">
@@ -115,7 +141,7 @@
                     <td>{{ucwords(str_replace('_', ' ', $item->order_type))}}</td>
                     <td class="text-center">{{ optional($item->order->product)->title ?? 'N/A' }}</td>
                     <td class="text-center">{{ENV('APP_CURRENCY')}}{{$item->amount}}</td>
-                    <td>{{$item->razorpay_payment_id}}</td>
+                    <td>{{$item->icici_txnID}}</td>
                     <td class="text-center">
                       @if($item->payment_status=="completed")
                         <span class="badge bg-success">Captured</span>
@@ -125,12 +151,11 @@
                     </td>
                     <td class="text-center">{{ date('d M y h:i A', strtotime($item->payment_date)) }}</td>
                     <td class="text-center">
-                        {{-- <a href="javascript:void(0)" wire:click="toggleRow({{ $key }}, '{{$item->razorpay_payment_id}}')">
-                          <span class="control"></span>
-                        </a> --}}
-                        <a href="javascript:void(0)">
+                      @if($item->icici_merchantTxnNo)
+                        <a href="javascript:void(0)" wire:click="toggleRow({{ $key }}, '{{$item->icici_merchantTxnNo}}',{{$item->amount}})">
                           <span class="control"></span>
                         </a>
+                        @endif
                       </td>
                   </tr>
                     @if(in_array($key, $expandedRows))
@@ -140,36 +165,28 @@
                               <p>Error: {{ $transaction_details[$key]['message'] }}</p>
                           @else
                               <div>
-                                  <strong>Transaction ID:</strong> {{ $transaction_details[$key]['id'] ?? 'N/A' }}<br>
-                                  <strong>Order ID:</strong> {{ $transaction_details[$key]['order_id'] ?? 'N/A' }}<br>
-                                  <strong>Amount:</strong> {{env('APP_CURRENCY')}}{{ number_format($transaction_details[$key]['amount'] / 100, 2) }}<br>
-                                  <strong>Status:</strong> {{ $transaction_details[$key]['status'] ?? 'N/A' }}<br>
-                                  <strong>Payment Method:</strong> {{ ucfirst($transaction_details[$key]['method']) ?? 'N/A' }}<br>
-                                  <strong>Email:</strong> {{ $transaction_details[$key]['email'] ?? 'N/A' }}<br>
-                                  <strong>Contact:</strong> {{ $transaction_details[$key]['contact'] ?? 'N/A' }}<br>
+                                  <strong>Transaction ID:</strong> {{ $transaction_details[$key]['txnID'] ?? 'N/A' }}<br>
+                                  <strong>Merchant Txn No:</strong> {{ $transaction_details[$key]['merchantTxnNo'] ?? 'N/A' }}<br>
+                                  <strong>Amount:</strong> {{ env('APP_CURRENCY') }}{{ number_format($transaction_details[$key]['amount'], 2) }}<br>
+                                  <strong>Status:</strong> 
+                                    @if($transaction_details[$key]['txnStatus'] == 'SUC')
+                                      Captured
+                                    @else
+                                      Failed
+                                    @endif
+                                  <br>
+                                  <strong>Payment Mode:</strong> {{ $transaction_details[$key]['paymentMode'] ?? 'N/A' }}<br>
+                                  <strong>Bank:</strong> {{ $transaction_details[$key]['paymentSubInstType'] ?? 'N/A' }}<br>
+                                  <strong>Auth ID:</strong> {{ $transaction_details[$key]['txnAuthID'] ?? 'N/A' }}<br>
+                                  <strong>Email:</strong> {{ $transaction_details[$key]['customerEmailID'] ?? 'N/A' }}<br>
+                                  <strong>Contact:</strong> {{ $transaction_details[$key]['customerMobileNo'] ?? 'N/A' }}<br>
+                                  <strong>Transaction Time:</strong> 
+                                    {{ \Carbon\Carbon::createFromFormat('YmdHis', $transaction_details[$key]['paymentDateTime'])->format('d M Y, h:i:s A') ?? 'N/A' }}
+                                  <br>
+                                  <strong>Transaction Status Code:</strong> {{ $transaction_details[$key]['txnResponseCode'] ?? 'N/A' }}<br>
+                                  <strong>Response Description:</strong> {{ $transaction_details[$key]['txnRespDescription'] ?? 'N/A' }}<br>
+                                </div>
 
-                                  {{-- Dynamic Fields Based on Payment Method --}}
-                                  @if($transaction_details[$key]['method'] == 'netbanking')
-                                      <strong>Bank:</strong> {{ $transaction_details[$key]['bank'] ?? 'N/A' }}<br>
-                                      <strong>Bank Transaction ID:</strong> {{ $transaction_details[$key]['acquirer_data']['bank_transaction_id'] ?? 'N/A' }}<br>
-                                  @elseif($transaction_details[$key]['method'] == 'upi')
-                                      <strong>VPA:</strong> {{ $transaction_details[$key]['vpa'] ?? 'N/A' }}<br>
-                                      <strong>RRN:</strong> {{ $transaction_details[$key]['acquirer_data']['rrn'] ?? 'N/A' }}<br>
-                                  @elseif($transaction_details[$key]['method'] == 'card')
-                                      <strong>Card ID:</strong> {{ $transaction_details[$key]['card_id'] ?? 'N/A' }}<br>
-                                      <strong>Auth Code:</strong> {{ $transaction_details[$key]['acquirer_data']['auth_code'] ?? 'N/A' }}<br>
-                                      <strong>ARN:</strong> {{ $transaction_details[$key]['acquirer_data']['arn'] ?? 'N/A' }}<br>
-                                      <strong>RRN:</strong> {{ $transaction_details[$key]['acquirer_data']['rrn'] ?? 'N/A' }}<br>
-                                  @elseif($transaction_details[$key]['method'] == 'wallet')
-                                      <strong>Wallet:</strong> {{ ucfirst($transaction_details[$key]['wallet']) ?? 'N/A' }}<br>
-                                      <strong>Transaction ID:</strong> {{ $transaction_details[$key]['acquirer_data']['transaction_id'] ?? 'N/A' }}<br>
-                                  @endif
-                                  
-                                  {{-- <strong>Fee:</strong> {{env('APP_CURRENCY')}}{{ number_format($transaction_details[$key]['fee'] / 100, 2) }}<br>
-                                  <strong>Tax:</strong> {{env('APP_CURRENCY')}}{{ number_format($transaction_details[$key]['tax'] / 100, 2) }}<br> --}}
-                                  {{-- <strong>Description:</strong> {{ $transaction_details[$key]['description'] ?? 'N/A' }}<br> --}}
-                                  {{-- <strong>Created At:</strong> {{ \Carbon\Carbon::createFromTimestamp($transaction_details[$key]['created_at'])->format('d M Y, H:i:s') }} --}}
-                              </div>
                           @endif
                       </td>
                   </tr>

@@ -208,7 +208,6 @@ class CronController extends Controller
             $AsignedVehicles = AsignedVehicle::where('status', 'assigned')
                                 ->where('end_date', '<', $startTime)
                                 ->get();
-
             foreach ($AsignedVehicles as $item) {
                 $item->status = 'overdue';
                 $item->save();

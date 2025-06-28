@@ -14,12 +14,12 @@ class UserPaymentHistory extends Component
     public $filterData = [];
     public $expandedRows = [];
     public $transaction_details = [];
-    public $selected_rider,$selected_product_type,$selected_payment_status,$start_date,$end_date;
+    public $selected_rider,$selected_product_type,$selected_payment_status,$start_date,$end_date,$export_type;
     public function mount(){
 
         $this->filterData = [
             'rider' => User::select('id', 'name')->get()->toArray(),
-            'product_type' => Payment::select('order_type')->distinct()->pluck('order_type')->toArray(),
+            'product_type' => Payment::select('order_type')->whereNotNull('order_type')->distinct()->pluck('order_type')->toArray(),
             'payment_status' => Payment::select('payment_status')->distinct()->pluck('payment_status')->toArray(),
         ];
     }
@@ -27,13 +27,12 @@ class UserPaymentHistory extends Component
         $this->$field = $value;
     }
     public function resetPageField(){
-        $this->reset(['selected_rider','selected_product_type','selected_payment_status','start_date','end_date']);
+        $this->reset(['selected_rider','selected_product_type','selected_payment_status','start_date','end_date','export_type']);
     }
 
-   public function toggleRow($key, $razorpay_payment_id)
+   public function toggleRow($key, $merchantTxnNo,$amount)
     {
-        $this->transaction_details[$key] = $this->paymentFetch($razorpay_payment_id);
-
+        $this->transaction_details[$key] = $this->paymentFetch($merchantTxnNo,$amount);
         if (in_array($key, $this->expandedRows)) {
             $this->expandedRows = array_diff($this->expandedRows, [$key]);
         } else {
@@ -41,28 +40,45 @@ class UserPaymentHistory extends Component
         }
     }
 
-    public function paymentFetch($razorpay_payment_id)
+    public function paymentFetch($merchantTxnNo,$amount)
     {
-        $api_key = env('RAZORPAY_KEY_ID');
-        $api_secret = env('RAZORPAY_KEY_SECRET');
-        
-        $curl = curl_init();
-        $url = "https://api.razorpay.com/v1/payments/$razorpay_payment_id";
+        $merchantID = env('ICICI_MARCHANT_ID');
+        $transactionType = 'STATUS';
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_USERPWD => $api_key . ":" . $api_secret,
-            CURLOPT_HTTPHEADER => [
-                "Content-Type: application/json"
-            ],
+        // Retrieve these from DB if needed
+        $originalTxnNo = $merchantTxnNo; // Ideally, fetch actual amount from your DB using this txn no
+
+        // Optional: Only include if the transaction was aggregator-initiated
+        $aggregatorID = env('ICICI_AGGREGATOR_ID');
+        $aggregatorSecretKey = env('ICICI_MARCHANT_SECRET_KEY');
+
+        // Create secureHash (optional but usually required)
+        $hashString = $amount . $merchantID . $merchantTxnNo . $originalTxnNo . $transactionType;
+        $secureHash = hash_hmac('sha256', $hashString, $aggregatorSecretKey);
+
+        $postData = [
+            'merchantID'       => $merchantID,
+            'merchantTxnNo'    => $merchantTxnNo,
+            'originalTxnNo'    => $originalTxnNo,
+            'transactionType'  => $transactionType,
+            'amount'           => $amount,
+            'secureHash'       => $secureHash,
+            // Only include aggregatorID if needed
+            // 'aggregatorID'     => $aggregatorID,
+        ];
+
+        // Make cURL request
+        $ch = curl_init(env('ICICI_PAYMENT_CHECK_STATUS_BASH_URL'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded',
         ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
 
-        $response = curl_exec($curl);
-        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-
+       $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Capture HTTP response code
+        curl_close($ch);
         if ($httpCode == 200) {
             return json_decode($response, true);
         } else {
@@ -76,7 +92,11 @@ class UserPaymentHistory extends Component
 
      public function exportAll()
     {
-        return Excel::download(new UserPaymentSummaryExport($this->selected_rider, $this->selected_product_type, $this->selected_payment_status, $this->start_date, $this->end_date), 'user_payment_history.xlsx');
+        if (!$this->export_type) {
+            session()->flash('error', 'Please select export type');
+                return false;
+        }
+        return Excel::download(new UserPaymentSummaryExport($this->selected_rider, $this->selected_product_type, $this->selected_payment_status, $this->start_date, $this->end_date,$this->export_type), 'user_payment_history.xlsx');
     }
 
     public function render()

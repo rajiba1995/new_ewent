@@ -352,7 +352,10 @@
                                     <tbody>
                                         @forelse ($bom_parts as $index => $part)
                                             <tr>
-                                                <td><img src="{{ asset($part->image) }}" alt="Existing Image" style="max-height: 70px;"></td>
+                                                <td>
+                                                    <img src="{{ $part->image ? asset($part->image) : asset('assets/img/no-data.png') }}" alt="Existing Image" style="max-height: 70px;">
+                                                </td>
+
                                                 <td>{{ optional($part->product)->title??'N/A' }}</td>
                                                 <td>{{ $part->part_name }}</td>
                                                 <td>{{ $part->part_number }}</td>

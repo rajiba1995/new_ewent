@@ -32,6 +32,10 @@ class Order extends Model
     {
         return $this->hasOne(AsignedVehicle::class);
     }
+    public function refund_payment()
+    {
+        return $this->hasOne(RefundPayment::class);
+    }
     public function exchange_vehicle()
     {
         return $this->hasMany(ExchangeVehicle::class);
