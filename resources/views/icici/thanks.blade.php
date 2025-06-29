@@ -53,6 +53,9 @@
             {{ $message }}
         </div>
     @elseif(!empty($response))
+        <div class="alert alert-success text-center alert-custom">
+            {{ $success_message }}
+        </div>
         <div class="box">
             <h3>Payment Summary</h3>
             <div class="info-row">

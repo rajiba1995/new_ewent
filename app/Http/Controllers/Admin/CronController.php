@@ -204,7 +204,7 @@ class CronController extends Controller
         try {
             $timezone = env('APP_LOCAL_TIMEZONE', 'Asia/Kolkata'); // Default fallback
             $startTime = Carbon::now($timezone);
-
+           
             $AsignedVehicles = AsignedVehicle::where('status', 'assigned')
                                 ->where('end_date', '<', $startTime)
                                 ->get();

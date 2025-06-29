@@ -70,7 +70,7 @@ Route::prefix('customer')->group(function () {
 
     Route::post('booking-new-payment', [AuthController::class, 'bookingNewPayment']);
     Route::post('booking-new-icici-payment', [AuthController::class, 'bookingNewICICIPayment']);
-    Route::post('booking-renew-payment', [AuthController::class, 'bookingRenewPayment']);
+    Route::post('booking-renew-payment', [AuthController::class, 'bookNowRenewal']);
     Route::get('esign/verification', [AuthController::class, 'EsignVerification']);
     
     

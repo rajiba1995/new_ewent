@@ -139,10 +139,10 @@ class UserPaymentSummaryExport implements FromCollection, WithHeadings
             ];
         }elseif($this->export_type == "rental"){
             return [
-                'Serial number',
+                'Serial Number',
                 'Rider Name',
                 'Order Type',
-                'Voucher number',
+                'Voucher Number',
                 'sales account',
                 'NARRATION',
                 'Currency',

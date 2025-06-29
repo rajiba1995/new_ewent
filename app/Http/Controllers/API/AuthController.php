@@ -31,6 +31,7 @@ use Illuminate\Support\Str;
 use App\Models\UserLocationLog;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 class AuthController extends Controller
 {
@@ -1448,7 +1449,7 @@ class AuthController extends Controller
                   'message' => "The total amount does not match the required amount. Please check and try again."
             ], 404);
         }
-// dd($validator);
+        // dd($validator);
         DB::beginTransaction();
         try{
             $existing_order = Order::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
@@ -1546,7 +1547,7 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                $InitiateSaleResponse = $this->iciciInitiateSale($order->id);
+                $InitiateSaleResponse = $this->iciciInitiateSale($order->id,'new');
                 // Check responseCode
                 if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === 'R1000') {
                    return response()->json([
@@ -1754,9 +1755,6 @@ class AuthController extends Controller
                 $payment->currency = "INR";
                 $payment->payment_status = 'completed';
                 $payment->transaction_id = $paymentDateTime;
-                // $payment->razorpay_order_id = $razorpay_order_id;
-                // $payment->razorpay_payment_id = $razorpay_payment_id;
-                // $payment->razorpay_signature = $razorpay_signature;
                 $payment->amount = $order->final_amount;
                 $payment->icici_txnID = $txnID;
                 $payment->payment_date = date('Y-m-d h:i:s', strtotime($paymentDateTime));
@@ -1937,8 +1935,170 @@ class AuthController extends Controller
         }
     }
 
+    public function bookNowRenewal(Request $request){
+            $order_id = $request->order_id;
+            $order_amount = $request->order_amount;
+            
+            $order = Order::with('subscription')->find($order_id);
+            if(!$order){
+                return response()->json([
+                    'status' => false,
+                    'message' => "Order not found.",
+                ], 404);
+            }
+            $assignRider = AsignedVehicle::where('order_id', $order->id)->first();
+            if($assignRider->status!="overdue"){
+                return response()->json([
+                    'status' => false,
+                    'message' => "Renewal not allowed. Please try after the subscription end date.",
+                ], 403);
+            }
+
+            $amount = number_format($order_amount, 2, '.', '');
+            $orderAmount = number_format($order->rental_amount, 2, '.', '');
+
+            if ($orderAmount !== $amount) {
+                return response()->json([
+                    'status' => false,
+                    'message' => "Sorry, the payment amount (₹$amount) does not match the renewal subscription amount (₹$orderAmount).",
+                ], 403);
+            }
+
+            $InitiateSaleResponse = $this->iciciInitiateSale($order->id,'renew');
+            // Check responseCode
+            if (isset($InitiateSaleResponse['responseCode']) && $InitiateSaleResponse['responseCode'] === 'R1000') {
+                    return response()->json([
+                    'status' => true,
+                    'response' => "Transaction has been successfully generated.",
+                    'merchantTxnNo' => $InitiateSaleResponse['merchantTxnNo'] ?? null,
+                    'redirect_url' => isset($InitiateSaleResponse['redirectURI'], $InitiateSaleResponse['tranCtx'])
+                            ? $InitiateSaleResponse['redirectURI'] . '?tranCtx=' . $InitiateSaleResponse['tranCtx']
+                            : null,
+                ], 200);
+
+            }
+
+            // If responseCode is not R1000
+            return response()->json([
+                'status' => false,
+                'response' => 'Failed to initiate transaction.',
+                'error' => $InitiateSaleResponse
+            ], 400);
+    }
+    protected function bookingRenewICICIPayment($merchantTxnNo,$txnID,$paymentMode,$paymentDateTime){
+        $status = true;
+        $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo',$merchantTxnNo)->first();
+        
+        if(!$OrderMerchantNumber){
+            return response()->json([
+                'status' => false,
+                'message' => 'No data found by this merchantTxnNo.',
+            ], 400);
+        }
+        $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo',$merchantTxnNo)->first();
+        $order = Order::with('subscription')->find($OrderMerchantNumber->order_id);
+        DB::beginTransaction();
+        try{
+            if($status==true){
+
+                $existing_payment = Payment::where('icici_merchantTxnNo',$merchantTxnNo)->first();
+                if(!$existing_payment){
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Payment details not found on this merchantTxnNo.",
+                    ], 404);
+                }else{
+                    $assignRider = AsignedVehicle::where('order_id', $order->id)->first();
+
+                    $order_type = $order->subscription?Str::snake($order->subscription->subscription_type):"";
+                    $payment = Payment::find($existing_payment['id']);
+                    $payment->order_id = $order->id;
+                    $payment->user_id = $order->user_id;
+                    $payment->order_type = 'renewal_subscription_'.$order_type;
+                    $payment->payment_method = $paymentMode;
+                    $payment->currency = "INR";
+                    $payment->payment_status = 'completed';
+                    $payment->transaction_id = $paymentDateTime;
+                    $payment->icici_txnID = $txnID;
+                    $payment->payment_date = date('Y-m-d h:i:s', strtotime($paymentDateTime));
+
+                    $payment->amount = $order->subscription ? $order->subscription->rental_amount : $order->rental_amount;
+                    $payment->payment_date = date('Y-m-d h:i:s');
+                    $payment->save();
+        
+                    if($payment){
+                        // Rental Amount using updateOrCreate
+                        $payment_item = PaymentItem::updateOrCreate(
+                            [
+                                'payment_id' => $payment->id,
+                                'type' => 'rental',
+                            ],
+                            [
+                                'product_id' => $order->product_id,
+                                'payment_for' => 'renewal_subscription_' . $order_type,
+                                'vehicle_id' => $assignRider->vehicle_id,
+                                'amount' => $order->subscription ? $order->subscription->rental_amount : $order->rental_amount,
+                                'duration' => $order->subscription ? $order->subscription->duration : $order->rent_duration,
+                            ]
+                        );
+
+                        // Calculate dates
+                        $startDate = Carbon::parse($assignRider->end_date);
+                        $endDate = $startDate->copy()->addDays($payment_item->duration);
+
+                        // Update Order
+                        $order->payment_mode = "Online";
+                        $order->payment_status = "completed";
+                        $order->rental_amount = $payment_item->amount;
+                        $order->total_price = $order->deposit_amount + $payment_item->amount;
+                        $order->final_amount = $order->deposit_amount + $payment_item->amount;
+                        $order->rent_duration = $payment_item->duration;
+                        $order->rent_start_date = $startDate;
+                        $order->rent_end_date = $endDate;
+                        $order->subscription_type = 'renewal_subscription_' . $order_type;
+                        $order->save();
+        
+                        
+        
+                        DB::table('exchange_vehicles')->insert([
+                            'status'       => "renewal",
+                            'user_id'      => $assignRider->user_id,
+                            'order_id'     => $assignRider->order_id,
+                            'vehicle_id'   => $assignRider->vehicle_id,
+                            'start_date'   => $assignRider->start_date,
+                            'end_date'     => $assignRider->end_date,
+                            'created_at'   => now(),
+                            'updated_at'   => now(),
+                        ]); 
+        
+                        $assignRider->start_date = $startDate;
+                        $assignRider->end_date = $endDate;
+                        $assignRider->status = "assigned";
+                        $assignRider->save();
+        
+                        DB::commit();
+                        
+                        return response()->json([
+                            'status' => true,
+                            'message' => "Payment completed and subscription renewed successfully.",
+                        ], 200);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment Failed', [
+                'response' => $e->getMessage()
+            ]);
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
     public function bookingRenewPayment(Request $request){
-        // dd($request->all());
+       
         $user = $this->getAuthenticatedUser();
         if ($user instanceof \Illuminate\Http\JsonResponse) {
             return $user; // Return the response if the user is not authenticated
@@ -2758,9 +2918,14 @@ class AuthController extends Controller
         return (string) ($xmlObj->CertificateData->KycRes['ts'] ?? '');
     }
 
-    private function iciciInitiateSale($order_id){
+    private function iciciInitiateSale($order_id,$type){
         $order = Order::find($order_id);
-        $formattedAmount = number_format((float)$order->final_amount, 2, '.', ''); // Always "100.00" format
+        if($type=='new'){
+            $formattedAmount = number_format((float)$order->final_amount, 2, '.', ''); // Always "100.00" format
+        }else{
+             $formattedAmount = number_format((float)$order->rental_amount, 2, '.', ''); // Always "100.00" format
+        }
+       
 
         $data = [
             "merchantId"=> env('ICICI_MARCHANT_ID'),
@@ -2771,7 +2936,7 @@ class AuthController extends Controller
             "customerEmailID"=> optional($order->user)->email??"testmail123@gmail.com",
             "transactionType"=> "SALE",
             "txnDate"=> date('YmdHis'),
-            "returnURL"=> secure_url('api/customer/icici/thankyou'),
+            "returnURL"=> 'http://127.0.0.1:8000/api/customer/icici/thankyou',
             "customerMobileNo"=> "91".optional($order->user)->mobile??"9876543210",
         ];
         // Create secureHash
@@ -2814,6 +2979,7 @@ class AuthController extends Controller
             OrderMerchantNumber::updateOrCreate(
                 ['order_id' => $order_id],
                 [
+                    'type'  => $type ?? 'new',
                     'merchantTxnNo'  => $InitiateSaleResponse['merchantTxnNo'] ?? null,
                     'redirect_url'   => $InitiateSaleResponse['redirectURI'] ?? null,
                     'secureHash'     => $InitiateSaleResponse['secureHash'] ?? null,
@@ -2914,6 +3080,7 @@ class AuthController extends Controller
 
         $OrderMerchantNumber = OrderMerchantNumber::where('merchantTxnNo', $merchantTxnNo)->first();
 
+        $message = '';
         // Case: Invalid merchantTxnNo
         if (!$OrderMerchantNumber) {
             $message = 'No data found by this merchantTxnNo.';
@@ -2921,22 +3088,40 @@ class AuthController extends Controller
         }
 
         // Case: Payment success
-        // dd($response);
         if (
             isset($response['respDescription']) &&
             $response['respDescription'] === 'Transaction successful' &&
             $response['responseCode'] === '0000'
         ) {
-            $bookingResponse = $this->bookingNewICICIPayment(
-                $merchantTxnNo,
-                $response['txnID'],
-                $response['paymentMode'],
-                $response['paymentDateTime']
-            );
+            if($OrderMerchantNumber->type==='new'){
+                $bookingResponse = $this->bookingNewICICIPayment(
+                    $merchantTxnNo,
+                    $response['txnID'],
+                    $response['paymentMode'],
+                    $response['paymentDateTime']
+                );
+                
+            }else{
+                $bookingResponse = $this->bookingRenewICICIPayment(
+                    $merchantTxnNo,
+                    $response['txnID'],
+                    $response['paymentMode'],
+                    $response['paymentDateTime']
+                );
+            }
         }
 
-        // Pass response to view
-        return view('icici.thanks', compact('response'));
+        // Convert JsonResponse to array
+        $success_message = '';
+        $decodedResponse = json_decode($bookingResponse->getContent(), true);
+        // Extract message
+        if($decodedResponse['status']==true){
+            $success_message = $decodedResponse['message'] ?? 'Payment processed successfully.';
+        }else{
+            $message = $decodedResponse['message'] ?? 'Payment processed successfully.';
+        }
+        
+        return view('icici.thanks', compact('response','success_message','message'));
     }
 
 
